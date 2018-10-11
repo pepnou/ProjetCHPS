@@ -26,16 +26,16 @@ void Mandelbrot::draw(int iterations)
 	mpf_div_ui(atomic_w, this->width, this->im_width*this->surEchantillonage);
 	mpf_div_ui(atomic_h, this->height, this->im_height*this->surEchantillonage);
 	
-	Mat* mat = new Mat(this->im_width*this->surEchantillonage, this->im_height*this->surEchantillonage, CV_8UC3);
+	Mat* mat = new Mat( this->im_height*this->surEchantillonage, this->im_width*this->surEchantillonage, CV_8UC3);
 	//Mat mat(this->im_width*this->surEchantillonage, this->im_height*this->surEchantillonage, CV_8UC3);
 
-	Mat* img = new Mat(this->im_width, this->im_height, CV_8UC3);
+	Mat* img = new Mat( this->im_height, this->im_width, CV_8UC3);
 	//Mat img(this->im_width, this->im_height, CV_8UC3);
 
 	Vec3b tmpvec;
 
 	vector<int> compression_params;
-    compression_params.push_back(IMWRITE_PNG_COMPRESSION);
+    compression_params.push_back( IMWRITE_PNG_COMPRESSION);
     compression_params.push_back(9);
 	
 	for (int i = 0; i < this->im_width*this->surEchantillonage; ++i)
@@ -68,11 +68,11 @@ void Mandelbrot::draw(int iterations)
 				mpf_add(mod, mod, tmp);
 
 				if(mpf_cmp_ui(mod, 4) > 0)
+				{
+					coloration(mat->at<Vec3b>(j, i), k, iterations);
 					break;
+				}
 			}
-			//Vec3b& rgb = mat->at<Vec3b>(i, j);
-			//coloration(rgb, i, iterations);
-			coloration(&(mat->at<Vec3b>(i, j)), i, iterations);
 		}
 	}
 
@@ -96,13 +96,13 @@ void Mandelbrot::draw(int iterations)
 			{
 				for(int l = 0; l < this->surEchantillonage; l++)
 				{
-					tmpvec = mat->at<Vec3b>(i*this->surEchantillonage+k, j*this->surEchantillonage+l);
+					tmpvec = mat->at<Vec3b>( j*this->surEchantillonage+l, i*this->surEchantillonage+k);
 					moy_b += tmpvec[0];
 					moy_g += tmpvec[1];
 					moy_r += tmpvec[2];
 				}
 			}
-			Vec3b& bgr = img->at<Vec3b>( i, j);
+			Vec3b& bgr = img->at<Vec3b>( j, i);
 
 			bgr[0] = moy_b/(this->surEchantillonage * this->surEchantillonage);
 			bgr[1] = moy_g/(this->surEchantillonage * this->surEchantillonage);

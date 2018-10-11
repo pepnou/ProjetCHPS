@@ -5,7 +5,8 @@ using namespace std;
 
 Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample) : surEchantillonage(supSample), im_width(im_w), im_height(im_h)
 {
-	mpf_inits(this->pos_x, this->pos_y, this->width, this->height);
+	mpf_inits(this->pos_x, this->pos_y, this->width, this->height, NULL);
+	
 	mpf_set(this->pos_x, x);
 	mpf_set(this->pos_y, y);
 	mpf_set(this->width, w);
@@ -20,17 +21,17 @@ Mandelbrot::~Mandelbrot()
 void Mandelbrot::draw(int iterations)
 {
 	mpf_t atomic_w, atomic_h, xc, yc, xn, yn, xnp1, ynp1, mod, tmp;
-	mpf_inits(atomic_w, atomic_h, xc, yc, xn, yn, xnp1, ynp1, mod, tmp);
-
+	mpf_inits(atomic_w, atomic_h, xc, yc, xn, yn, xnp1, ynp1, mod, tmp, NULL);
+	
 	mpf_div_ui(atomic_w, this->width, this->im_width*this->surEchantillonage);
 	mpf_div_ui(atomic_h, this->height, this->im_height*this->surEchantillonage);
-
+	
 	Mat* mat = new Mat(this->im_width*this->surEchantillonage, this->im_height*this->surEchantillonage, CV_8UC3);
 	//Mat mat(this->im_width*this->surEchantillonage, this->im_height*this->surEchantillonage, CV_8UC3);
 
-	//Mat* img = new Mat(this->im_width, this->im_height, CV_8UC3);
-	Mat img(this->im_width, this->im_height, CV_8UC3);
-
+	Mat* img = new Mat(this->im_width, this->im_height, CV_8UC3);
+	//Mat img(this->im_width, this->im_height, CV_8UC3);
+	
 	for (int i = 0; i < this->im_width*this->surEchantillonage; ++i)
 	{
 		mpf_mul_ui(tmp, this->width, 2);
@@ -67,7 +68,7 @@ void Mandelbrot::draw(int iterations)
 			coloration(rgb, i, iterations);
 		}
 	}
-
+	
 	int moy_r, moy_g, moy_b;
 
 	for(int i = 0; i < this->im_width; ++i)
@@ -79,41 +80,41 @@ void Mandelbrot::draw(int iterations)
 			{
 				for(int l = 0; l < this->surEchantillonage; l++)
 				{
-					moy_b += mat->at<char>(i*this->surEchantillonage, j*this->surEchantillonage, 0);
-					moy_g += mat->at<char>(i*this->surEchantillonage, j*this->surEchantillonage, 1);
-					moy_r += mat->at<char>(i*this->surEchantillonage, j*this->surEchantillonage, 2);
+					moy_b += mat->at<char>(i*this->surEchantillonage+k, j*this->surEchantillonage+l, 0);
+					moy_g += mat->at<char>(i*this->surEchantillonage+k, j*this->surEchantillonage+l, 1);
+					moy_r += mat->at<char>(i*this->surEchantillonage+k, j*this->surEchantillonage+l, 2);
 				}
 			}
 			moy_b /= (this->surEchantillonage * this->surEchantillonage);
 			moy_g /= (this->surEchantillonage * this->surEchantillonage);
 			moy_r /= (this->surEchantillonage * this->surEchantillonage);
 
-			img.at<char>(i,j,0) = moy_b;
-			img.at<char>(i,j,0) = moy_g;
-			img.at<char>(i,j,0) = moy_r;
+			img->at<char>(i,j,0) = moy_b;
+			img->at<char>(i,j,1) = moy_g;
+			img->at<char>(i,j,2) = moy_r;
 		}
 	}
 
-
+	
 
 	vector<int> compression_params;
     compression_params.push_back(IMWRITE_PNG_COMPRESSION);
     compression_params.push_back(9);
     try
     {
-        imwrite("mandel.png", img, compression_params);
+        imwrite("mandel.png", *img, compression_params);
     }
     catch (const cv::Exception& ex)
     {
         fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
     }
 
-
-	mpf_clears(atomic_w, atomic_h, xc, yc, xn, yn, xnp1, ynp1, mod, tmp);
-
+	mpf_clears(atomic_w, atomic_h, xc, yc, xn, yn, xnp1, ynp1, mod, tmp, NULL);
+	dbg
 	delete mat;
 	//delete &mat;
-
+	dbg
 	//delete img;
-	delete &img;
+	delete img;
+	dbg
 }

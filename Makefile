@@ -31,3 +31,4 @@ clean:
 	rm -f ProjetFractale
 	rm -f test
 	rm -f alpha.png
+	rm -f mandel.png

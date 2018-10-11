@@ -15,8 +15,8 @@ int main(int argc, char** argv)
 	mpf_init_set_d(h,4.0);
 
 	Mandelbrot M(x,y,w,h,1920,1080,1);
-
 	M.draw(100);
 
+	mpf_clears( x, y, w, h, NULL);
 	return 0;
 }

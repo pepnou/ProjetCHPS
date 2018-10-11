@@ -4,8 +4,11 @@
 #include <iostream>
 #include <complex>
 
-//#include <gmp> ???
-//#include <opencv>
+#include <gmp.h>
+
+#include <opencv2/core.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/highgui.hpp>
 
 class Mandelbrot
 {

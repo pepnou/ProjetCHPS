@@ -2,9 +2,9 @@
 
 using namespace cv;
 
-void coloration(Vec3b bgr,int n, int iterations)
+void coloration(Vec3b *bgr,int n, int iterations)
 {
-	bgr[0] = 0;
-	bgr[1] = 0;
-	bgr[2] = 255;
+	(*bgr)[0] = 0;
+	(*bgr)[1] = 0;
+	(*bgr)[2] = 255;
 }

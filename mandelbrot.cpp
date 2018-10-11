@@ -31,6 +31,12 @@ void Mandelbrot::draw(int iterations)
 
 	Mat* img = new Mat(this->im_width, this->im_height, CV_8UC3);
 	//Mat img(this->im_width, this->im_height, CV_8UC3);
+
+	Vec3b tmpvec;
+
+	vector<int> compression_params;
+    compression_params.push_back(IMWRITE_PNG_COMPRESSION);
+    compression_params.push_back(9);
 	
 	for (int i = 0; i < this->im_width*this->surEchantillonage; ++i)
 	{
@@ -64,10 +70,20 @@ void Mandelbrot::draw(int iterations)
 				if(mpf_cmp_ui(mod, 4) > 0)
 					break;
 			}
-			Vec3b& rgb = mat->at<Vec3b>(i, j);
-			coloration(rgb, i, iterations);
+			//Vec3b& rgb = mat->at<Vec3b>(i, j);
+			//coloration(rgb, i, iterations);
+			coloration(&(mat->at<Vec3b>(i, j)), i, iterations);
 		}
 	}
+
+	try
+    {
+        imwrite("mandelprev.png", *mat, compression_params);
+    }
+    catch (const cv::Exception& ex)
+    {
+        fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
+    }
 	
 	int moy_r, moy_g, moy_b;
 
@@ -80,26 +96,21 @@ void Mandelbrot::draw(int iterations)
 			{
 				for(int l = 0; l < this->surEchantillonage; l++)
 				{
-					moy_b += mat->at<char>(i*this->surEchantillonage+k, j*this->surEchantillonage+l, 0);
-					moy_g += mat->at<char>(i*this->surEchantillonage+k, j*this->surEchantillonage+l, 1);
-					moy_r += mat->at<char>(i*this->surEchantillonage+k, j*this->surEchantillonage+l, 2);
+					tmpvec = mat->at<Vec3b>(i*this->surEchantillonage+k, j*this->surEchantillonage+l);
+					moy_b += tmpvec[0];
+					moy_g += tmpvec[1];
+					moy_r += tmpvec[2];
 				}
 			}
-			moy_b /= (this->surEchantillonage * this->surEchantillonage);
-			moy_g /= (this->surEchantillonage * this->surEchantillonage);
-			moy_r /= (this->surEchantillonage * this->surEchantillonage);
+			Vec3b& bgr = img->at<Vec3b>( i, j);
 
-			img->at<char>(i,j,0) = moy_b;
-			img->at<char>(i,j,1) = moy_g;
-			img->at<char>(i,j,2) = moy_r;
+			bgr[0] = moy_b/(this->surEchantillonage * this->surEchantillonage);
+			bgr[1] = moy_g/(this->surEchantillonage * this->surEchantillonage);
+			bgr[2] = moy_r/(this->surEchantillonage * this->surEchantillonage);
 		}
 	}
 
-	
 
-	vector<int> compression_params;
-    compression_params.push_back(IMWRITE_PNG_COMPRESSION);
-    compression_params.push_back(9);
     try
     {
         imwrite("mandel.png", *img, compression_params);
@@ -109,12 +120,12 @@ void Mandelbrot::draw(int iterations)
         fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
     }
 
+
 	mpf_clears(atomic_w, atomic_h, xc, yc, xn, yn, xnp1, ynp1, mod, tmp, NULL);
-	dbg
+	
 	delete mat;
 	//delete &mat;
-	dbg
-	//delete img;
+	
 	delete img;
-	dbg
+	//delete &img;
 }

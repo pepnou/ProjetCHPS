@@ -12,9 +12,9 @@ class Mandelbrot
 	private:
 		std::complex<long double> pos;
 		//Mat M;
-		long double width;
+		double width;
 		int im_width;
-		int sur-echantillonage;
+		int surEchantillonage;
 	
 	public:
 		void move();
@@ -22,6 +22,6 @@ class Mandelbrot
 			//random walk assisté en suiavtn les bords
 		void draw(int iterations);
 		bool isNice();
-}
+};
 
 #endif

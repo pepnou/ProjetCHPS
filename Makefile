@@ -18,6 +18,10 @@ test: test_img.cpp
 	g++ -g -o test test_img.cpp -Wall -lgmp `pkg-config --cflags --libs opencv`
 
 
+run: ProjetFractale
+	./ProjetFractale
+
+
 runtest: test
 	./test
 

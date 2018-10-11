@@ -1,6 +1,7 @@
 #include "mandelbrot.hpp"
 
 using namespace cv;
+using namespace std;
 
 Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample) : surEchantillonage(supSample), im_width(im_w), im_height(im_h)
 {
@@ -26,6 +27,9 @@ void Mandelbrot::draw(int iterations)
 
 	Mat* mat = new Mat(this->im_width*this->surEchantillonage, this->im_height*this->surEchantillonage, CV_8UC3);
 	//Mat mat(this->im_width*this->surEchantillonage, this->im_height*this->surEchantillonage, CV_8UC3);
+
+	//Mat* img = new Mat(this->im_width, this->im_height, CV_8UC3);
+	Mat img(this->im_width, this->im_height, CV_8UC3);
 
 	for (int i = 0; i < this->im_width*this->surEchantillonage; ++i)
 	{
@@ -59,19 +63,57 @@ void Mandelbrot::draw(int iterations)
 				if(mpf_cmp_ui(mod, 4) > 0)
 					break;
 			}
-			//Vec3b& rgb = mat->at<Vec3b>(i, j);
+			Vec3b& rgb = mat->at<Vec3b>(i, j);
+			coloration(rgb, i, iterations);
+		}
+	}
+
+	int moy_r, moy_g, moy_b;
+
+	for(int i = 0; i < this->im_width; ++i)
+	{
+		for (int j = 0; j < this->im_height; ++j)
+		{
+			moy_r = 0; moy_g = 0; moy_b = 0;
+			for(int k = 0; k < this->surEchantillonage; k++)
+			{
+				for(int l = 0; l < this->surEchantillonage; l++)
+				{
+					moy_b += mat->at<char>(i*this->surEchantillonage, j*this->surEchantillonage, 0);
+					moy_g += mat->at<char>(i*this->surEchantillonage, j*this->surEchantillonage, 1);
+					moy_r += mat->at<char>(i*this->surEchantillonage, j*this->surEchantillonage, 2);
+				}
+			}
+			moy_b /= (this->surEchantillonage * this->surEchantillonage);
+			moy_g /= (this->surEchantillonage * this->surEchantillonage);
+			moy_r /= (this->surEchantillonage * this->surEchantillonage);
+
+			img.at<char>(i,j,0) = moy_b;
+			img.at<char>(i,j,0) = moy_g;
+			img.at<char>(i,j,0) = moy_r;
 		}
 	}
 
 
 
-
-
-
-
+	vector<int> compression_params;
+    compression_params.push_back(IMWRITE_PNG_COMPRESSION);
+    compression_params.push_back(9);
+    try
+    {
+        imwrite("mandel.png", img, compression_params);
+    }
+    catch (const cv::Exception& ex)
+    {
+        fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
+    }
 
 
 	mpf_clears(atomic_w, atomic_h, xc, yc, xn, yn, xnp1, ynp1, mod, tmp);
+
 	delete mat;
 	//delete &mat;
+
+	//delete img;
+	delete &img;
 }

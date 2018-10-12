@@ -29,7 +29,7 @@ void Mandelbrot::draw(int iterations)
 	mpf_div_ui(atomic_w, this->width, this->im_width*this->surEchantillonage);
 	mpf_div_ui(atomic_h, this->height, this->im_height*this->surEchantillonage);
 
-	Mat* mat = new Mat( this->im_height*this->surEchantillonage, this->im_width*this->surEchantillonage, CV_8UC3);
+	Mat* mat = new Mat( this->im_height*this->surEchantillonage, this->im_width*this->surEchantillonage, CV_32FC1);
 	//Mat mat(this->im_width*this->surEchantillonage, this->im_height*this->surEchantillonage, CV_8UC3);
 
 	Mat* img = new Mat( this->im_height, this->im_width, CV_8UC3);
@@ -43,11 +43,10 @@ void Mandelbrot::draw(int iterations)
     cout<<mpf_get_d(atomic_w)<<" "<<mpf_get_d(atomic_h)<<endl;
     cout<<mat->rows<<" "<<mat->cols<<endl;*/
 
-    Vec3b tmpvec;
+    int moy;
 
     loading(this->im_width * this->surEchantillonage * this->im_height * this->surEchantillonage);
     loading(0);
-
 
 	for (int i = 0; i < this->im_width*this->surEchantillonage; ++i)
 	{
@@ -93,49 +92,36 @@ void Mandelbrot::draw(int iterations)
 
 				if(mpf_cmp_ui(mod, 4) > 0)
 				{
-					coloration(mat->at<Vec3b>(j, i), k, iterations);
+					mat->at<int>(j, i) = k;
 					break;
 				} else if(k == iterations -1)
 					{
-						coloration(mat->at<Vec3b>(j, i), iterations, iterations);
+						mat->at<int>(j, i) = iterations;
 					}
 			}
 			loading(i*(this->im_height*this->surEchantillonage) + j);
 		}
 		//cout<<endl;
 	}
-
-	try
-    {
-        imwrite("mandelprev.png", *mat, compression_params);
-    }
-    catch (const cv::Exception& ex)
-    {
-        fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
-    }
 	
-	int moy_r, moy_g, moy_b;
+	
 
 	for(int i = 0; i < this->im_width; ++i)
 	{
 		for (int j = 0; j < this->im_height; ++j)
 		{
-			moy_r = 0; moy_g = 0; moy_b = 0;
+			moy = 0;
 			for(int k = 0; k < this->surEchantillonage; k++)
 			{
 				for(int l = 0; l < this->surEchantillonage; l++)
 				{
-					tmpvec = mat->at<Vec3b>( j*this->surEchantillonage+l, i*this->surEchantillonage+k);
-					moy_b += tmpvec[0];
-					moy_g += tmpvec[1];
-					moy_r += tmpvec[2];
+					moy += mat->at<int>( j*this->surEchantillonage+l, i*this->surEchantillonage+k);
 				}
 			}
-			Vec3b& bgr = img->at<Vec3b>( j, i);
+			moy /= (this->surEchantillonage * this->surEchantillonage);
 
-			bgr[0] = moy_b/(this->surEchantillonage * this->surEchantillonage);
-			bgr[1] = moy_g/(this->surEchantillonage * this->surEchantillonage);
-			bgr[2] = moy_r/(this->surEchantillonage * this->surEchantillonage);
+			Vec3b& bgr = img->at<Vec3b>( j, i);
+			coloration(bgr, moy, iterations);
 		}
 	}
 

@@ -154,7 +154,7 @@ void Mandelbrot::draw(int iterations)
         fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
     }
 
-	//mpf_clears(atomic_w, atomic_h, xc, yc, xn, yn, xnp1, ynp1, mod, tmp, NULL);
+	mpf_clears(atomic_w, atomic_h, xc, yc, xn, yn, xnp1, ynp1, mod, tmp, NULL);
 	
 	delete mat;
 	//delete &mat;

@@ -12,6 +12,7 @@
 #include <opencv2/imgcodecs.hpp>
 
 #include "color.hpp"
+#include "load.hpp"
 
 class Mandelbrot
 {

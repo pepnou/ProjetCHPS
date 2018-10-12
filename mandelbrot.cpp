@@ -44,6 +44,9 @@ void Mandelbrot::draw(int iterations)
     cout<<mat->rows<<" "<<mat->cols<<endl;*/
 
     Vec3b tmpvec;
+
+    loading(this->im_width * this->surEchantillonage * this->im_height * this->surEchantillonage);
+    loading(0);
 	
 
 	for (int i = 0; i < this->im_width*this->surEchantillonage; ++i)
@@ -97,6 +100,7 @@ void Mandelbrot::draw(int iterations)
 						coloration(mat->at<Vec3b>(j, i), iterations, iterations);
 					}
 			}
+			loading(i*(this->im_width*this->surEchantillonage) + j);
 		}
 		//cout<<endl;
 	}

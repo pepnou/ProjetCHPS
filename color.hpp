@@ -1,6 +1,9 @@
 #ifndef _COLOR_
 #define _COLOR_
 
+#include <iostream>
+#include <iomanip>
+
 #include <opencv2/core.hpp>
 #include <cmath>
 

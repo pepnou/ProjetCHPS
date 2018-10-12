@@ -23,6 +23,8 @@ void Mandelbrot::draw(int iterations)
 	mpf_t atomic_w, atomic_h, xc, yc, xn, yn, xnp1, ynp1, mod, tmp;
 	mpf_inits(atomic_w, atomic_h, xc, yc, xn, yn, xnp1, ynp1, mod, tmp, NULL);
 	
+	//  atomic_w = width / (im_width * surEchantillonage)
+	//  atomic_h = height / (im_height * surEchantillonage)
 	mpf_div_ui(atomic_w, this->width, this->im_width*this->surEchantillonage);
 	mpf_div_ui(atomic_h, this->height, this->im_height*this->surEchantillonage);
 	
@@ -40,32 +42,42 @@ void Mandelbrot::draw(int iterations)
 	
 	for (int i = 0; i < this->im_width*this->surEchantillonage; ++i)
 	{
-		mpf_mul_ui(tmp, this->width, 2);
-		mpf_sub(xc, this->pos_x, tmp);
-		mpf_mul_ui(tmp, atomic_w, i);
-		mpf_add(xc, xc, tmp);
+		//  xc = pos_x - width/2 + i*atomic_w
+		mpf_div_ui(tmp, this->width, 2); //  tmp = width/2
+		mpf_sub(xc, this->pos_x, tmp); //  xc = pos_x - tmp = pos_x - width/2
+		mpf_mul_ui(tmp, atomic_w, i); //  tmp = atomic_w * 1
+		mpf_add(xc, xc, tmp); //  xc = xc + tmp = pos_x - width/2 + atomic_w * i
 
 		for (int j = 0; j < this->im_height*this->surEchantillonage; ++j)
 		{
-			mpf_mul_ui(tmp, this->height, 2);
-			mpf_sub(yc, this->pos_y, tmp);
-			mpf_mul_ui(tmp, atomic_h, j);
-			mpf_add(yc, yc, tmp);
+			//  yc = pos_y - height/2 + i*atomic_h
+			mpf_div_ui(tmp, this->height, 2); //  tmp = height/2
+			mpf_sub(yc, this->pos_y, tmp); //  yc = pos_y - tmp = pos_y - height/2
+			mpf_mul_ui(tmp, atomic_h, j); //  tmp = atomic_h * j
+			mpf_add(yc, yc, tmp); //  yc = yc + tmp = pos_y - height/2 + atomic_h * j
 
 			for (int k = 1; k < iterations; ++k)
 			{
-				mpf_pow_ui(tmp, yn, 2);
-				mpf_pow_ui(xnp1, xn, 2);
-				mpf_sub(xnp1, xnp1, tmp);
-				mpf_add(xnp1, xnp1, xc);
+				//  xnp1 = xn² - yn² + xc
+				mpf_pow_ui(tmp, yn, 2); //  tmp = yn²
+				mpf_pow_ui(xnp1, xn, 2); //  xnp1 = xn²
+				mpf_sub(xnp1, xnp1, tmp); //  xnp1 = xnp1 - tmp = xn² - yn²
+				mpf_add(xnp1, xnp1, xc); //  xnp1 = xnp1 + xc = xn² - yn² + xc
 
-				mpf_mul(ynp1, xn, yn);
-				mpf_mul_ui(ynp1, ynp1, 2);
-				mpf_add(ynp1, ynp1, yn);
+				//  ynp1 = 2*xn*yn + yc
+				mpf_mul(ynp1, xn, yn); //  ynp1 = xn * yn
+				mpf_mul_ui(ynp1, ynp1, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
+				mpf_add(ynp1, ynp1, yc); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
 
-				mpf_pow_ui(mod, xnp1, 2);
-				mpf_pow_ui(tmp, ynp1, 2);
-				mpf_add(mod, mod, tmp);
+				//  mod = xnp1² + ynp1²
+				mpf_pow_ui(mod, xnp1, 2); //  mod = xnp1²
+				mpf_pow_ui(tmp, ynp1, 2); //  tmp = ynp1²
+				mpf_add(mod, mod, tmp); //  mod = mod + tmp = xnp1² + ynp1²
+
+				//  xn = xnp1
+				//  yn = ynp1
+				mpf_set( xn, xnp1); //  xn = xnp1
+				mpf_set( yn, ynp1); //  yn = ynp1
 
 				if(mpf_cmp_ui(mod, 4) > 0)
 				{

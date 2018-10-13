@@ -96,24 +96,31 @@ void Mandelbrot::escapeSpeedCalc()
 
 void Mandelbrot::draw()
 {
-	int moy;
+	int moy, nbr_div, nbr_ndiv, divSpeed;
 
 	for(int i = 0; i < this->im_width; ++i)
 	{
 		for (int j = 0; j < this->im_height; ++j)
 		{
-			moy = 0;
+			moy = 0, nbr_div = 0, nbr_ndiv = 0;
 			for(int k = 0; k < this->surEchantillonage; k++)
 			{
 				for(int l = 0; l < this->surEchantillonage; l++)
 				{
-					moy += this->divMat->at<int>( j*this->surEchantillonage+l, i*this->surEchantillonage+k);
+					divSpeed = divMat->at<int>( j*this->surEchantillonage+l, i*this->surEchantillonage+k);
+					if(divSpeed == this->iterations)
+						nbr_ndiv++;
+					else
+					{
+						moy += divSpeed;
+						nbr_div++;
+					}
 				}
 			}
-			moy /= (this->surEchantillonage * this->surEchantillonage);
+			moy /= nbr_div;
 
 			Vec3b& bgr = this->img->at<Vec3b>( j, i);
-			coloration(bgr, moy, this->iterations);
+			coloration(bgr, moy, this->iterations, nbr_div, nbr_ndiv);
 		}
 	}
 }

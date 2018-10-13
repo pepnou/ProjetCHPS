@@ -4,7 +4,7 @@ using namespace cv;
 using namespace std;
 
 
-void coloration(Vec3b &bgr,int n, int iterations)
+void coloration(Vec3b &bgr,int n, int iterations, int nbr_div, int nbr_ndiv)
 {
 	if(n >= iterations)
 	{
@@ -14,14 +14,11 @@ void coloration(Vec3b &bgr,int n, int iterations)
 	}
 	else
 	{
-		//bgr[0] = 255;
-		//bgr[1] = 255;
-		//bgr[2] = 255;
-		bgr = HSBtoRGB( n%360, 1, 1);
+		bgr = HSBtoRGB( n%360, 1, nbr_div/(nbr_div+nbr_ndiv));
 	}
 }
 
-Vec3b HSBtoRGB( int h, int s, int v)
+Vec3b HSBtoRGB( int h, float s, float v)
 {
 	Vec3b res;
 	int c, m;

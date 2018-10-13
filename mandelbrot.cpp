@@ -3,7 +3,7 @@
 using namespace cv;
 using namespace std;
 
-Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample) : surEchantillonage(supSample), im_width(im_w), im_height(im_h)
+Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations) : surEchantillonage(supSample), im_width(im_w), im_height(im_h), iterations(iterations)
 {
 	mpf_inits(this->pos_x, this->pos_y, this->width, this->height, NULL);
 	
@@ -11,39 +11,27 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, i
 	mpf_set(this->pos_y, y);
 	mpf_set(this->width, w);
 	mpf_set(this->height, h);
+
+	this->divMat = new Mat(im_h*supSample, im_w*supSample, CV_32FC1);
+	this->img = new Mat(im_h, im_w, CV_8UC3);
 }
 
 Mandelbrot::~Mandelbrot()
 {
 	mpf_clears(this->pos_x, this->pos_y, this->width, this->height);
+	delete this->divMat;
+	delete this->img;
 }
 
-void Mandelbrot::draw(int iterations)
+void Mandelbrot::escapeSpeedCalc()
 {
 	mpf_t atomic_w, atomic_h, xc, yc, xn, yn, xnp1, ynp1, mod, tmp;
 	mpf_inits(atomic_w, atomic_h, xc, yc, xn, yn, xnp1, ynp1, mod, tmp, NULL);
 
-	
 	//  atomic_w = width / (im_width * surEchantillonage)
 	//  atomic_h = height / (im_height * surEchantillonage)
 	mpf_div_ui(atomic_w, this->width, this->im_width*this->surEchantillonage);
 	mpf_div_ui(atomic_h, this->height, this->im_height*this->surEchantillonage);
-
-	Mat* mat = new Mat( this->im_height*this->surEchantillonage, this->im_width*this->surEchantillonage, CV_32FC1);
-	//Mat mat(this->im_width*this->surEchantillonage, this->im_height*this->surEchantillonage, CV_8UC3);
-
-	Mat* img = new Mat( this->im_height, this->im_width, CV_8UC3);
-	//Mat img(this->im_width, this->im_height, CV_8UC3);
-
-	vector<int> compression_params;
-    compression_params.push_back( IMWRITE_PNG_COMPRESSION);
-    compression_params.push_back(9);
-
-    /*cout<<mpf_get_d(this->width)<<" "<<mpf_get_d(this->height)<<endl;
-    cout<<mpf_get_d(atomic_w)<<" "<<mpf_get_d(atomic_h)<<endl;
-    cout<<mat->rows<<" "<<mat->cols<<endl;*/
-
-    int moy;
 
     loading(this->im_width * this->surEchantillonage * this->im_height * this->surEchantillonage);
     loading(0);
@@ -67,7 +55,7 @@ void Mandelbrot::draw(int iterations)
 			mpf_set_ui(xn,0);
 			mpf_set_ui(yn,0);
 
-			for (int k = 1; k < iterations; ++k)
+			for (int k = 1; k < this->iterations; ++k)
 			{
 				//  xnp1 = xn² - yn² + xc
 				mpf_pow_ui(tmp, yn, 2); //  tmp = yn²
@@ -92,19 +80,23 @@ void Mandelbrot::draw(int iterations)
 
 				if(mpf_cmp_ui(mod, 4) > 0)
 				{
-					mat->at<int>(j, i) = k;
+					this->divMat->at<int>(j, i) = k;
 					break;
-				} else if(k == iterations -1)
+				} else if(k == this->iterations -1)
 					{
-						mat->at<int>(j, i) = iterations;
+						this->divMat->at<int>(j, i) = this->iterations;
 					}
 			}
 			loading(i*(this->im_height*this->surEchantillonage) + j);
 		}
-		//cout<<endl;
 	}
 	
-	
+	mpf_clears(atomic_w, atomic_h, xc, yc, xn, yn, xnp1, ynp1, mod, tmp, NULL);
+}
+
+void Mandelbrot::draw()
+{
+	int moy;
 
 	for(int i = 0; i < this->im_width; ++i)
 	{
@@ -115,36 +107,29 @@ void Mandelbrot::draw(int iterations)
 			{
 				for(int l = 0; l < this->surEchantillonage; l++)
 				{
-					moy += mat->at<int>( j*this->surEchantillonage+l, i*this->surEchantillonage+k);
+					moy += this->divMat->at<int>( j*this->surEchantillonage+l, i*this->surEchantillonage+k);
 				}
 			}
 			moy /= (this->surEchantillonage * this->surEchantillonage);
 
-			Vec3b& bgr = img->at<Vec3b>( j, i);
-			coloration(bgr, moy, iterations);
+			Vec3b& bgr = this->img->at<Vec3b>( j, i);
+			coloration(bgr, moy, this->iterations);
 		}
 	}
+}
 
+void Mandelbrot::save()
+{
+	vector<int> compression_params;
+    compression_params.push_back( IMWRITE_PNG_COMPRESSION);
+    compression_params.push_back(9);
 
-	/*char test_window[] = "test Mandelbrot";
-	imshow( test_window, *img);
-	waitKey( 0);*/
-
-
-    try
+	try
     {
-        imwrite("mandel.png", *img, compression_params);
+        imwrite("mandel.png", *(this->img), compression_params);
     }
     catch (const cv::Exception& ex)
     {
         fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
     }
-
-	mpf_clears(atomic_w, atomic_h, xc, yc, xn, yn, xnp1, ynp1, mod, tmp, NULL);
-	
-	delete mat;
-	//delete &mat;
-	
-	delete img;
-	//delete &img;
 }

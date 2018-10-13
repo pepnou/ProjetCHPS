@@ -19,13 +19,16 @@ class Mandelbrot
 	private:
 		mpf_t pos_x, pos_y;
 		mpf_t width,height;
-		int im_width,im_height;
+		int im_width, im_height, iterations;
 		int surEchantillonage;
+		cv::Mat *divMat, *img;
 	
 	public:
-		Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample);
+		Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations);
 		~Mandelbrot();
-		void draw(int iterations);
+		void escapeSpeedCalc();
+		void draw();
+		void save();
 		bool isNice();
 };
 

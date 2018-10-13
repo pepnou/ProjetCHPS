@@ -107,7 +107,7 @@ void Mandelbrot::draw()
 			{
 				for(int l = 0; l < this->surEchantillonage; l++)
 				{
-					divSpeed = divMat->at<int>( j*this->surEchantillonage+l, i*this->surEchantillonage+k);
+					divSpeed = divMat->at<int>( j*this->surEchantillonage + l, i*this->surEchantillonage + k);
 					if(divSpeed == this->iterations)
 						nbr_ndiv++;
 					else
@@ -117,7 +117,8 @@ void Mandelbrot::draw()
 					}
 				}
 			}
-			moy /= nbr_div;
+			if(nbr_div)
+				moy /= nbr_div;
 
 			Vec3b& bgr = this->img->at<Vec3b>( j, i);
 			coloration(bgr, moy, this->iterations, nbr_div, nbr_ndiv);

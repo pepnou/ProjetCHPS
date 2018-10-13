@@ -21,7 +21,6 @@ int main(int argc, char** argv)
 	mpf_init_set_d( h, 0.28125);
 
 	Mandelbrot M( x, y, w, h, 1920, 1080, 4, 200);
-
 	// Mandelbrot M( x, y, w, h, 240, 135, 5, 200);
 
 	M.escapeSpeedCalc();

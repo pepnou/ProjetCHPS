@@ -28,7 +28,6 @@ void loading(int p)
 		cout<<p<<endl;
 		total = p;
 		reset = false;
-		cout<<p<<" : "<<total<<endl;
 	}
 	else
 	{

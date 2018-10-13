@@ -14,15 +14,14 @@ void coloration(Vec3b &bgr,int n, int iterations, int nbr_div, int nbr_ndiv)
 	}
 	else
 	{
-		bgr = HSBtoRGB( n%360, 1, nbr_div/(nbr_div+nbr_ndiv));
+		bgr = HSBtoRGB( n%360, 1, (float)nbr_div/(nbr_div+nbr_ndiv));
 	}
 }
 
 Vec3b HSBtoRGB( int h, float s, float v)
 {
 	Vec3b res;
-	int c, m;
-	double x, r2 = 0.0, g2 = 0.0, b2 = 0.0, tmp;
+	double x, r2 = 0.0, g2 = 0.0, b2 = 0.0, c, m, tmp;
 
 	c = v*s;
 	//x = c*(1-abs((h/60)%2 - 1));

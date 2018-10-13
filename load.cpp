@@ -28,17 +28,18 @@ void loading(int p)
 		cout<<p<<endl;
 		total = p;
 		reset = false;
+		cout<<p<<" : "<<total<<endl;
 	}
 	else
 	{
 		if(p<0)
+		{
 			reset = true;
+		}
 		else
 		{
-			nbr = p * terminal_width / total;
-
-			//cout<<p<<" "<<nbr<<endl<<endl;
-
+			nbr = (float)p / total * terminal_width;
+			
 			if(nbr != act)
 			{
 				system("clear");

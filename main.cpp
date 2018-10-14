@@ -26,7 +26,9 @@ int main(int argc, char** argv)
 	M.escapeSpeedCalc();
 	M.draw();
 	M.save();
-
-	mpf_clears( x, y, w, h, NULL);
+	
+	cout<<clock()/CLOCKS_PER_SEC<<endl;
+	
+	mpf_clears( x, y, w, h, NULL);	
 	exit(0);
 }

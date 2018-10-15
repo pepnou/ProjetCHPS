@@ -28,7 +28,9 @@ run: ProjetFractale
 
 runtest: test
 	./test
-
+	
+#sudo apt-get install libgmp3-dev
+#sudo apt-get install libopencv-dev
 
 clean:
 	rm -f *.o

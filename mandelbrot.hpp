@@ -35,6 +35,7 @@ class Mandelbrot
 		Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations);
 		~Mandelbrot();
 		void escapeSpeedCalc();
+		void escapeSpeedCalcThread();
 		void draw();
 		void save();
 		bool isNice();

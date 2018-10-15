@@ -27,7 +27,13 @@ int main(int argc, char** argv)
 	M.draw();
 	M.save();
 	
-	cout<<clock()/CLOCKS_PER_SEC<<endl;
+	
+	int s = clock()/CLOCKS_PER_SEC, m, he;
+	he = s/3600;
+	m = (s - he*60)/60;
+	s = s - he*3600 - m*60;
+	
+	cout<<he<<"h"<<m<<"min"<<s<<"sec"<<endl;
 	
 	mpf_clears( x, y, w, h, NULL);	
 	exit(0);

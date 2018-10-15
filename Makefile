@@ -1,5 +1,5 @@
 ProjetFractale: main.o mandelbrot.o color.o load.o
-	g++ -g -o ProjetFractale main.o mandelbrot.o color.o load.o -Wall -lgmp `pkg-config --cflags --libs opencv`
+	g++ -g -o ProjetFractale main.o mandelbrot.o color.o load.o -Wall -lgmp `pkg-config --cflags --libs opencv` -lpthread
 
 
 main.o: main.cpp main.hpp
@@ -7,7 +7,7 @@ main.o: main.cpp main.hpp
 
 
 mandelbrot.o: mandelbrot.cpp mandelbrot.hpp
-	g++ -c -g -o mandelbrot.o mandelbrot.cpp -Wall -lgmp `pkg-config --cflags --libs opencv`
+	g++ -c -g -o mandelbrot.o mandelbrot.cpp -Wall -lgmp `pkg-config --cflags --libs opencv` -lpthread
 
 
 color.o: color.cpp color.hpp

@@ -24,6 +24,11 @@ test: test_img.cpp
 
 run: ProjetFractale
 	./ProjetFractale
+	
+install: install
+		sudo apt-get update
+		sudo apt-get install libgmp3-dev
+		sudo apt-get install libopencv-dev
 
 
 runtest: test

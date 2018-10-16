@@ -141,3 +141,26 @@ void Mandelbrot::save()
         fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
     }
 }
+
+void Mandelbrot::dichotomie(mpf_t x_init, mpf_t y_init, int im_h, int im_w, int surech){
+	
+	mpf_t x, y, w, h;
+	int iteration;
+	
+	nb_iteration();
+	
+	mpf_init_set_d( x, x_init);
+	mpf_init_set_d( y, y_init);
+	mpf_init_set_d( w, 3);
+	mpf_init_set_d( h, 2.0);
+	
+	Mandelbrot M( x, y, w, h, im_w, in_h, surech, iteration);
+	
+	M.split();
+	
+	
+	
+	
+	mpf_clears( x, y, w, h, NULL);
+	
+}

@@ -30,6 +30,8 @@ class Mandelbrot
 		void draw();
 		void save();
 		bool isNice();
+		void dichotomie(mpf_t x_init, mpf_t y_init, int im_h, int im_w, int surech);
+
 };
 
 #endif

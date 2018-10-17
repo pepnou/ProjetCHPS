@@ -100,10 +100,9 @@ void Mandelbrot::escapeSpeedCalc()
 
 void Mandelbrot::escapeSpeedCalcThread()
 {
-	long nbr_iterations = this->im_height*this->surEchantillonage * this->im_width*this->surEchantillonage * this->iterations;
-	int nbr_threads = nbr_iterations / ITERATIONS_PER_THREAD + 1;
+	int nbr_threads = (float) this->im_height*this->surEchantillonage / ITERATIONS_PER_THREAD * this->im_width*this->surEchantillonage * this->iterations + 1;
 	thread threads[nbr_threads];
-
+	
 	for (int i = 0; i < nbr_threads; ++i)
 	{
 		threads[i] = thread( &Mandelbrot::threadCalc, this, (i*(this->im_height*this->surEchantillonage)/nbr_threads), ((i+1)*(this->im_height*this->surEchantillonage)/nbr_threads));

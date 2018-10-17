@@ -116,8 +116,8 @@ void Mandelbrot::escapeSpeedCalcThread()
 
 void Mandelbrot::threadCalc(int deb, int fin)
 {	
-	mpf_t xc, yc, xn, yn, xnp1, ynp1, mod, tmp;
-	mpf_inits( xc, yc, xn, yn, xnp1, ynp1, mod, tmp, NULL);
+	mpf_t xc, yc, xn, yn, xnp1, ynp1, mod, xsqrt, ysqrt, tmp;
+	mpf_inits( xc, yc, xn, yn, xnp1, ynp1, mod, tmp, xsqrt, ysqrt, NULL);
 	
 
 	for(int j = deb; j < fin; ++j)
@@ -141,26 +141,14 @@ void Mandelbrot::threadCalc(int deb, int fin)
 
 			for (int k = 1; k < this->iterations; ++k)
 			{
-				//  xnp1 = xn² - yn² + xc
-				mpf_pow_ui(tmp, yn, 2); //  tmp = yn²
-				mpf_pow_ui(xnp1, xn, 2); //  xnp1 = xn²
-				mpf_sub(xnp1, xnp1, tmp); //  xnp1 = xnp1 - tmp = xn² - yn²
-				mpf_add(xnp1, xnp1, xc); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+				//xsqrt = xn²
+				mpf_mul(xsqrt, xn, xn);
 
-				//  ynp1 = 2*xn*yn + yc
-				mpf_mul(ynp1, xn, yn); //  ynp1 = xn * yn
-				mpf_mul_ui(ynp1, ynp1, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
-				mpf_add(ynp1, ynp1, yc); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+				//ysqrt = yn²
+				mpf_mul(ysqrt, yn, yn);
 
 				//  mod = xnp1² + ynp1²
-				mpf_pow_ui(mod, xnp1, 2); //  mod = xnp1²
-				mpf_pow_ui(tmp, ynp1, 2); //  tmp = ynp1²
-				mpf_add(mod, mod, tmp); //  mod = mod + tmp = xnp1² + ynp1²
-
-				//  xn = xnp1
-				//  yn = ynp1
-				mpf_set( xn, xnp1); //  xn = xnp1
-				mpf_set( yn, ynp1); //  yn = ynp1
+				mpf_add(mod, xsqrt, ysqrt); //  mod = xsqrt + ysqrt = xn² + yn²
 
 				if(mpf_cmp_ui(mod, 4) > 0)
 				{
@@ -170,9 +158,24 @@ void Mandelbrot::threadCalc(int deb, int fin)
 					{
 						this->divMat->at<int>(j, i) = this->iterations;
 					}
+
+				//  xnp1 = xn² - yn² + xc
+				mpf_sub(xnp1, xsqrt, ysqrt); //  xnp1 = xsqrt - ysqrt = xn² - yn²
+				mpf_add(xnp1, xnp1, xc); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+
+				//  ynp1 = 2*xn*yn + yc
+				mpf_mul(ynp1, xn, yn); //  ynp1 = xn * yn
+				mpf_mul_ui(ynp1, ynp1, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
+				mpf_add(ynp1, ynp1, yc); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+
+				//  xn = xnp1
+				//  yn = ynp1
+				mpf_set( xn, xnp1); //  xn = xnp1
+				mpf_set( yn, ynp1); //  yn = ynp1				
 			}
 		}
 	}
+	mpf_clears( xc, yc, xn, yn, xnp1, ynp1, mod, tmp, xsqrt, ysqrt, NULL);
 }
 
 

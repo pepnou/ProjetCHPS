@@ -142,25 +142,88 @@ void Mandelbrot::save()
     }
 }
 
-void Mandelbrot::dichotomie(mpf_t x_init, mpf_t y_init, int im_h, int im_w, int surech){
+/*int Mandelbrot::IsGood(){
 	
-	mpf_t x, y, w, h;
-	int iteration;
 	
-	nb_iteration();
-	
-	mpf_init_set_d( x, x_init);
-	mpf_init_set_d( y, y_init);
-	mpf_init_set_d( w, 3);
-	mpf_init_set_d( h, 2.0);
-	
-	Mandelbrot M( x, y, w, h, im_w, in_h, surech, iteration);
-	
-	M.split();
+	return 0;		//pas good
+	return 1;		//good
+}*/
+
+void Mandelbrot::IterUp(){
 	
 	
 	
 	
-	mpf_clears( x, y, w, h, NULL);
+}
+
+int Mandelbrot::DeepEnough(auto enough){
+	
+	//change enough
+	
+	return enough;		//c'est assez on peut s'arreter et cracher l'image
+	return enough;		//pas assez, on continue
+}
+
+void Mandelbrot::dichotomie(int enough)
+{
+	if(1/*this->IsGood()*/)
+	{
+		this->draw();
+		this->save();
+		//this->iterations = this->IterUp(enough);
+		this->iterations *= 2;
+
+		if(--enough /*this->DeepEnough(enough)*/)
+		{
+			mpf_t nx1, ny1, nx2, ny2, nx3, ny3, nx4, ny4, nh, nw, temp;
+			
+			mpf_inits(nx1, ny1, nx2, ny2, nx3, ny3, nx4, ny4, nh, nw, temp, NULL);
+			
+			// newx = x - x/2 & y + y/2
+			mpf_div_ui(temp, this->pos_x, 2);		//calcul nouveau x pour reiterer
+			mpf_sub(nx1, this->pos_x, temp);
+			mpf_div_ui(temp, this->pos_y, 2);		//calcul nouveau y
+			mpf_add(ny1, this->pos_y, temp);
+			
+			// newx = x + x/2 & y + y/2
+			mpf_div_ui(temp, this->pos_x, 2);		//calcul nouveau x pour reiterer
+			mpf_add(nx2, this->pos_x, temp);
+			mpf_div_ui(temp, this->pos_y, 2);		//calcul nouveau y
+			mpf_add(ny2, this->pos_y, temp);
+			
+			// newx = x - x/2 & y - y/2
+			mpf_div_ui(temp, this->pos_x, 2);		//calcul nouveau x pour reiterer
+			mpf_sub(nx3, this->pos_x, temp);
+			mpf_div_ui(temp, this->pos_y, 2);		//calcul nouveau y
+			mpf_sub(ny3, this->pos_y, temp);
+			
+			// newx = x + x/2 & y - y/2
+			mpf_div_ui(temp, this->pos_x, 2);		//calcul nouveau x pour reiterer
+			mpf_add(nx4, this->pos_x, temp);
+			mpf_div_ui(temp, this->pos_y, 2);		//calcul nouveau y
+			mpf_sub(ny4, this->pos_y, temp);
+			
+			int nim_w, nim_h, nsurech, niterations;
+				
+			nim_w = this->im_width/2;		//calcul le nouveau w
+			nim_h = this->im_height/2;		//calcul le nouveau h
+			
+			Mandelbrot 	M1(nx1, ny1, nw, nh, im_width, im_height, surEchantillonage, iterations);		//en haut a gauche
+			M1.dichotomie(enough);
+			
+			Mandelbrot  M2(nx2, ny2, nw, nh, im_width, im_height, surEchantillonage, iterations);		//en haut a droite
+			M2.dichotomie(enough);
+			
+			Mandelbrot	M3(nx3, ny3, nw, nh,im_width, im_height, surEchantillonage, iterations);			//en bas a gauche
+			M3.dichotomie(enough);		
+				
+			Mandelbrot	M4(nx4, ny4, nw, nh, im_width, im_height, surEchantillonage, iterations);		//en bas a droite
+			M4.dichotomie(enough);
+			
+			
+			mpf_clears(nx1, ny1, nx2, ny2, nx3, ny3, nx4, ny4, nh, nw, temp, NULL);
+		}
+
+	}
 	
 }

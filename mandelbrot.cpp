@@ -193,25 +193,14 @@ void Mandelbrot::dichotomie(int enough)
 			// newx = x - x/2 & y + y/2
 			mpf_div_ui(temp, this->width, 4);		//calcul nouveau x pour reiterer
 			mpf_sub(nx1, this->pos_x, temp);
+			mpf_add(nx2, this->pos_x, temp);
+			mpf_sub(nx3, this->pos_x, temp);
+			mpf_add(nx4, this->pos_x, temp);
+			
 			mpf_div_ui(temp, this->height, 4);		//calcul nouveau y
 			mpf_add(ny1, this->pos_y, temp);
-			
-			// newx = x + x/2 & y + y/2
-			mpf_div_ui(temp, this->width, 4);		//calcul nouveau x pour reiterer
-			mpf_add(nx2, this->pos_x, temp);
-			mpf_div_ui(temp, this->height, 4);		//calcul nouveau y
 			mpf_add(ny2, this->pos_y, temp);
-			
-			// newx = x - x/2 & y - y/2
-			mpf_div_ui(temp, this->width, 4);		//calcul nouveau x pour reiterer
-			mpf_sub(nx3, this->pos_x, temp);
-			mpf_div_ui(temp, this->height, 4);		//calcul nouveau y
 			mpf_sub(ny3, this->pos_y, temp);
-			
-			// newx = x + x/2 & y - y/2
-			mpf_div_ui(temp, this->width, 4);		//calcul nouveau x pour reiterer
-			mpf_add(nx4, this->pos_x, temp);
-			mpf_div_ui(temp, this->height, 4);		//calcul nouveau y
 			mpf_sub(ny4, this->pos_y, temp);
 			
 			// newh = h/2

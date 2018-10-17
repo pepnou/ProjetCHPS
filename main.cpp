@@ -18,7 +18,7 @@ int main(int argc, char** argv)
 
 	
 
-	Mandelbrot M( x, y, w, h, 240, 135, 1, 50);
+	Mandelbrot M( x, y, w, h, 240, 135, 1, 30);
 
 	M.dichotomie(enough);
 	

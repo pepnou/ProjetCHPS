@@ -1,6 +1,8 @@
 #ifndef _MANDEL_
 #define _MANDEL_
 
+#define ITERATIONS_PER_THREAD 400000000
+
 #include <iostream>
 #include <iomanip>
 #include <thread>
@@ -13,10 +15,9 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgcodecs.hpp>
 
-
-
 #include "color.hpp"
 #include "load.hpp"
+#include "rdtsc.hpp"
 
 class Mandelbrot
 {
@@ -29,7 +30,7 @@ class Mandelbrot
 		cv::Mat *divMat, *img;
 		
 		//void* threadCalc(void* arg);
-		void threadCalc(int j);
+		void threadCalc(int deb, int fin);
 		
 	public:
 		Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations);

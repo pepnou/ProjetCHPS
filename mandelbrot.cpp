@@ -100,74 +100,79 @@ void Mandelbrot::escapeSpeedCalc()
 
 void Mandelbrot::escapeSpeedCalcThread()
 {
-	thread threads[this->im_height*this->surEchantillonage];
-	for( int j = 0; j < this->im_height*this->surEchantillonage; ++j)
+	long nbr_iterations = this->im_height*this->surEchantillonage * this->im_width*this->surEchantillonage * this->iterations;
+	int nbr_threads = nbr_iterations / ITERATIONS_PER_THREAD + 1;
+	thread threads[nbr_threads];
+
+	for (int i = 0; i < nbr_threads; ++i)
 	{
-		threads[j] = thread( &Mandelbrot::threadCalc, this, j);
+		threads[i] = thread( &Mandelbrot::threadCalc, this, (i*(this->im_height*this->surEchantillonage)/nbr_threads), ((i+1)*(this->im_height*this->surEchantillonage)/nbr_threads));
 	}
-	for( int j = 0; j < this->im_height*this->surEchantillonage; ++j)
+	for (int i = 0; i < nbr_threads; ++i)
 	{
-		threads[j].join();
+		threads[i].join();
 	}
 }
 
-void Mandelbrot::threadCalc(int j)
+void Mandelbrot::threadCalc(int deb, int fin)
 {	
 	mpf_t xc, yc, xn, yn, xnp1, ynp1, mod, tmp;
 	mpf_inits( xc, yc, xn, yn, xnp1, ynp1, mod, tmp, NULL);
 	
-	//  yc = pos_y - height/2 + i*atomic_h
-	mpf_div_ui(tmp, this->height, 2); //  tmp = height/2
-	mpf_sub(yc, this->pos_y, tmp); //  yc = pos_y - tmp = pos_y - height/2
-	mpf_mul_ui(tmp, atomic_h, j); //  tmp = atomic_h * j
-	mpf_add(yc, yc, tmp); //  yc = yc + tmp = pos_y - height/2 + atomic_h * j
-	
-	for (int i = 0; i < this->im_width*this->surEchantillonage; ++i)
+
+	for(int j = deb; j < fin; ++j)
 	{
-		//  xc = pos_x - width/2 + i*atomic_w
-		mpf_div_ui(tmp, this->width, 2); //  tmp = width/2
-		mpf_sub(xc, this->pos_x, tmp); //  xc = pos_x - tmp = pos_x - width/2
-		mpf_mul_ui(tmp, atomic_w, i); //  tmp = atomic_w * 1
-		mpf_add(xc, xc, tmp); //  xc = xc + tmp = pos_x - width/2 + atomic_w * i
-
-		mpf_set_ui(xn,0);
-		mpf_set_ui(yn,0);
-
-		for (int k = 1; k < this->iterations; ++k)
+		//  yc = pos_y - height/2 + i*atomic_h
+		mpf_div_ui(tmp, this->height, 2); //  tmp = height/2
+		mpf_sub(yc, this->pos_y, tmp); //  yc = pos_y - tmp = pos_y - height/2
+		mpf_mul_ui(tmp, atomic_h, j); //  tmp = atomic_h * j
+		mpf_add(yc, yc, tmp); //  yc = yc + tmp = pos_y - height/2 + atomic_h * j
+		
+		for (int i = 0; i < this->im_width*this->surEchantillonage; ++i)
 		{
-			//  xnp1 = xn² - yn² + xc
-			mpf_pow_ui(tmp, yn, 2); //  tmp = yn²
-			mpf_pow_ui(xnp1, xn, 2); //  xnp1 = xn²
-			mpf_sub(xnp1, xnp1, tmp); //  xnp1 = xnp1 - tmp = xn² - yn²
-			mpf_add(xnp1, xnp1, xc); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+			//  xc = pos_x - width/2 + i*atomic_w
+			mpf_div_ui(tmp, this->width, 2); //  tmp = width/2
+			mpf_sub(xc, this->pos_x, tmp); //  xc = pos_x - tmp = pos_x - width/2
+			mpf_mul_ui(tmp, atomic_w, i); //  tmp = atomic_w * 1
+			mpf_add(xc, xc, tmp); //  xc = xc + tmp = pos_x - width/2 + atomic_w * i
 
-			//  ynp1 = 2*xn*yn + yc
-			mpf_mul(ynp1, xn, yn); //  ynp1 = xn * yn
-			mpf_mul_ui(ynp1, ynp1, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
-			mpf_add(ynp1, ynp1, yc); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+			mpf_set_ui(xn,0);
+			mpf_set_ui(yn,0);
 
-			//  mod = xnp1² + ynp1²
-			mpf_pow_ui(mod, xnp1, 2); //  mod = xnp1²
-			mpf_pow_ui(tmp, ynp1, 2); //  tmp = ynp1²
-			mpf_add(mod, mod, tmp); //  mod = mod + tmp = xnp1² + ynp1²
-
-			//  xn = xnp1
-			//  yn = ynp1
-			mpf_set( xn, xnp1); //  xn = xnp1
-			mpf_set( yn, ynp1); //  yn = ynp1
-
-			if(mpf_cmp_ui(mod, 4) > 0)
+			for (int k = 1; k < this->iterations; ++k)
 			{
-				this->divMat->at<int>(j, i) = k;
-				break;
-			} else if(k == this->iterations -1)
+				//  xnp1 = xn² - yn² + xc
+				mpf_pow_ui(tmp, yn, 2); //  tmp = yn²
+				mpf_pow_ui(xnp1, xn, 2); //  xnp1 = xn²
+				mpf_sub(xnp1, xnp1, tmp); //  xnp1 = xnp1 - tmp = xn² - yn²
+				mpf_add(xnp1, xnp1, xc); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+
+				//  ynp1 = 2*xn*yn + yc
+				mpf_mul(ynp1, xn, yn); //  ynp1 = xn * yn
+				mpf_mul_ui(ynp1, ynp1, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
+				mpf_add(ynp1, ynp1, yc); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+
+				//  mod = xnp1² + ynp1²
+				mpf_pow_ui(mod, xnp1, 2); //  mod = xnp1²
+				mpf_pow_ui(tmp, ynp1, 2); //  tmp = ynp1²
+				mpf_add(mod, mod, tmp); //  mod = mod + tmp = xnp1² + ynp1²
+
+				//  xn = xnp1
+				//  yn = ynp1
+				mpf_set( xn, xnp1); //  xn = xnp1
+				mpf_set( yn, ynp1); //  yn = ynp1
+
+				if(mpf_cmp_ui(mod, 4) > 0)
 				{
-					this->divMat->at<int>(j, i) = this->iterations;
-				}
+					this->divMat->at<int>(j, i) = k;
+					break;
+				} else if(k == this->iterations -1)
+					{
+						this->divMat->at<int>(j, i) = this->iterations;
+					}
+			}
 		}
 	}
-	
-	pthread_exit(nullptr);
 }
 
 

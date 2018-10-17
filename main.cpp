@@ -15,20 +15,20 @@ int main(int argc, char** argv)
 	mpf_init_set_d( w, 0.5);
 	mpf_init_set_d( h, 0.28125);
 
-	 Mandelbrot M( x, y, w, h, 1920, 1080, 4, 200);
+	//Mandelbrot M( x, y, w, h, 1920, 1080, 4, 200);
 	 
-	// Mandelbrot M( x, y, w, h, 960, 540, 4, 200);
+	Mandelbrot M( x, y, w, h, 480, 270, 4, 200);
 
-	system("date");
-	M.escapeSpeedCalc();
-	system("date");
+	uint64_t tick = rdtsc();
+
+	//M.escapeSpeedCalcThread();
 	M.escapeSpeedCalcThread();
-	system("date");
+
+	cout << rdtsc() - tick << endl;
 	
 	
-	
-	//M.draw();
-	//M.save();
+	M.draw();
+	M.save();
 	
 	
 	//~ int s = clock()/CLOCKS_PER_SEC, m, he;

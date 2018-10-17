@@ -31,7 +31,7 @@ class Mandelbrot
 		void save();
 		bool isGood();
 		void IterUp();
-		int DeepEnough(auto enough);
+		//int DeepEnough(auto enough);
 		void dichotomie(int enough);
 
 };

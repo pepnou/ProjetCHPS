@@ -18,7 +18,7 @@ int main(int argc, char** argv)
 
 	
 
-	Mandelbrot M( x, y, w, h, 240, 135, 4, 200);
+	Mandelbrot M( x, y, w, h, 240, 135, 1, 50);
 
 	M.dichotomie(enough);
 	
@@ -26,7 +26,7 @@ int main(int argc, char** argv)
 	M.draw();
 	M.save();*/
 	
-	cout<<clock()/CLOCKS_PER_SEC<<endl;
+	//cout<<clock()/CLOCKS_PER_SEC<<endl;
 	
 	mpf_clears( x, y, w, h, NULL);
 		

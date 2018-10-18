@@ -287,65 +287,29 @@ void Mandelbrot::save()
 
 bool Mandelbrot::IsGood(){
 
-	Mat src = imread("mandel0.png", IMREAD_COLOR);
-	imshow( "imread", src );
-	waitKey(0);
+	Mat* src_gray = new Mat(im_height, im_width, CV_8UC3);
+	Mat* detected_edges = new Mat(im_height, im_width, CV_8UC3);
 
-	/*Mat* src_gray = new Mat(im_height, im_width, CV_8UC3);
-	Mat* dst = new Mat(im_height, im_width, CV_8UC3);
-	Mat* detected_edges = new Mat(im_height, im_width, CV_8UC3);*/
+	int lowThreshold = 50;
+	int ratio = 3;//
+	int kernel_size = 3;
 
-	static int num = 0;
-	vector<int> compression_params;
-    compression_params.push_back( IMWRITE_PNG_COMPRESSION);
-    compression_params.push_back(9);
-
-	/*int lowThreshold = 50;
-	int ratio = 3;
-	int kernel_size = 3;*/
-
-	cvtColor( src, src, CV_BGR2GRAY );
-	/*blur( src, *(detected_edges), Size(3,3) );
+	cvtColor( *(this->img), *(src_gray), CV_BGR2GRAY );
+	blur( *(src_gray), *(detected_edges), Size(3,3) );
 	Canny( *(detected_edges), *(detected_edges), lowThreshold, lowThreshold*ratio, kernel_size);
-	//dst = Scalar::all(0);		//utile ?
-	src.copyTo( *(dst), *(detected_edges));		//utile ?*/
+
+	//imshow("edge", *detected_edges);
+	//waitKey(0);
+	//cout<<*detected_edges<<endl;
+	while(detected_edges->cols > 1 || detected_edges->rows > 1){
+		cout<<detected_edges->at<char>( 0)<<endl;
+    	pyrDown( *(detected_edges), *(detected_edges), Size( detected_edges->cols/2, detected_edges->rows/2) );
+	}
 
 
-	char nom_img[128];
-	/*sprintf(nom_img,"contours%d.png",num);
-	
-	try
-    {
-        imwrite(nom_img, *(detected_edges), compression_params);
-    }
-    catch (const cv::Exception& ex)
-    {
-        fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
-    }*/
+    //imshow("edge", *detected_edges);
+	//waitKey(0);
 
-    	sprintf(nom_img,"grisé%d.png",num);
-	
-	try
-    {
-        imwrite(nom_img, src, compression_params);
-    }
-    catch (const cv::Exception& ex)
-    {
-        fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
-    }
-
-        	/*sprintf(nom_img,"dst%d.png",num);
-	
-	try
-    {
-        imwrite(nom_img, *(dst), compression_params);
-    }
-    catch (const cv::Exception& ex)
-    {
-        fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
-    }*/
-
-    num++;
 
 	//return false;		//pas good
 	return true;		//good

@@ -10,7 +10,7 @@ int main(int argc, char** argv)
 {	
 	mpf_t x, y, w, h;
 
-	int im_w = 960, im_h = 540, surech = 1, iteration = 100, enough = 4;
+	int im_w = 960, im_h = 540, surech = 2, iteration = 100, enough = 4;
 
 	// mpf_init_set_d( x, -1.5);
 	// mpf_init_set_d( y, 0.0);

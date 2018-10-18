@@ -5,6 +5,8 @@
 
 #include <iostream>
 #include <iomanip>
+#include <stdlib.h>
+#include <stdio.h>
 #include <thread>
 #include <vector>
 
@@ -40,7 +42,7 @@ class Mandelbrot
 		void draw();
 		void draw2();
 		void save();
-		bool isGood();
+		bool IsGood();
 		void IterUp();
 		//int DeepEnough(auto enough);
 		void dichotomie(int enough);

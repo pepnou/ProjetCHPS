@@ -290,9 +290,9 @@ bool Mandelbrot::IsGood(){
 	Mat* src_gray = new Mat(im_height, im_width, CV_8UC3);
 	Mat* detected_edges = new Mat(im_height, im_width, CV_8UC3);
 
-	int lowThreshold = 20;
-	int ratio = 3;//
-	int kernel_size = 3;
+	int lowThreshold = 30;		//comment changer ça ?
+	int ratio = 3;				//inutile de changer ca
+	int kernel_size = 3;		//inutile de changer ca
 
 	cvtColor( *(this->img), *(src_gray), CV_BGR2GRAY );
 	blur( *(src_gray), *(detected_edges), Size(3,3) );
@@ -319,6 +319,22 @@ bool Mandelbrot::IsGood(){
 	
 }*/
 
+/*void worthsaving(){
+
+
+
+
+
+}*/
+
+/*void worthcontinue(){
+
+
+
+
+
+}*/
+
 /*bool Mandelbrot::DeepEnough(auto enough){
 	
 	//change enough
@@ -336,7 +352,7 @@ void Mandelbrot::dichotomie(int enough)
 	{
 		this->save();
 		//this->iterations = this->IterUp(enough);
-		//this->iterations *= 2;
+		//this->iterations += this->iterations/2;
 
 		if(--enough /*this->DeepEnough(enough)*/)
 		{
@@ -345,13 +361,13 @@ void Mandelbrot::dichotomie(int enough)
 			mpf_inits(nx1, ny1, nx2, ny2, nx3, ny3, nx4, ny4, nh, nw, temp, NULL);
 			
 			// newx = x - x/2 & y + y/2
-			mpf_div_ui(temp, this->width, 4);		//calcul nouveau x pour reiterer
+			mpf_div_ui(temp, this->width, 4);		//calcul nouveaux x pour reiterer
 			mpf_sub(nx1, this->pos_x, temp);
 			mpf_add(nx2, this->pos_x, temp);
 			mpf_sub(nx3, this->pos_x, temp);
 			mpf_add(nx4, this->pos_x, temp);
 			
-			mpf_div_ui(temp, this->height, 4);		//calcul nouveau y
+			mpf_div_ui(temp, this->height, 4);		//calcul nouveaux y
 			mpf_add(ny1, this->pos_y, temp);
 			mpf_add(ny2, this->pos_y, temp);
 			mpf_sub(ny3, this->pos_y, temp);

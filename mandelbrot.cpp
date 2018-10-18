@@ -101,10 +101,9 @@ void Mandelbrot::escapeSpeedCalc()
 void Mandelbrot::escapeSpeedCalcThread()
 {
 	int nbr_threads = (float) this->im_height*this->surEchantillonage / ITERATIONS_PER_THREAD * this->im_width*this->surEchantillonage * this->iterations + 1;
+	// int nbr_threads = (float) this->im_height*this->surEchantillonage / 10 + 1;
 	thread threads[nbr_threads];
-	
-	cout<<nbr_threads<<endl;
-	
+		
 	for (int i = 0; i < nbr_threads; ++i)
 	{
 		threads[i] = thread( &Mandelbrot::threadCalc, this, (i*(this->im_height*this->surEchantillonage)/nbr_threads), ((i+1)*(this->im_height*this->surEchantillonage)/nbr_threads));
@@ -451,8 +450,7 @@ bool Mandelbrot::IsGood(){
 
 void Mandelbrot::dichotomie(int enough)
 {
-	cout<<enough<<endl,
-	this->escapeSpeedCalcThread();
+	this->escapeSpeedCalcThread2();
 	this->draw2();
 
 	if(this->IsGood())

@@ -2,7 +2,7 @@
 #define _MANDEL_
 
 #define ITERATIONS_PER_THREAD 400000000
-#define THRESHOLD 5
+#define THRESHOLD 3
 
 #include <iostream>
 #include <iomanip>

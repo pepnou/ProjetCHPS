@@ -18,6 +18,41 @@ void coloration(Vec3b &bgr,int n, int iterations, int nbr_div, int nbr_ndiv)
 	}
 }
 
+void coloration2(Vec3b &bgr,int n, int iterations)
+{
+	int speed = 50;
+	n = n % (4 * speed);
+
+	switch(n/speed)
+	{
+		case 0:
+		{
+			bgr = HSBtoRGB( 240, (float) 1 - n/speed, 1);
+			break;
+		}
+		case 1:
+		{
+			bgr = HSBtoRGB( 60, (float) n/speed, 1);
+			break;
+		}
+		case 2:
+		{
+			bgr = HSBtoRGB( 60, 1, (float) 1 - n/speed);
+			break;
+		}
+		case 3:
+		{
+			bgr = HSBtoRGB( 240, 1, (float) n/speed);
+			break;
+		}
+		default:
+		{
+			cout<<"erreur"<<endl;
+			break;
+		}
+	}
+}
+
 Vec3b HSBtoRGB( int h, float s, float v)
 {
 	Vec3b res;

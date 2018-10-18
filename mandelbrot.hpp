@@ -38,6 +38,7 @@ class Mandelbrot
 		void escapeSpeedCalc();
 		void escapeSpeedCalcThread();
 		void draw();
+		void draw2();
 		void save();
 		bool isGood();
 		void IterUp();

@@ -23,17 +23,17 @@ int main(int argc, char** argv)
 
 	// Mandelbrot M( x, y, w, h, 1920, 1080, 4, 200); 
 	// Mandelbrot M( x, y, w, h, 480, 270, 4, 200);
-	Mandelbrot M( x, y, w, h, 240, 135, 1, 30);
+	Mandelbrot M( x, y, w, h, 240, 135, 1, 100);
 	
 	system("date");
 	uint64_t tick = rdtsc();
-	M.dichotomie(enough);
-	//M.escapeSpeedCalcThread();
+	//M.dichotomie(enough);
+	M.escapeSpeedCalcThread();
 	system("date");
 	cout << rdtsc() - tick << endl;
 	
-	//M.draw();
-	//M.save();
+	M.draw2();
+	M.save();
 	
 	mpf_clears( x, y, w, h, NULL);	
 	exit(0);

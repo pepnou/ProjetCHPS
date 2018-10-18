@@ -46,3 +46,7 @@ clean:
 	rm -f ProjetFractale
 	rm -f test
 	rm -f *.png
+
+delimg:
+	rm -f -r img
+	mkdir img

@@ -302,7 +302,7 @@ void Mandelbrot::save()
     compression_params.push_back(9);
 	
 	char nom_img[128];
-	sprintf(nom_img,"mandel%d.png",num++);
+	sprintf(nom_img,"./img/mandel%d.png",num++);
 	
 	try
     {
@@ -316,68 +316,29 @@ void Mandelbrot::save()
 
 bool Mandelbrot::IsGood(){
 
-	Mat src = imread("mandel0.png", IMREAD_COLOR);
-	imshow( "imread", src );
-	waitKey(0);
+	Mat* src_gray = new Mat(im_height, im_width, CV_8UC3);
+	Mat* detected_edges = new Mat(im_height, im_width, CV_8UC3);
 
-	/*Mat* src_gray = new Mat(im_height, im_width, CV_8UC3);
-	Mat* dst = new Mat(im_height, im_width, CV_8UC3);
-	Mat* detected_edges = new Mat(im_height, im_width, CV_8UC3);*/
+	int lowThreshold = 30;		//comment changer ça ?
+	int ratio = 3;				//inutile de changer ca
+	int kernel_size = 3;		//inutile de changer ca
 
-	static int num = 0;
-	vector<int> compression_params;
-    compression_params.push_back( IMWRITE_PNG_COMPRESSION);
-    compression_params.push_back(9);
-
-	/*int lowThreshold = 50;
-	int ratio = 3;
-	int kernel_size = 3;*/
-
-	cvtColor( src, src, CV_BGR2GRAY );
-	/*blur( src, *(detected_edges), Size(3,3) );
+	cvtColor( *(this->img), *(src_gray), CV_BGR2GRAY );
+	blur( *(src_gray), *(detected_edges), Size(3,3) );
 	Canny( *(detected_edges), *(detected_edges), lowThreshold, lowThreshold*ratio, kernel_size);
-	//dst = Scalar::all(0);		//utile ?
-	src.copyTo( *(dst), *(detected_edges));		//utile ?*/
 
+	while(detected_edges->cols > 1 || detected_edges->rows > 1){
+		
+    	pyrDown( *(detected_edges), *(detected_edges), Size( detected_edges->cols/2, detected_edges->rows/2) );
+	}
+	int res = detected_edges->at<char>( 0);
 
-	char nom_img[128];
-	/*sprintf(nom_img,"contours%d.png",num);
-	
-	try
-    {
-        imwrite(nom_img, *(detected_edges), compression_params);
-    }
-    catch (const cv::Exception& ex)
-    {
-        fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
-    }*/
+	//cout<<res<<endl;
 
-    	sprintf(nom_img,"grisé%d.png",num);
-	
-	try
-    {
-        imwrite(nom_img, src, compression_params);
-    }
-    catch (const cv::Exception& ex)
-    {
-        fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
-    }
-
-        	/*sprintf(nom_img,"dst%d.png",num);
-	
-	try
-    {
-        imwrite(nom_img, *(dst), compression_params);
-    }
-    catch (const cv::Exception& ex)
-    {
-        fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
-    }*/
-
-    num++;
-
-	//return false;		//pas good
-	return true;		//good
+	if(res<THRESHOLD)
+		return false;
+	else
+		return true;
 }
 
 /*void Mandelbrot::IterUp(){
@@ -385,6 +346,22 @@ bool Mandelbrot::IsGood(){
 	
 	
 	
+}*/
+
+/*void worthsaving(){
+
+
+
+
+
+}*/
+
+/*void worthcontinue(){
+
+
+
+
+
 }*/
 
 /*bool Mandelbrot::DeepEnough(auto enough){
@@ -397,19 +374,14 @@ bool Mandelbrot::IsGood(){
 
 void Mandelbrot::dichotomie(int enough)
 {
-	/*double d;
-	d=mpf_get_d(this->pos_x);
-	cout<<d<<" ";
-	d=mpf_get_d(this->pos_y);
-	cout<<d<<endl;*/
-	
+	this->escapeSpeedCalcThread();
+	this->draw();
+
 	if(this->IsGood())
 	{
-		this->escapeSpeedCalcThread();
-		this->draw();
 		this->save();
 		//this->iterations = this->IterUp(enough);
-		//this->iterations *= 2;
+		//this->iterations += this->iterations/2;
 
 		if(--enough /*this->DeepEnough(enough)*/)
 		{
@@ -418,13 +390,13 @@ void Mandelbrot::dichotomie(int enough)
 			mpf_inits(nx1, ny1, nx2, ny2, nx3, ny3, nx4, ny4, nh, nw, temp, NULL);
 			
 			// newx = x - x/2 & y + y/2
-			mpf_div_ui(temp, this->width, 4);		//calcul nouveau x pour reiterer
+			mpf_div_ui(temp, this->width, 4);		//calcul nouveaux x pour reiterer
 			mpf_sub(nx1, this->pos_x, temp);
 			mpf_add(nx2, this->pos_x, temp);
 			mpf_sub(nx3, this->pos_x, temp);
 			mpf_add(nx4, this->pos_x, temp);
 			
-			mpf_div_ui(temp, this->height, 4);		//calcul nouveau y
+			mpf_div_ui(temp, this->height, 4);		//calcul nouveaux y
 			mpf_add(ny1, this->pos_y, temp);
 			mpf_add(ny2, this->pos_y, temp);
 			mpf_sub(ny3, this->pos_y, temp);

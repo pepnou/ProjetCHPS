@@ -273,7 +273,7 @@ void Mandelbrot::save()
     compression_params.push_back(9);
 	
 	char nom_img[128];
-	sprintf(nom_img,"mandel%d.png",num++);
+	sprintf(nom_img,"./img/mandel%d.png",num++);
 	
 	try
     {
@@ -290,7 +290,7 @@ bool Mandelbrot::IsGood(){
 	Mat* src_gray = new Mat(im_height, im_width, CV_8UC3);
 	Mat* detected_edges = new Mat(im_height, im_width, CV_8UC3);
 
-	int lowThreshold = 10;
+	int lowThreshold = 20;
 	int ratio = 3;//
 	int kernel_size = 3;
 
@@ -298,23 +298,18 @@ bool Mandelbrot::IsGood(){
 	blur( *(src_gray), *(detected_edges), Size(3,3) );
 	Canny( *(detected_edges), *(detected_edges), lowThreshold, lowThreshold*ratio, kernel_size);
 
-	imshow("edge", *detected_edges);
-	waitKey(0);
-
-
 	while(detected_edges->cols > 1 || detected_edges->rows > 1){
 		
     	pyrDown( *(detected_edges), *(detected_edges), Size( detected_edges->cols/2, detected_edges->rows/2) );
 	}
-	cout<<(int)detected_edges->at<char>( 0)<<endl;
-	cout<<*detected_edges<<endl;
+	int res = detected_edges->at<char>( 0);
 
-    //imshow("edge", *detected_edges);
-	//waitKey(0);
+	//cout<<res<<endl;
 
-
-	//return false;		//pas good
-	return true;		//good
+	if(res<THRESHOLD)
+		return false;
+	else
+		return true;
 }
 
 /*void Mandelbrot::IterUp(){
@@ -334,16 +329,11 @@ bool Mandelbrot::IsGood(){
 
 void Mandelbrot::dichotomie(int enough)
 {
-	/*double d;
-	d=mpf_get_d(this->pos_x);
-	cout<<d<<" ";
-	d=mpf_get_d(this->pos_y);
-	cout<<d<<endl;*/
-	
+	this->escapeSpeedCalcThread();
+	this->draw();
+
 	if(this->IsGood())
 	{
-		this->escapeSpeedCalcThread();
-		this->draw();
 		this->save();
 		//this->iterations = this->IterUp(enough);
 		//this->iterations *= 2;

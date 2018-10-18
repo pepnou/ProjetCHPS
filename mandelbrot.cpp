@@ -173,6 +173,9 @@ void Mandelbrot::escapeSpeedCalcThread()
 	{
 		mpf_clear(y[i]);
 	}
+
+	free(x);
+	free(y);
 }
 
 void Mandelbrot::threadCalc(int deb, int fin, mpf_t* x, mpf_t* y)
@@ -314,7 +317,7 @@ void Mandelbrot::dichotomie(int enough)
 	
 	if(1/*this->IsGood()*/)
 	{
-		this->escapeSpeedCalc();
+		this->escapeSpeedCalcThread();
 		this->draw();
 		this->save();
 		//this->iterations = this->IterUp(enough);

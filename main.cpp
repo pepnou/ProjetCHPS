@@ -27,16 +27,14 @@ int main(int argc, char** argv)
 	
 	system("date");
 	uint64_t tick = rdtsc();
-	//M.dichotomie(enough);
+	M.dichotomie(enough);
 	//M.escapeSpeedCalcThread();
 	system("date");
 	cout << rdtsc() - tick << endl;
 	
 	//M.draw();
 	//M.save();
-
-	mpf_clears( x, y, w, h, NULL);
-
+	
 	mpf_clears( x, y, w, h, NULL);	
 	exit(0);
 }

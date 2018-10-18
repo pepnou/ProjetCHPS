@@ -18,7 +18,7 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, i
 
 Mandelbrot::~Mandelbrot()
 {
-	mpf_clears(this->pos_x, this->pos_y, this->width, this->height);
+	mpf_clears(this->pos_x, this->pos_y, this->width, this->height, NULL);
 	delete this->divMat;
 	delete this->img;
 }
@@ -33,8 +33,8 @@ void Mandelbrot::escapeSpeedCalc()
 	mpf_div_ui(atomic_w, this->width, this->im_width*this->surEchantillonage);
 	mpf_div_ui(atomic_h, this->height, this->im_height*this->surEchantillonage);
 
-    loading(this->im_width * this->surEchantillonage * this->im_height * this->surEchantillonage);
-    loading(0);
+    //loading(this->im_width * this->surEchantillonage * this->im_height * this->surEchantillonage);
+    //loading(0);
 
 	for (int i = 0; i < this->im_width*this->surEchantillonage; ++i)
 	{
@@ -87,7 +87,7 @@ void Mandelbrot::escapeSpeedCalc()
 						this->divMat->at<int>(j, i) = this->iterations;
 					}
 			}
-			loading(i*(this->im_height*this->surEchantillonage) + j);
+			//loading(i*(this->im_height*this->surEchantillonage) + j);
 		}
 	}
 	
@@ -128,16 +128,107 @@ void Mandelbrot::draw()
 
 void Mandelbrot::save()
 {
+	static int num = 0;
 	vector<int> compression_params;
     compression_params.push_back( IMWRITE_PNG_COMPRESSION);
     compression_params.push_back(9);
-
+	
+	char nom_img[128];
+	sprintf(nom_img,"mandel%d.png",num++);
+	
 	try
     {
-        imwrite("mandel.png", *(this->img), compression_params);
+        imwrite(nom_img, *(this->img), compression_params);
     }
     catch (const cv::Exception& ex)
     {
         fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
     }
+}
+
+/*bool Mandelbrot::IsGood(){
+	
+	
+	return 0;		//pas good
+	return 1;		//good
+}*/
+
+/*void Mandelbrot::IterUp(){
+	
+	
+	
+	
+}*/
+
+/*int Mandelbrot::DeepEnough(auto enough){
+	
+	//change enough
+	
+	return enough;		//c'est assez on peut s'arreter et cracher l'image
+	return enough;		//pas assez, on continue
+}*/
+
+void Mandelbrot::dichotomie(int enough)
+{
+	double d;
+	d=mpf_get_d(this->pos_x);
+	cout<<d<<" ";
+	d=mpf_get_d(this->pos_y);
+	cout<<d<<endl;
+	
+	if(1/*this->IsGood()*/)
+	{
+		this->escapeSpeedCalc();
+		this->draw();
+		this->save();
+		//this->iterations = this->IterUp(enough);
+		//this->iterations *= 2;
+
+		if(--enough /*this->DeepEnough(enough)*/)
+		{
+			mpf_t nx1, ny1, nx2, ny2, nx3, ny3, nx4, ny4, nh, nw, temp;
+			
+			mpf_inits(nx1, ny1, nx2, ny2, nx3, ny3, nx4, ny4, nh, nw, temp, NULL);
+			
+			// newx = x - x/2 & y + y/2
+			mpf_div_ui(temp, this->width, 4);		//calcul nouveau x pour reiterer
+			mpf_sub(nx1, this->pos_x, temp);
+			mpf_add(nx2, this->pos_x, temp);
+			mpf_sub(nx3, this->pos_x, temp);
+			mpf_add(nx4, this->pos_x, temp);
+			
+			mpf_div_ui(temp, this->height, 4);		//calcul nouveau y
+			mpf_add(ny1, this->pos_y, temp);
+			mpf_add(ny2, this->pos_y, temp);
+			mpf_sub(ny3, this->pos_y, temp);
+			mpf_sub(ny4, this->pos_y, temp);
+			
+			// newh = h/2
+			mpf_div_ui(nh, this->height, 2);
+			
+			//neww = w/2
+			mpf_div_ui(nw, this->width, 2);
+			
+			Mandelbrot* M1 = new Mandelbrot(nx1, ny1, nw, nh, im_width, im_height, surEchantillonage, iterations);		//en haut a gauche
+			M1->dichotomie(enough);
+			
+			Mandelbrot* M2 = new Mandelbrot(nx2, ny2, nw, nh, im_width, im_height, surEchantillonage, iterations);		//en haut a droite
+			M2->dichotomie(enough);
+			
+			Mandelbrot* M3 = new Mandelbrot(nx3, ny3, nw, nh,im_width, im_height, surEchantillonage, iterations);			//en bas a gauche
+			M3->dichotomie(enough);		
+				
+			Mandelbrot* M4 = new Mandelbrot(nx4, ny4, nw, nh, im_width, im_height, surEchantillonage, iterations);		//en bas a droite
+			M4->dichotomie(enough);
+			
+			
+			mpf_clears(nx1, ny1, nx2, ny2, nx3, ny3, nx4, ny4, nh, nw, temp, NULL);
+			delete M1;
+			delete M2;
+			delete M3;
+			delete M4;
+		}
+
+	}
+	
 }

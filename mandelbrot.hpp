@@ -29,7 +29,11 @@ class Mandelbrot
 		void escapeSpeedCalc();
 		void draw();
 		void save();
-		bool isNice();
+		bool isGood();
+		void IterUp();
+		//int DeepEnough(auto enough);
+		void dichotomie(int enough);
+
 };
 
 #endif

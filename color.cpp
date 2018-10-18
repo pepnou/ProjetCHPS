@@ -18,44 +18,55 @@ void coloration(Vec3b &bgr,int n, int iterations, int nbr_div, int nbr_ndiv)
 
 void coloration2(Vec3b &bgr,int n, int iterations)
 {
+	int speed = 50, angle = 240;
+	float max_lum = 0.5, h, s, v;
+	
 	if(n>=iterations)
 	{
 		bgr = 0;
 	}
 	else
 	{
-		int speed = 30, angle = 240;
 		n = n % (4 * speed);
 
 		switch(n/speed)
 		{
 			case 0:
 			{
-				bgr = HSBtoRGB( angle, 1 - (float)(n-0)/speed, 1);
+				h = angle;
+				s = 1 - (float)(n-0)/speed;
+				v = (max_lum - 1)*s + 1;
 				break;
 			}
 			case 1:
 			{
-				bgr = HSBtoRGB( (angle + 180)%360, (float) (n-speed)/speed, 1);
+				h = (angle + 180)%360;
+				s = (float) (n-speed)/speed;
+				v = (max_lum - 1)*s + 1;
 				break;
 			}
 			case 2:
 			{
-				bgr = HSBtoRGB( (angle + 180)%360, 1, 1 - (float) (n-2*speed)/speed);
+				h = (angle + 180)%360;
+				s = 1;
+				v = 1 - (float) (n-2*speed)/speed;
 				break;
 			}
 			case 3:
 			{
-				bgr = HSBtoRGB( angle, 1, (float) (n-3*speed)/speed);
+				h = angle;
+				s = 1;
+				v = (float) (n-3*speed)/speed;
 				break;
 			}
 			default:
 			{
 				cout<<"erreur"<<endl;
-				break;
+				exit(2);
 			}
 		}
 	}
+	bgr = HSBtoRGB( h, s, v);
 }
 
 Vec3b HSBtoRGB( int h, float s, float v)

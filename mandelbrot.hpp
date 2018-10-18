@@ -2,7 +2,7 @@
 #define _MANDEL_
 
 #define ITERATIONS_PER_THREAD 400000000
-#define THRESHOLD 7
+#define THRESHOLD 5
 
 #include <iostream>
 #include <iomanip>
@@ -33,13 +33,15 @@ class Mandelbrot
 		cv::Mat *divMat, *img;
 		
 		//void* threadCalc(void* arg);
-		void threadCalc(int deb, int fin, mpf_t* x, mpf_t* y);
+		void threadCalc(int deb, int fin);
+		void threadCalc2(int deb, int fin, mpf_t* x, mpf_t* y);
 		
 	public:
 		Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations);
 		~Mandelbrot();
 		void escapeSpeedCalc();
 		void escapeSpeedCalcThread();
+		void escapeSpeedCalcThread2();
 		void draw();
 		void draw2();
 		void save();

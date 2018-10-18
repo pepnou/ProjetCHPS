@@ -20,29 +20,29 @@ void coloration(Vec3b &bgr,int n, int iterations, int nbr_div, int nbr_ndiv)
 
 void coloration2(Vec3b &bgr,int n, int iterations)
 {
-	int speed = 50;
+	int speed = 40, angle = 240;
 	n = n % (4 * speed);
 
 	switch(n/speed)
 	{
 		case 0:
 		{
-			bgr = HSBtoRGB( 240, 1 - (float)n/speed, 1);
+			bgr = HSBtoRGB( angle, 1 - (float)(n-0)/speed, 1);
 			break;
 		}
 		case 1:
 		{
-			bgr = HSBtoRGB( 60, (float) n/speed, 1);
+			bgr = HSBtoRGB( (angle + 180)%360, (float) (n-speed)/speed, 1);
 			break;
 		}
 		case 2:
 		{
-			bgr = HSBtoRGB( 60, 1, 1 - (float) n/speed);
+			bgr = HSBtoRGB( (angle + 180)%360, 1, 1 - (float) (n-2*speed)/speed);
 			break;
 		}
 		case 3:
 		{
-			bgr = HSBtoRGB( 240, 1, (float) n/speed);
+			bgr = HSBtoRGB( angle, 1, (float) (n-3*speed)/speed);
 			break;
 		}
 		default:

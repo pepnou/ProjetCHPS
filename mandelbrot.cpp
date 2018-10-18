@@ -268,7 +268,7 @@ void Mandelbrot::draw()
 void Mandelbrot::draw2()
 {
 	int div, divSpeed;
-	Vec3b moy;
+	Vec3b moy, tmp;
 
 	for(int i = 0; i < this->im_width; ++i)
 	{
@@ -282,14 +282,16 @@ void Mandelbrot::draw2()
 					divSpeed = divMat->at<int>( j*this->surEchantillonage + l, i*this->surEchantillonage + k);
 					if(divSpeed != this->iterations)
 					{
-						Vec3b& bgr = this->img->at<Vec3b>( j, i);
-						coloration2(bgr, divSpeed, this->iterations);
-						moy += bgr;
+						coloration2(tmp, divSpeed, this->iterations);
+						moy += tmp;
 						div++;
 					}
 				}
 			}
-			moy /= div;
+			if(div)
+				moy /= div;
+
+			this->img->at<Vec3b>( j, i) = moy;
 		}
 	}
 }
@@ -375,7 +377,7 @@ bool Mandelbrot::IsGood(){
 void Mandelbrot::dichotomie(int enough)
 {
 	this->escapeSpeedCalcThread();
-	this->draw();
+	this->draw2();
 
 	if(this->IsGood())
 	{

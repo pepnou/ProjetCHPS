@@ -30,7 +30,7 @@ class Mandelbrot
 		cv::Mat *divMat, *img;
 		
 		//void* threadCalc(void* arg);
-		void threadCalc(int deb, int fin);
+		void threadCalc(int deb, int fin, mpf_t* x, mpf_t* y);
 		
 	public:
 		Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations);

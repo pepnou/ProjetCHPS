@@ -100,41 +100,91 @@ void Mandelbrot::escapeSpeedCalc()
 
 void Mandelbrot::escapeSpeedCalcThread()
 {
-	int nbr_threads = (float) this->im_height*this->surEchantillonage / ITERATIONS_PER_THREAD * this->im_width*this->surEchantillonage * this->iterations + 1;
+	// int nbr_threads = (float) this->im_height*this->surEchantillonage / ITERATIONS_PER_THREAD * this->im_width*this->surEchantillonage * this->iterations + 1;
+	// thread threads[nbr_threads];
+	
+	// for (int i = 0; i < nbr_threads; ++i)
+	// {
+	// 	threads[i] = thread( &Mandelbrot::threadCalc, this, (i*(this->im_height*this->surEchantillonage)/nbr_threads), ((i+1)*(this->im_height*this->surEchantillonage)/nbr_threads));
+	// }
+	// for (int i = 0; i < nbr_threads; ++i)
+	// {
+	// 	threads[i].join();
+	// }
+
+	mpf_t tmp1, tmp2;
+	mpf_t *x, *y;
+	x = (mpf_t*)malloc(sizeof(mpf_t)*this->im_width*this->surEchantillonage);
+	y = (mpf_t*)malloc(sizeof(mpf_t)*this->im_height*this->surEchantillonage);
+
+	if(!x || !y)
+		exit(2);
+
+	mpf_inits( tmp1, tmp2, NULL);
+
+	mpf_div_ui(tmp1, this->width, 2); //  tmp1 = width/2
+	mpf_set_ui( tmp2, 0);
+	for(int i = 0; i < this->im_width*this->surEchantillonage; ++i)
+	{
+		mpf_init(x[i]);
+
+		//  xc = pos_x - width/2 + i*atomic_w
+		mpf_sub(x[i], this->pos_x, tmp1); //  xc = pos_x - tmp = pos_x - width/2
+		//mpf_mul_ui(tmp, this->atomic_w, i); //  tmp = atomic_w * 1
+		mpf_add( tmp2, tmp2, atomic_w);
+		mpf_add(x[i], x[i], tmp2); //  xc = xc + tmp = pos_x - width/2 + atomic_w * i
+
+	}
+
+	mpf_div_ui(tmp1, this->height, 2); //  tmp1 = height/2
+	mpf_set_ui( tmp2, 0);
+	for(int i = 0; i < this->im_height*this->surEchantillonage; ++i)
+	{
+		mpf_init(y[i]);
+
+		//  yc = pos_y - height/2 + i*atomic_h
+		mpf_sub(y[i], this->pos_y, tmp1); //  yc = pos_y - tmp = pos_y - height/2
+		//mpf_mul_ui(tmp, atomic_h, j); //  tmp = atomic_h * j
+		mpf_add( tmp2, tmp2, atomic_h);
+		mpf_add(y[i], y[i], tmp2); //  yc = yc + tmp = pos_y - height/2 + atomic_h * j
+	}
+
+	mpf_clears( tmp1, tmp2, NULL);
+
+
+	int nbr_threads = (float) this->im_height*this->surEchantillonage / 10 + 1;
 	thread threads[nbr_threads];
 	
 	for (int i = 0; i < nbr_threads; ++i)
 	{
-		threads[i] = thread( &Mandelbrot::threadCalc, this, (i*(this->im_height*this->surEchantillonage)/nbr_threads), ((i+1)*(this->im_height*this->surEchantillonage)/nbr_threads));
+		threads[i] = thread( &Mandelbrot::threadCalc, this, (i*(this->im_height*this->surEchantillonage)/nbr_threads), ((i+1)*(this->im_height*this->surEchantillonage)/nbr_threads), x, y);
 	}
 	for (int i = 0; i < nbr_threads; ++i)
 	{
 		threads[i].join();
 	}
+
+
+	for(int i = 0; i < this->im_width*this->surEchantillonage; ++i)
+	{
+		mpf_clear(x[i]);
+	}
+	for(int i = 0; i < this->im_height*this->surEchantillonage; ++i)
+	{
+		mpf_clear(y[i]);
+	}
 }
 
-void Mandelbrot::threadCalc(int deb, int fin)
+void Mandelbrot::threadCalc(int deb, int fin, mpf_t* x, mpf_t* y)
 {	
-	mpf_t xc, yc, xn, yn, xnp1, ynp1, mod, xsqrt, ysqrt, tmp;
-	mpf_inits( xc, yc, xn, yn, xnp1, ynp1, mod, tmp, xsqrt, ysqrt, NULL);
+	mpf_t xn, yn, xnp1, ynp1, mod, xsqrt, ysqrt, tmp;
+	mpf_inits( xn, yn, xnp1, ynp1, mod, tmp, xsqrt, ysqrt, NULL);
 	
 
 	for(int j = deb; j < fin; ++j)
 	{
-		//  yc = pos_y - height/2 + i*atomic_h
-		mpf_div_ui(tmp, this->height, 2); //  tmp = height/2
-		mpf_sub(yc, this->pos_y, tmp); //  yc = pos_y - tmp = pos_y - height/2
-		mpf_mul_ui(tmp, atomic_h, j); //  tmp = atomic_h * j
-		mpf_add(yc, yc, tmp); //  yc = yc + tmp = pos_y - height/2 + atomic_h * j
-		
 		for (int i = 0; i < this->im_width*this->surEchantillonage; ++i)
 		{
-			//  xc = pos_x - width/2 + i*atomic_w
-			mpf_div_ui(tmp, this->width, 2); //  tmp = width/2
-			mpf_sub(xc, this->pos_x, tmp); //  xc = pos_x - tmp = pos_x - width/2
-			mpf_mul_ui(tmp, atomic_w, i); //  tmp = atomic_w * 1
-			mpf_add(xc, xc, tmp); //  xc = xc + tmp = pos_x - width/2 + atomic_w * i
-
 			mpf_set_ui(xn,0);
 			mpf_set_ui(yn,0);
 
@@ -160,12 +210,14 @@ void Mandelbrot::threadCalc(int deb, int fin)
 
 				//  xnp1 = xn² - yn² + xc
 				mpf_sub(xnp1, xsqrt, ysqrt); //  xnp1 = xsqrt - ysqrt = xn² - yn²
-				mpf_add(xnp1, xnp1, xc); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+				//mpf_add(xnp1, xnp1, xc); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+				mpf_add(xnp1, xnp1, x[i]); //  xnp1 = xnp1 + xc = xn² - yn² + xc
 
 				//  ynp1 = 2*xn*yn + yc
 				mpf_mul(ynp1, xn, yn); //  ynp1 = xn * yn
 				mpf_mul_ui(ynp1, ynp1, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
-				mpf_add(ynp1, ynp1, yc); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+				//mpf_add(ynp1, ynp1, yc); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+				mpf_add(ynp1, ynp1, y[j]); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
 
 				//  xn = xnp1
 				//  yn = ynp1
@@ -174,7 +226,7 @@ void Mandelbrot::threadCalc(int deb, int fin)
 			}
 		}
 	}
-	mpf_clears( xc, yc, xn, yn, xnp1, ynp1, mod, tmp, xsqrt, ysqrt, NULL);
+	mpf_clears( xn, yn, xnp1, ynp1, mod, tmp, xsqrt, ysqrt, NULL);
 }
 
 

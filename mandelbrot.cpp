@@ -290,7 +290,7 @@ bool Mandelbrot::IsGood(){
 	Mat* src_gray = new Mat(im_height, im_width, CV_8UC3);
 	Mat* detected_edges = new Mat(im_height, im_width, CV_8UC3);
 
-	int lowThreshold = 50;
+	int lowThreshold = 10;
 	int ratio = 3;//
 	int kernel_size = 3;
 
@@ -298,14 +298,16 @@ bool Mandelbrot::IsGood(){
 	blur( *(src_gray), *(detected_edges), Size(3,3) );
 	Canny( *(detected_edges), *(detected_edges), lowThreshold, lowThreshold*ratio, kernel_size);
 
-	//imshow("edge", *detected_edges);
-	//waitKey(0);
-	//cout<<*detected_edges<<endl;
+	imshow("edge", *detected_edges);
+	waitKey(0);
+
+
 	while(detected_edges->cols > 1 || detected_edges->rows > 1){
-		cout<<detected_edges->at<char>( 0)<<endl;
+		
     	pyrDown( *(detected_edges), *(detected_edges), Size( detected_edges->cols/2, detected_edges->rows/2) );
 	}
-
+	cout<<(int)detected_edges->at<char>( 0)<<endl;
+	cout<<*detected_edges<<endl;
 
     //imshow("edge", *detected_edges);
 	//waitKey(0);

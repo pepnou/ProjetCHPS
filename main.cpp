@@ -9,7 +9,7 @@ using namespace std;
 int main(int argc, char** argv)
 {
 	mpf_t x, y, w, h;
-	int im_w = 38, im_h = 21, surech = 1, iteration = 100, enough = 3;
+	int im_w = 38, im_h = 21, surech = 1, iteration = 100, enough = 1;
 
 	mpf_init_set_d( x, -0.5);
 	mpf_init_set_d( y, 0.0);
@@ -19,6 +19,10 @@ int main(int argc, char** argv)
 	
 
 	Mandelbrot M( x, y, w, h, 240, 135, 1, 30);
+
+	M.escapeSpeedCalcThread();
+	M.draw();
+	M.save();
 
 	M.dichotomie(enough);
 	

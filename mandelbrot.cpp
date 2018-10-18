@@ -146,12 +146,71 @@ void Mandelbrot::save()
     }
 }
 
-/*bool Mandelbrot::IsGood(){
+bool Mandelbrot::IsGood(){
+
+	Mat src = imread("mandel0.png", IMREAD_COLOR);
+	imshow( "imread", src );
+	waitKey(0);
+
+	/*Mat* src_gray = new Mat(im_height, im_width, CV_8UC3);
+	Mat* dst = new Mat(im_height, im_width, CV_8UC3);
+	Mat* detected_edges = new Mat(im_height, im_width, CV_8UC3);*/
+
+	static int num = 0;
+	vector<int> compression_params;
+    compression_params.push_back( IMWRITE_PNG_COMPRESSION);
+    compression_params.push_back(9);
+
+	/*int lowThreshold = 50;
+	int ratio = 3;
+	int kernel_size = 3;*/
+
+	cvtColor( src, src, CV_BGR2GRAY );
+	/*blur( src, *(detected_edges), Size(3,3) );
+	Canny( *(detected_edges), *(detected_edges), lowThreshold, lowThreshold*ratio, kernel_size);
+	//dst = Scalar::all(0);		//utile ?
+	src.copyTo( *(dst), *(detected_edges));		//utile ?*/
+
+
+	char nom_img[128];
+	/*sprintf(nom_img,"contours%d.png",num);
 	
+	try
+    {
+        imwrite(nom_img, *(detected_edges), compression_params);
+    }
+    catch (const cv::Exception& ex)
+    {
+        fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
+    }*/
+
+    	sprintf(nom_img,"grisé%d.png",num);
 	
-	return 0;		//pas good
-	return 1;		//good
-}*/
+	try
+    {
+        imwrite(nom_img, src, compression_params);
+    }
+    catch (const cv::Exception& ex)
+    {
+        fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
+    }
+
+        	/*sprintf(nom_img,"dst%d.png",num);
+	
+	try
+    {
+        imwrite(nom_img, *(dst), compression_params);
+    }
+    catch (const cv::Exception& ex)
+    {
+        fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
+    }*/
+
+    num++;
+
+	//return false;		//pas good
+	return true;		//good
+}
 
 /*void Mandelbrot::IterUp(){
 	
@@ -160,23 +219,23 @@ void Mandelbrot::save()
 	
 }*/
 
-/*int Mandelbrot::DeepEnough(auto enough){
+/*bool Mandelbrot::DeepEnough(auto enough){
 	
 	//change enough
 	
-	return enough;		//c'est assez on peut s'arreter et cracher l'image
-	return enough;		//pas assez, on continue
+	return false;		//c'est assez on peut s'arreter et cracher l'image
+	return true;		//pas assez, on continue
 }*/
 
 void Mandelbrot::dichotomie(int enough)
 {
-	double d;
+	/*double d;
 	d=mpf_get_d(this->pos_x);
 	cout<<d<<" ";
 	d=mpf_get_d(this->pos_y);
-	cout<<d<<endl;
+	cout<<d<<endl;*/
 	
-	if(1/*this->IsGood()*/)
+	if(this->IsGood())
 	{
 		this->escapeSpeedCalc();
 		this->draw();

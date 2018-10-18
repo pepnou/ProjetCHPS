@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <iomanip>
+	#include <stdlib.h>
+	#include <stdio.h>
 
 #include <gmp.h>
 
@@ -29,7 +31,7 @@ class Mandelbrot
 		void escapeSpeedCalc();
 		void draw();
 		void save();
-		bool isGood();
+		bool IsGood();
 		void IterUp();
 		//int DeepEnough(auto enough);
 		void dichotomie(int enough);

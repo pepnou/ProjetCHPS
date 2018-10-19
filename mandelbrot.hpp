@@ -2,7 +2,7 @@
 #define _MANDEL_
 
 #define ITERATIONS_PER_THREAD 400000000
-#define THRESHOLD 3
+#define THRESHOLD 6
 
 #include <iostream>
 #include <iomanip>
@@ -35,6 +35,7 @@ class Mandelbrot
 		//void* threadCalc(void* arg);
 		void threadCalc(int deb, int fin);
 		void threadCalc2(int deb, int fin, mpf_t* x, mpf_t* y);
+		void threadCalc2_2(int deb, int fin, mpf_t* x, mpf_t* y);
 		
 	public:
 		Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations);

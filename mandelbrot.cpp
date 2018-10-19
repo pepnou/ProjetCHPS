@@ -388,7 +388,7 @@ void Mandelbrot::save()
     compression_params.push_back(9);
 	
 	char nom_img[128];
-	sprintf(nom_img,"./img/mandel%d.png",num++);
+	sprintf(nom_img,"../img/mandel%d.png",num++);
 	
 	try
     {
@@ -461,7 +461,7 @@ bool Mandelbrot::IsGood(){
 void Mandelbrot::dichotomie(int enough)
 {
 	this->escapeSpeedCalcThread2();
-	this->draw();
+	this->draw2();
 
 	if(this->IsGood())
 	{

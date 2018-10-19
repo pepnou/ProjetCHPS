@@ -186,6 +186,14 @@ void Mandelbrot::threadCalc(int deb, int fin)
 
 void Mandelbrot::escapeSpeedCalcThread2()
 {
+	/*cout<<mpf_get_prec(this->width)<<endl;
+	mpf_set_prec_raw(this->width, 32);
+	cout<<mpf_get_prec(this->width)<<endl;
+	mpf_set_prec(this->width, 32);
+	cout<<mpf_get_prec(this->width)<<endl;*/
+
+
+
 	mpf_t tmp1, tmp2;
 	mpf_t *x, *y;
 	x = (mpf_t*)malloc(sizeof(mpf_t)*this->im_width*this->surEchantillonage);
@@ -255,7 +263,9 @@ void Mandelbrot::threadCalc2(int deb, int fin, mpf_t* x, mpf_t* y)
 {	
 	mpf_t xn, yn, xnp1, ynp1, mod, xsqrt, ysqrt, tmp;
 	mpf_inits( xn, yn, xnp1, ynp1, mod, tmp, xsqrt, ysqrt, NULL);
-	
+
+	//mpf_set_prec( mpf_t, int)
+	//mpf_set_prec_raw( mpf_t, int)
 
 	for(int j = deb; j < fin; ++j)
 	{
@@ -451,7 +461,7 @@ bool Mandelbrot::IsGood(){
 void Mandelbrot::dichotomie(int enough)
 {
 	this->escapeSpeedCalcThread2();
-	this->draw2();
+	this->draw();
 
 	if(this->IsGood())
 	{

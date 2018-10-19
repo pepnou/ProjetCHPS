@@ -69,6 +69,24 @@ void coloration2(Vec3b &bgr,int n, int iterations)
 	bgr = HSBtoRGB( h, s, v);
 }
 
+void coloration3(Vec3b &bgr,int n, int iterations)
+{
+	if(n >= iterations)
+	{
+		bgr = 0;
+	}
+	else
+	{
+		double 	x = log(n)/log(2),
+				a = 1/log(2),
+				b = 1/(3*sqrt(2)*log(2)),
+				c = 1/((7-pow( 3, 1/8))*log(2));
+		bgr[2] = 255*(1-cos(a*x))/2;
+		bgr[1] = 255*(1-cos(b*x))/2;
+		bgr[0] = 255*(1-cos(c*x))/2;
+	}
+}
+
 Vec3b HSBtoRGB( int h, float s, float v)
 {
 	Vec3b res;

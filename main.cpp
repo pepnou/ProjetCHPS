@@ -36,7 +36,7 @@ int main(int argc, char** argv)
 	cout << rdtsc() - tick << endl;
 	system("date");
 	
-	M.draw();
+	M.draw2();
 	M.save();
 	
 	mpf_clears( x, y, w, h, NULL);	

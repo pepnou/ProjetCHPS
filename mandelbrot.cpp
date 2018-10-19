@@ -239,6 +239,7 @@ void Mandelbrot::escapeSpeedCalcThread2()
 	
 	for (int i = 0; i < nbr_threads; ++i)
 	{
+		// threads[i] = thread( &Mandelbrot::threadCalc2, this, (i*(this->im_height*this->surEchantillonage)/nbr_threads), ((i+1)*(this->im_height*this->surEchantillonage)/nbr_threads), x, y);
 		threads[i] = thread( &Mandelbrot::threadCalc2_2, this, (i*(this->im_height*this->surEchantillonage)/nbr_threads), ((i+1)*(this->im_height*this->surEchantillonage)/nbr_threads), x, y);
 	}
 	for (int i = 0; i < nbr_threads; ++i)
@@ -351,6 +352,7 @@ void Mandelbrot::threadCalc2_2(int deb, int fin, mpf_t* x, mpf_t* y)
 				if(mpf_cmp_d(mod, threshold) < 0)
 				{
 					this->divMat->at<int>(j, i) = this->iterations;
+					// this->divMat->at<int>(j, i) = k;
 					break;
 				}
 				
@@ -470,7 +472,8 @@ void Mandelbrot::draw2()
 				moy /= nbr_div;
 			else
 				moy = this->iterations;
-			coloration2(bgr, moy, this->iterations);
+			//coloration2(bgr, moy, this->iterations);
+			coloration3(bgr, moy, this->iterations);
 		}
 	}
 }

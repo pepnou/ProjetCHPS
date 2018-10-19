@@ -285,7 +285,7 @@ void Mandelbrot::threadCalc2(int deb, int fin, mpf_t* x, mpf_t* y)
 				//  mod = xnp1² + ynp1²
 				mpf_add(mod, xsqrt, ysqrt); //  mod = xsqrt + ysqrt = xn² + yn²
 
-				if(mpf_cmp_ui(mod, 4) > 0)
+				if(mpf_cmp_ui(mod, 1000000) > 0)
 				{
 					this->divMat->at<int>(j, i) = k;
 					break;

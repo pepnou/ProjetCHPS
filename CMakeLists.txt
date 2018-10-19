@@ -8,8 +8,9 @@ project (Fractale 	VERSION 1.0
 
 
 set (SRC main.cpp mandelbrot.cpp color.cpp load.cpp rdtsc.cpp)
-set (LIB_PATH /usr/include/c++/7.2.0/thread /usr/local/include/)
-
+set (GMP_INCLUDE /usr/local/include/)
+set (THREAD_INCLUDE /usr/include/c++/7.2.0/thread )
+set (COMPILATION_OPTION "-O3")
 
 
 add_executable(ProjetFractale ${SRC})
@@ -20,7 +21,8 @@ if (OpenCV_FOUND)
   target_link_libraries (ProjetFractale ${OpenCV_LIBRARIES})
 endif (OpenCV_FOUND)
 
-target_include_directories(ProjetFractale PUBLIC LIB_PATH)
+target_include_directories(ProjetFractale PUBLIC THREAD_INCLUDE GMP_INCLUDE)
 target_link_libraries (ProjetFractale pthread gmp)
 
-
+# set_target_properties(ProjetFractale PROPERTIES COMPILE_FLAGS ${COMPILATION_OPTION} )
+target_compile_options(ProjetFractale PUBLIC ${COMPILATION_OPTION})

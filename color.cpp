@@ -18,7 +18,7 @@ void coloration(Vec3b &bgr,int n, int iterations, int nbr_div, int nbr_ndiv)
 
 void coloration2(Vec3b &bgr,int n, int iterations)
 {
-	int speed = 50, angle = 240;
+	int speed = 10, angle = 240;
 	float max_lum = 0.5, h, s, v;
 	
 	if(n>=iterations)

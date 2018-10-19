@@ -3,11 +3,30 @@
 using namespace cv;
 using namespace std;
 
-
-
-
 int main(int argc, char** argv)
 {
+	namespace po = boost::program_options;
+	
+	po::options_description options("Options");
+	options.add_options()
+	("help,h", "describe arguments")
+	("verbose,v", "be verbose");
+	
+	po::positional_options_description positional;
+
+	po::variables_map vm;
+	po::store(po::command_line_parser(argc, argv)
+		.options(options)
+		.positional(positional)
+		.run(),
+		vm);
+	po::notify(vm);
+
+	if (vm.count("help")) {
+	std::cout << options << "\n";
+	exit(0);
+	}
+	
 	mpf_t x, y, w, h;
 
 	int im_w = 240, im_h = 135, surech = 2, iteration = 100, enough = 5;

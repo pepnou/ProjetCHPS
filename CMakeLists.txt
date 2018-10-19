@@ -21,6 +21,12 @@ if (OpenCV_FOUND)
   target_link_libraries (ProjetFractale ${OpenCV_LIBRARIES})
 endif (OpenCV_FOUND)
 
+find_package (Boost COMPONENTS program_options REQUIRED)
+if (Boost_FOUND)
+  include_directories(${Boost_INCLUDE_DIRS})
+  target_link_libraries (ProjetFractale ${Boost_LIBRARIES})
+endif (Boost_FOUND)
+
 target_include_directories(ProjetFractale PUBLIC THREAD_INCLUDE GMP_INCLUDE)
 target_link_libraries (ProjetFractale pthread gmp)
 

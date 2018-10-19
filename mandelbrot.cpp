@@ -321,7 +321,9 @@ bool Mandelbrot::IsGood(){
 
 /*void worthsaving(){
 
-
+	
+	// faire le test
+	this->draw();
 
 
 
@@ -346,7 +348,8 @@ bool Mandelbrot::IsGood(){
 void Mandelbrot::dichotomie(int enough)
 {
 	this->escapeSpeedCalcThread();
-	this->draw();
+	this->save();
+	//worthsaving();
 
 	if(this->IsGood())
 	{
@@ -354,7 +357,7 @@ void Mandelbrot::dichotomie(int enough)
 		//this->iterations = this->IterUp(enough);
 		//this->iterations += this->iterations/2;
 
-		if(--enough /*this->DeepEnough(enough)*/)
+		if(--enough /*this->DeepEnough(enough) || worthcontinue()*/)
 		{
 			mpf_t nx1, ny1, nx2, ny2, nx3, ny3, nx4, ny4, nh, nw, temp;
 			

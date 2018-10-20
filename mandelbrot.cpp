@@ -312,26 +312,24 @@ bool Mandelbrot::IsGood(){
 		return true;
 }
 
-/*void Mandelbrot::IterUp(){
+void Mandelbrot::IterUp(){
 	
+	//equation a changer en fonction de this->pos_x ou de enough
+
+	iterations += iterations/4;
 	
-	
-	
-}*/
+}
+
+void worthcontinue(){
+
+	//condition de saving
+
+	this->save();
+
+}
 
 /*void worthsaving(){
-
 	
-	// faire le test
-	this->draw();
-
-
-
-}*/
-
-/*void worthcontinue(){
-
-
 
 
 
@@ -348,14 +346,12 @@ bool Mandelbrot::IsGood(){
 void Mandelbrot::dichotomie(int enough)
 {
 	this->escapeSpeedCalcThread();
-	this->save();
-	//worthsaving();
+	this->draw();
 
 	if(this->IsGood())
 	{
-		this->save();
-		//this->iterations = this->IterUp(enough);
-		//this->iterations += this->iterations/2;
+		this->worthsaving();
+		this->IterUp();
 
 		if(--enough /*this->DeepEnough(enough) || worthcontinue()*/)
 		{
@@ -381,6 +377,9 @@ void Mandelbrot::dichotomie(int enough)
 			
 			//neww = w/2
 			mpf_div_ui(nw, this->width, 2);
+
+			//new iterations
+			this->IterUp();
 			
 			Mandelbrot* M1 = new Mandelbrot(nx1, ny1, nw, nh, im_width, im_height, surEchantillonage, iterations);		//en haut a gauche
 			M1->dichotomie(enough);

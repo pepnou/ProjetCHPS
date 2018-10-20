@@ -12,7 +12,14 @@ void coloration(Vec3b &bgr,int n, int iterations, int nbr_div, int nbr_ndiv)
 	}
 	else
 	{
-		bgr = HSBtoRGB( n%360, 1, (float)nbr_div/(nbr_div+nbr_ndiv));
+		if(n < 0)
+		{
+			bgr[0] = 255;
+			bgr[1] = 255;
+			bgr[2] = 255;
+		}
+		else
+			bgr = HSBtoRGB( n%360, 1, (float)nbr_div/(nbr_div+nbr_ndiv));
 	}
 }
 

@@ -5,7 +5,7 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
-	namespace po = boost::program_options;
+	/*namespace po = boost::program_options;
 	
 	po::options_description options("Options");
 	options.add_options()
@@ -25,11 +25,11 @@ int main(int argc, char** argv)
 	if (vm.count("help")) {
 	std::cout << options << "\n";
 	exit(0);
-	}
+	}*/
 	
 	mpf_t x, y, w, h;
 
-	int im_w = 240, im_h = 135, surech = 2, iteration = 100, enough = 5;
+	int im_w = 960, im_h = 540, surech = 3, iteration = 200, enough = 5;
 
 	// mpf_init_set_d( x, -1.5);
 	// mpf_init_set_d( y, 0.0);
@@ -41,22 +41,22 @@ int main(int argc, char** argv)
 	mpf_init_set_d( w, 3);
 	mpf_init_set_d( h, 2);
 
-	Mandelbrot M( x, y, w, h, 1920, 1080, 4, 200); 
+	// Mandelbrot M( x, y, w, h, 1920, 1080, 4, 200); 
 	// Mandelbrot M( x, y, w, h, 480, 270, 2, 100);
 
-	// Mandelbrot M( x, y, w, h, im_w, im_h, surech, iteration);
+	Mandelbrot M( x, y, w, h, im_w, im_h, surech, iteration);
 	
 	system("date");
 	uint64_t tick = rdtsc();
-	//for(int i=0;i<250;i++)
-		M.escapeSpeedCalcThread2();
-	// M.dichotomie(enough);
+	
+	// M.escapeSpeedCalcThread2();
+	M.dichotomie(enough);
 	
 	cout << rdtsc() - tick << endl;
 	system("date");
 	
-	M.draw2();
-	M.save();
+	// M.draw2();
+	// M.save();
 	
 	mpf_clears( x, y, w, h, NULL);	
 	exit(0);

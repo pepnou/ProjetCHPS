@@ -320,7 +320,7 @@ void Mandelbrot::threadCalc2(int deb, int fin, mpf_t* x, mpf_t* y)
 
 void Mandelbrot::threadCalc2_2(int deb, int fin, mpf_t* x, mpf_t* y)
 {
-	double threshold = 0.00001; //  e=0.001
+	double threshold = 0.001; //  e=0.001²
 	
 	mpf_t xn, yn, xnp1, ynp1, mod, xsqrt, ysqrt, dxn, dyn, dxnp1, dynp1, tmp;
 	mpf_inits( xn, yn, xnp1, ynp1, mod, tmp, xsqrt, ysqrt, dxn, dyn, dxnp1, dynp1, NULL);
@@ -351,8 +351,9 @@ void Mandelbrot::threadCalc2_2(int deb, int fin, mpf_t* x, mpf_t* y)
 
 				if(mpf_cmp_d(mod, threshold) < 0)
 				{
-					this->divMat->at<int>(j, i) = this->iterations;
+					// this->divMat->at<int>(j, i) = this->iterations;
 					// this->divMat->at<int>(j, i) = k;
+					this->divMat->at<int>(j, i) = -1;
 					break;
 				}
 				

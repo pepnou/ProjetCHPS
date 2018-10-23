@@ -29,7 +29,7 @@ int main(int argc, char** argv)
 	
 	mpf_t x, y, w, h;
 
-	int im_w = 240, im_h = 138, surech = 1, iteration = 50, enough = 9;
+	int im_w = 240, im_h = 135, surech = 1, iteration = 50, enough = 9;
 
 	// mpf_init_set_d( x, -1.5);
 	// mpf_init_set_d( y, 0.0);

@@ -4,7 +4,7 @@
 #define ITERATIONS_PER_THREAD 400000000
 #define THRESHOLD 10
 // 47x28 => 18 (50it)
-//
+// 240x135 => 10 (50it)
 
 #include <iostream>
 #include <iomanip>

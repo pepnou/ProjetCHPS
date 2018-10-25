@@ -2,16 +2,20 @@
 #define _MANDEL_
 
 #define ITERATIONS_PER_THREAD 400000000
-#define THRESHOLD 10
-// 47x28 => 18 (50it)
-// 240x135 => 10 (50it)
+#define THRESHOLD 18
+// 47x28(1 316) => 18 (50it)
+// 120x67(8 040) => 14 (50it)
+// 240x135(32 400) => 9 (50it)
+// 480x270(129 600) => 5 (50it)
+// 1920x1080(2 073 600) => 3 (50it)
 
 #include <iostream>
 #include <iomanip>
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cstdio>
 #include <thread>
 #include <vector>
+#include <ctime>
 
 #include <gmp.h>
 
@@ -23,6 +27,7 @@
 #include "color.hpp"
 #include "load.hpp"
 #include "rdtsc.hpp"
+#include "matOp.hpp"
 
 class Mandelbrot
 {
@@ -33,7 +38,7 @@ class Mandelbrot
 		int im_width, im_height, iterations;
 		int surEchantillonage;
 		cv::Mat *divMat, *img;
-		
+
 		//void* threadCalc(void* arg);
 		void threadCalc(int deb, int fin);
 		void threadCalc2(int deb, int fin, mpf_t* x, mpf_t* y);
@@ -52,7 +57,6 @@ class Mandelbrot
 		void IterUp();
 		//int DeepEnough(auto enough);
 		void dichotomie(int enough);
-
 };
 
 #endif

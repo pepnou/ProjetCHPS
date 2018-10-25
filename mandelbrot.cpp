@@ -483,22 +483,27 @@ void Mandelbrot::draw2()
 
 void Mandelbrot::save()
 {
-	static int num = 0;
-	vector<int> compression_params;
-    compression_params.push_back( IMWRITE_PNG_COMPRESSION);
-    compression_params.push_back(9);
-	
-	char nom_img[128];
-	sprintf(nom_img,"../img/mandel%d.png",num++);
-	
-	try
-    {
-        imwrite(nom_img, *(this->img), compression_params);
-    }
-    catch (const cv::Exception& ex)
-    {
-        fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
-    }
+	static const time_t now = time(0);
+	char* dt = ctime(&now);
+	int i = 0;
+	while(dt[i] != '\0')
+	{
+		if(dt[i] == ' ')
+		{
+			dt[i] = '_';
+		}
+		else if(dt[i] == ':')
+		{
+			dt[i] = '-';
+		}
+		else if(dt[i] == '\n')
+		{
+			dt[i] = '\0';
+		}
+		i++;
+	}
+
+	matSave( this->img, dt);
 }
 
 bool Mandelbrot::IsGood(){
@@ -561,6 +566,7 @@ bool Mandelbrot::IsGood(){
 
 void Mandelbrot::dichotomie(int enough)
 {
+	cout<<enough<<endl;
 	this->escapeSpeedCalcThread2();
 	this->draw();
 

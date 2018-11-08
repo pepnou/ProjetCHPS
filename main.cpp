@@ -29,7 +29,7 @@ int main(int argc, char** argv)
 	
 	mpf_t x, y, w, h;
 
-	int im_w = 48, im_h = 27, surech = 1, iteration = 50, enough = 2;
+	int im_w = 480, im_h = 270, surech = 1, iteration = 50, enough = 2, color = 1;
 
 	// mpf_init_set_d( x, -1.5);
 	// mpf_init_set_d( y, 0.0);
@@ -43,19 +43,19 @@ int main(int argc, char** argv)
 
 	// Mandelbrot M( x, y, w, h, 1920, 1080, 4, 200); 
 	// Mandelbrot M( x, y, w, h, 480, 270, 4, 200);
-	Mandelbrot M( x, y, w, h, im_w, im_h, surech, iteration);
+	Mandelbrot M( x, y, w, h, im_w, im_h, surech, iteration, color);
 	//M.escapeSpeedCalcThread();
 	//M.draw();
 	//M.save();
 
 	
 	// system("date");
-	uint64_t tick = rdtsc();
+	//uint64_t tick = rdtsc();
 	
 	// M.escapeSpeedCalcThread2();
 	M.dichotomie(enough);
 	
-	cout << rdtsc() - tick << endl;
+	//cout << rdtsc() - tick << endl;
 	// system("date");
 	
 	// M.draw2();

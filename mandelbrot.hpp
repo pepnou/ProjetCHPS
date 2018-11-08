@@ -2,7 +2,7 @@
 #define _MANDEL_
 
 #define ITERATIONS_PER_THREAD 400000000
-#define THRESHOLD 18
+
 // 47x28(1 316) => 18 (50it)
 // 120x67(8 040) => 14 (50it)
 // 240x135(32 400) => 9 (50it)
@@ -38,6 +38,7 @@ class Mandelbrot
 		int im_width, im_height, iterations;
 		int surEchantillonage;
 		cv::Mat *divMat, *img;
+		double Threshold;
 
 		//void* threadCalc(void* arg);
 		void threadCalc(int deb, int fin);
@@ -47,6 +48,7 @@ class Mandelbrot
 	public:
 		Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations);
 		~Mandelbrot();
+		void del_mem();
 		void escapeSpeedCalc();
 		void escapeSpeedCalcThread();
 		void escapeSpeedCalcThread2();

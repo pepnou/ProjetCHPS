@@ -3,13 +3,33 @@
 using namespace cv;
 using namespace std;
 
-
-
-
 int main(int argc, char** argv)
-{	
+{
+	/*namespace po = boost::program_options;
+	
+	po::options_description options("Options");
+	options.add_options()
+	("help,h", "describe arguments")
+	("verbose,v", "be verbose");
+	
+	po::positional_options_description positional;
+
+	po::variables_map vm;
+	po::store(po::command_line_parser(argc, argv)
+		.options(options)
+		.positional(positional)
+		.run(),
+		vm);
+	po::notify(vm);
+
+	if (vm.count("help")) {
+	std::cout << options << "\n";
+	exit(0);
+	}*/
+	
 	mpf_t x, y, w, h;
-	int im_w = 40, im_h = 22, surech = 4, iteration = 50, enough = 9;
+
+	int im_w = 960, im_h = 540, surech = 3, iteration = 200, enough = 5;
 
 	// mpf_init_set_d( x, -1.5);
 	// mpf_init_set_d( y, 0.0);
@@ -27,16 +47,19 @@ int main(int argc, char** argv)
 	//M.escapeSpeedCalcThread();
 	//M.draw();
 	//M.save();
+
 	
 	system("date");
 	uint64_t tick = rdtsc();
-
+	
+	// M.escapeSpeedCalcThread2();
 	M.dichotomie(enough);
-	//M.escapeSpeedCalcThread();
-
-	system("date");
+	
 	cout << rdtsc() - tick << endl;
-
+	system("date");
+	
+	// M.draw2();
+	// M.save();
 	
 	mpf_clears( x, y, w, h, NULL);	
 	exit(0);

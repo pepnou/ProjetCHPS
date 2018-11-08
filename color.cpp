@@ -8,13 +8,89 @@ void coloration(Vec3b &bgr,int n, int iterations, int nbr_div, int nbr_ndiv)
 {
 	if(n >= iterations)
 	{
-		bgr[0] = 0;
-		bgr[1] = 0;
-		bgr[2] = 0;
+		bgr = 0;
 	}
 	else
 	{
-		bgr = HSBtoRGB( n%360, 1, (float)nbr_div/(nbr_div+nbr_ndiv));
+		if(n < 0)
+		{
+			bgr[0] = 255;
+			bgr[1] = 255;
+			bgr[2] = 255;
+		}
+		else
+			bgr = HSBtoRGB( n%360, 1, (float)nbr_div/(nbr_div+nbr_ndiv));
+	}
+}
+
+void coloration2(Vec3b &bgr,int n, int iterations)
+{
+	int speed = 10, angle = 240;
+	float max_lum = 0.5, h, s, v;
+	
+	if(n>=iterations)
+	{
+		bgr = 0;
+	}
+	else
+	{
+		n = n % (4 * speed);
+
+		switch(n/speed)
+		{
+			case 0:
+			{
+				h = angle;
+				s = 1 - (float)(n-0)/speed;
+				v = (max_lum - 1)*s + 1;
+				break;
+			}
+			case 1:
+			{
+				h = (angle + 180)%360;
+				s = (float) (n-speed)/speed;
+				v = (max_lum - 1)*s + 1;
+				break;
+			}
+			case 2:
+			{
+				h = (angle + 180)%360;
+				s = 1;
+				v = 1 - (float) (n-2*speed)/speed;
+				break;
+			}
+			case 3:
+			{
+				h = angle;
+				s = 1;
+				v = (float) (n-3*speed)/speed;
+				break;
+			}
+			default:
+			{
+				cout<<"erreur"<<endl;
+				exit(2);
+			}
+		}
+	}
+	bgr = HSBtoRGB( h, s, v);
+}
+
+void coloration3(Vec3b &bgr,int n, int iterations)
+{
+	if(n >= iterations)
+	{
+		bgr = 0;
+	}
+	else
+	{
+		double 	x = log(n)/log(2),
+				a = 1/log(2),
+				b = 1/(3*sqrt(2)*log(2)),
+				c = 1/((7-pow( 3, 1/8))*log(2));
+		bgr[2] = 255*(1-cos(a*x))/2;
+		bgr[1] = 255*(1-cos(b*x))/2;
+		bgr[0] = 255*(1-cos(c*x))/2;
 	}
 }
 

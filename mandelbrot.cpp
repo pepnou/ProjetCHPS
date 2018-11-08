@@ -20,6 +20,8 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, i
 
 	this->divMat = new Mat(im_h*supSample, im_w*supSample, CV_32FC1);
 	this->img = new Mat(im_h, im_w, CV_8UC3);
+
+
 }
 
 Mandelbrot::~Mandelbrot()
@@ -351,9 +353,9 @@ void Mandelbrot::threadCalc2_2(int deb, int fin, mpf_t* x, mpf_t* y)
 
 				if(mpf_cmp_d(mod, threshold) < 0)
 				{
-					// this->divMat->at<int>(j, i) = this->iterations;
+					this->divMat->at<int>(j, i) = this->iterations;
 					// this->divMat->at<int>(j, i) = k;
-					this->divMat->at<int>(j, i) = -1;
+					// this->divMat->at<int>(j, i) = -1;
 					break;
 				}
 				
@@ -481,22 +483,27 @@ void Mandelbrot::draw2()
 
 void Mandelbrot::save()
 {
-	static int num = 0;
-	vector<int> compression_params;
-    compression_params.push_back( IMWRITE_PNG_COMPRESSION);
-    compression_params.push_back(9);
-	
-	char nom_img[128];
-	sprintf(nom_img,"../img/mandel%d.png",num++);
-	
-	try
-    {
-        imwrite(nom_img, *(this->img), compression_params);
-    }
-    catch (const cv::Exception& ex)
-    {
-        fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
-    }
+	static const time_t now = time(0);
+	char* dt = ctime(&now);
+	int i = 0;
+	while(dt[i] != '\0')
+	{
+		if(dt[i] == ' ')
+		{
+			dt[i] = '_';
+		}
+		else if(dt[i] == ':')
+		{
+			dt[i] = '-';
+		}
+		else if(dt[i] == '\n')
+		{
+			dt[i] = '\0';
+		}
+		i++;
+	}
+
+	matSave( this->img, dt);
 }
 
 bool Mandelbrot::IsGood(){
@@ -559,6 +566,7 @@ void worthcontinue(){
 
 void Mandelbrot::dichotomie(int enough)
 {
+	cout<<enough<<endl;
 	this->escapeSpeedCalcThread2();
 	this->draw();
 

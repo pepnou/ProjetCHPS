@@ -29,7 +29,7 @@ int main(int argc, char** argv)
 	
 	mpf_t x, y, w, h;
 
-	int im_w = 960, im_h = 540, surech = 3, iteration = 200, enough = 5;
+	int im_w = 48, im_h = 27, surech = 1, iteration = 50, enough = 2;
 
 	// mpf_init_set_d( x, -1.5);
 	// mpf_init_set_d( y, 0.0);
@@ -49,14 +49,14 @@ int main(int argc, char** argv)
 	//M.save();
 
 	
-	system("date");
+	// system("date");
 	uint64_t tick = rdtsc();
 	
 	// M.escapeSpeedCalcThread2();
 	M.dichotomie(enough);
 	
 	cout << rdtsc() - tick << endl;
-	system("date");
+	// system("date");
 	
 	// M.draw2();
 	// M.save();

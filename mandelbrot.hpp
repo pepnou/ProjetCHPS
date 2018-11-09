@@ -46,6 +46,7 @@ class Mandelbrot
 		void threadCalc2(int deb, int fin, mpf_t* x, mpf_t* y);
 		void threadCalc2_2(int deb, int fin, mpf_t* x, mpf_t* y);
 		void threadCalc3(int deb, int fin, mpf_t* x, mpf_t* y);
+		void partialDraw();
 		
 	public:
 		Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations, int color);

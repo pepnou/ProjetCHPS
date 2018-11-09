@@ -196,7 +196,7 @@ void Mandelbrot::threadCalc2(int deb, int fin, mpf_t* x, mpf_t* y)
 
 void Mandelbrot::escapeSpeedCalcThread3()
 {
-	mpf_t tmp1, tmp2;
+	/*mpf_t tmp1, tmp2;
 	mpf_t *x, *y;
 	x = (mpf_t*)malloc(sizeof(mpf_t)*this->im_width*this->surEchantillonage);
 	y = (mpf_t*)malloc(sizeof(mpf_t)*this->im_height*this->surEchantillonage);
@@ -235,18 +235,46 @@ void Mandelbrot::escapeSpeedCalcThread3()
 
 	mpf_clears( tmp1, tmp2, NULL);
 
+
+
+
+
+
+
+
 	//int nbr_threads = (float) this->im_height*this->surEchantillonage / ITERATIONS_PER_THREAD * this->im_width*this->surEchantillonage * this->iterations + 1;
-	int nbr_threads = (float) this->im_height*this->surEchantillonage / 10 + 1;
+	int nbr_threads = (float) this->im_height / 10 + 1;
 	thread threads[nbr_threads];
+
+
 	
+	Vec3b bgr = { 1, 1, 1};
+	*(this->img) = bgr;
 	for (int i = 0; i < nbr_threads; ++i)
 	{
-		threads[i] = thread( &Mandelbrot::threadCalc3, this, (i*(this->im_height*this->surEchantillonage)/nbr_threads), ((i+1)*(this->im_height*this->surEchantillonage)/nbr_threads), x, y);
+		threads[i] = thread( &Mandelbrot::threadCalc3, this, (i*(this->im_height)/nbr_threads), ((i+1)*(this->im_height)/nbr_threads), x, y);
 	}
 	for (int i = 0; i < nbr_threads; ++i)
 	{
 		threads[i].join();
 	}
+
+	this->partialDraw();
+	this->save();
+	// Mat* src_gray = new Mat(im_height, im_width, CV_8UC3);
+	// Mat* detected_edges = new Mat(im_height, im_width, CV_8UC3);
+
+	// int lowThreshold = 30;		//comment changer ça ?
+	// int ratio = 3;				//inutile de changer ca
+	// int kernel_size = 3;		//inutile de changer ca
+
+	// cvtColor( *(this->img), *(src_gray), CV_BGR2GRAY );
+	// blur( *(src_gray), *(detected_edges), Size(3,3) );
+	// Canny( *(detected_edges), *(detected_edges), lowThreshold, lowThreshold*ratio, kernel_size);
+
+
+
+
 	
 	for(int i = 0; i < this->im_width*this->surEchantillonage; ++i)
 	{
@@ -258,11 +286,12 @@ void Mandelbrot::escapeSpeedCalcThread3()
 	}
 
 	free(x);
-	free(y);
+	free(y);*/
 }
 
 void Mandelbrot::threadCalc3(int deb, int fin, mpf_t* x, mpf_t* y)
-{	
+{
+	//cout<<deb<<" "<<fin<<endl;
 	mpf_t xn, yn, xnp1, ynp1, mod, xsqr, ysqr, tmp;
 	mpf_inits( xn, yn, xnp1, ynp1, mod, tmp, xsqr, ysqr, NULL);
 
@@ -270,7 +299,8 @@ void Mandelbrot::threadCalc3(int deb, int fin, mpf_t* x, mpf_t* y)
 	{
 		for (int i = 0; i < this->im_width; i++)
 		{
-			int sE = this->img->at<int>(j, i);
+			Vec3b bgr = this->img->at<Vec3b>(j, i);
+			int sE = bgr[0];
 
 			for(int m = 0; m < sE; m++)
 			{
@@ -321,8 +351,43 @@ void Mandelbrot::threadCalc3(int deb, int fin, mpf_t* x, mpf_t* y)
 			}
 		}
 	}
-
 	mpf_clears( xn, yn, xnp1, ynp1, mod, tmp, xsqr, ysqr, NULL);
+}
+
+void Mandelbrot::partialDraw()
+{
+	int moy, nbr_div, nbr_ndiv, divSpeed;
+
+	for(int i = 0; i < this->im_width; ++i)
+	{
+		for (int j = 0; j < this->im_height; ++j)
+		{
+			divSpeed = divMat->at<int>( j*this->surEchantillonage, i*this->surEchantillonage);
+			Vec3b bgr;
+			switch(this->color)
+			{
+				case 1:
+				{
+					if(divSpeed == this->iterations)
+						coloration(bgr, divSpeed, this->iterations, 0, 1);
+					else
+						coloration(bgr, divSpeed, this->iterations, 1, 0);
+					break;
+				}
+				case 2:
+				{
+					coloration2(bgr, divSpeed, this->iterations);
+					break;
+				}
+				case 3:
+				{
+					coloration3(bgr, divSpeed, this->iterations);
+					break;
+				}
+			}
+			this->img->at<Vec3b>( j, i) = bgr;
+		}
+	}
 }
 
 /*void Mandelbrot::threadCalc2_2(int deb, int fin, mpf_t* x, mpf_t* y)
@@ -434,41 +499,45 @@ void Mandelbrot::draw()
 			{
 				for(int l = 0; l < this->surEchantillonage; l++)
 				{
-					switch(this->color)
+					divSpeed = divMat->at<int>( j*this->surEchantillonage + l, i*this->surEchantillonage + k);
+					if(divSpeed != -1)
 					{
-						case 1:
+						switch(this->color)
 						{
-							divSpeed = divMat->at<int>( j*this->surEchantillonage + l, i*this->surEchantillonage + k);
-							if(divSpeed == this->iterations)
-								nbr_ndiv++;
-							else
+							case 1:
 							{
-								moy += divSpeed;
-								nbr_div++;
+								if(divSpeed == this->iterations)
+									nbr_ndiv++;
+								else
+								{
+									moy += divSpeed;
+									nbr_div++;
+								}
+								break;
 							}
-							break;
-						}
-						case 2:case 3:
-						{
-							divSpeed = divMat->at<int>( j*this->surEchantillonage + l, i*this->surEchantillonage + k);
-							if(divSpeed != this->iterations)
+							case 2:case 3:
 							{
-								moy += divSpeed;
-								nbr_div++;
+								if(divSpeed != this->iterations)
+								{
+									moy += divSpeed;
+									nbr_div++;
+								}
+								break;
 							}
-							break;
 						}
 					}
 				}
 			}
 
-			Vec3b& bgr = this->img->at<Vec3b>( j, i);
+			Vec3b bgr;
 			switch(this->color)
 			{
 				case 1:
 				{
 					if(nbr_div)
 						moy /= nbr_div;
+					else 
+						moy = this->iterations;
 					coloration(bgr, moy, this->iterations, nbr_div, nbr_ndiv);
 					break;
 				}
@@ -492,6 +561,7 @@ void Mandelbrot::draw()
 					break;
 				}
 			}
+			this->img->at<Vec3b>( j, i) = bgr;
 		}
 	}
 }
@@ -560,7 +630,7 @@ void worthsaving(){
 
 void Mandelbrot::dichotomie(int enough)
 {
-	this->escapeSpeedCalcThread2();
+	this->escapeSpeedCalcThread3();
 	this->draw();
 	this->save();
 

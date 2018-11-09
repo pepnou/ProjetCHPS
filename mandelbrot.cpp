@@ -513,7 +513,7 @@ void Mandelbrot::save()
 bool Mandelbrot::IsGood(){
 
 	Mat* src_gray = new Mat(im_height, im_width, CV_8UC3);
-	Mat* detected_edges = new Mat(im_height, im_width, CV_8UC3);
+	Mat* detected_edges = new Mat(im_height, im_width, CV_8UC1);
 
 	int lowThreshold = 30;		//comment changer ça ?
 	int ratio = 3;				//inutile de changer ca
@@ -536,6 +536,81 @@ bool Mandelbrot::IsGood(){
 	else
 		return true;
 }
+
+
+bool Mandelbrot::IsGood_2(bool* filtre){
+
+	bool continue_y_or_n;
+
+	Mat* src_gray = new Mat(im_height, im_width, CV_8UC3);
+	Mat* detected_edges = new Mat(im_height, im_width, CV_8UC1);
+
+	int lowThreshold = 30;		//comment changer ça ?
+	int ratio = 3;				//inutile de changer ca
+	int kernel_size = 3;		//inutile de changer ca
+
+	cvtColor( *(this->img), *(src_gray), CV_BGR2GRAY );
+	blur( *(src_gray), *(detected_edges), Size(3,3) );
+	Canny( *(detected_edges), *(detected_edges), lowThreshold, lowThreshold*ratio, kernel_size);
+	matSave( detected_edges, "tout_va_bien");
+{	//filtre good enough to save
+		int y0 = this->im_width/2;
+		int x0 = this->im_height/2;
+		int sigma_x = x0/2;
+		int sigma_y = y0/2;
+
+
+		for (int i = 0; i < im_height; i++)
+		{
+			for (int j = 0; j < im_width; j++)
+			{
+
+				double X = (pow(i - x0, 2)/(2*pow(sigma_x, 2)));
+
+				double Y = (pow(j - y0, 2)/(2*pow(sigma_y, 2)));
+
+				double flou = exp(-(X + Y));
+
+				cout<<(int)detected_edges->at<char>( i, j)<<endl<<endl;
+
+				detected_edges->at<char>( i, j) = (double)flou*255 + detected_edges->at<char>( i, j);
+
+			}
+		}
+
+	matSave( detected_edges, "ca_va_plus");
+
+	}
+
+	while(detected_edges->cols > 1 || detected_edges->rows > 1){
+		
+    	pyrDown( *(detected_edges), *(detected_edges), Size( detected_edges->cols/2, detected_edges->rows/2) );
+	}
+	int res = detected_edges->at<char>( 0);
+
+	//cout<<res<<endl;
+
+	if(res<this->Threshold)
+		continue_y_or_n = false;
+	else
+		continue_y_or_n = true;
+
+	if(continue_y_or_n){
+
+		//https://fr.wikipedia.org/wiki/Fonction_gaussienne
+
+
+	//matSave( this->img, "reduction");
+
+		if(/*good filtered*/1)
+			*filtre = true;
+		else
+			*filtre = false;
+	}
+
+	return continue_y_or_n;
+}
+
 
 void Mandelbrot::IterUp(){
 
@@ -581,13 +656,13 @@ void Mandelbrot::IterUp(){
 	
 }
 
-void worthcontinue(){
+/*void worthcontinue(){
 
 	//condition de saving
 
 	//this->save();
 
-}
+}*/
 
 /*void worthsaving(){
 	
@@ -608,10 +683,14 @@ void Mandelbrot::dichotomie(int enough)
 {
 	this->escapeSpeedCalcThread2();
 	this->draw();
-	this->save();
+	//M.save();
 
-	if(this->IsGood())
+	bool filtre;
+
+	if(this->IsGood_2(&filtre))
 	{
+		if(filtre)
+			this->save();
 		//this->worthsaving();
 
 		if(--enough /*this->DeepEnough(enough) || worthcontinue()*/)

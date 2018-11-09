@@ -57,6 +57,7 @@ class Mandelbrot
 		void save();
 		bool IsGood();
 		void IterUp();
+		bool IsGood_2(bool* filtre);
 		//int DeepEnough(auto enough);
 		void dichotomie(int enough);
 };

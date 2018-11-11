@@ -18,7 +18,7 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, i
 	mpf_div_ui(atomic_w, this->width, this->im_width*this->surEchantillonage);
 	mpf_div_ui(atomic_h, this->height, this->im_height*this->surEchantillonage);
 
-	this->divMat = new Mat(im_h*supSample, im_w*supSample, CV_32FC1);
+	this->divMat = new Mat(im_h*supSample, im_w*supSample, CV_32SC1);
 	this->img = new Mat(im_h, im_w, CV_8UC3);
 
 	time_t now = time(0);
@@ -57,7 +57,7 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, i
 	mpf_div_ui(atomic_w, this->width, this->im_width*this->surEchantillonage);
 	mpf_div_ui(atomic_h, this->height, this->im_height*this->surEchantillonage);
 
-	this->divMat = new Mat(im_h*supSample, im_w*supSample, CV_32FC1);
+	this->divMat = new Mat(im_h*supSample, im_w*supSample, CV_32SC1);
 	this->img = new Mat(im_h, im_w, CV_8UC3);
 }
 
@@ -262,8 +262,8 @@ void Mandelbrot::escapeSpeedCalcThread3()
 	}
 
 	//cout<<*(this->divMat)<<endl;
-	this->partialDraw();
-	this->save();
+	//this->partialDraw();
+	//this->save();
 	//cout<<*(this->divMat)<<endl;
 
 	// Mat* src_gray = new Mat(im_height, im_width, CV_8UC3);
@@ -305,7 +305,7 @@ void Mandelbrot::threadCalc3(int deb, int fin, mpf_t* x, mpf_t* y)
 		{
 			Vec3b bgr = this->img->at<Vec3b>(j, i);
 			int sE = bgr[0];
-			cout<<sE<<endl;
+			//cout<<sE<<endl;
 
 			for(int m = 0; m < sE; m++)
 			{

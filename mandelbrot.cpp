@@ -277,10 +277,10 @@ void Mandelbrot::escapeSpeedCalcThread3()
 	blur( *(this->sEMat), *(this->sEMat), Size(3,3) );
 	Canny( *(this->sEMat), *(this->sEMat), lowThreshold, lowThreshold*ratio, kernel_size);
 	filter2D( *(this->sEMat), *(this->sEMat), -1 , kernel, Point( -1, -1 ), 0, BORDER_DEFAULT);
-	//matSave(this->sEMat,"sEMat_blur");
-
+	matSave(this->sEMat,"sEMat_blur");
 
 	*(this->sEMat) = *(this->sEMat)*this->surEchantillonage/255;
+
 
 	for (int i = 0; i < nbr_threads; ++i)
 	{
@@ -320,7 +320,7 @@ void Mandelbrot::threadCalc3(int deb, int fin, mpf_t* x, mpf_t* y)
 			{
 				for(int n = 0; n < sE; n++)
 				{
-					//if((sE == 1 && this->divMat->at<int>(j*this->surEchantillonage+n ,i*this->surEchantillonage+m) != -1) || sE != 1)
+					if((sE != 1 && this->divMat->at<int>(j*this->surEchantillonage+n ,i*this->surEchantillonage+m) == -1) || sE == 1)
 					{
 						mpf_set_ui(xn,0);
 						mpf_set_ui(yn,0);
@@ -685,3 +685,12 @@ void Mandelbrot::dichotomie(int enough)
 	}
 	
 }
+
+
+
+/*
+
+Any primitive type from the list can be defined by an identifier in the form CV_<bit-depth>{U|S|F}C(<number_of_channels>)
+where U is unsigned integer type, S is signed integer type, and F is float type.
+
+*/

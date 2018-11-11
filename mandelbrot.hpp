@@ -38,7 +38,7 @@ class Mandelbrot
 		int im_width, im_height, iterations;
 		int surEchantillonage;
 		int color;
-		cv::Mat *divMat, *img;
+		cv::Mat *divMat, *img, *sEMat;
 		char* rep;
 
 		//void* threadCalc(void* arg);
@@ -49,8 +49,8 @@ class Mandelbrot
 		void partialDraw();
 		
 	public:
-		Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations, int color);
-		Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations, int color, char* rep);
+		Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations, int color, char* rep = nullptr);
+		//Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations, int color, char* rep);
 		~Mandelbrot();
 		void escapeSpeedCalc();
 		void escapeSpeedCalcThread();

@@ -19,7 +19,7 @@ using namespace cv;
 
 int main(int argc, char** argv)
 {
-	int w=1000, h=1000, nbr_test=10000;
+	/*int w=1000, h=1000, nbr_test=10000;
 	Mat* mat;
 	int** tab;
 	int* tab2;
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
 		
 		delete [] tab2;
 	}
-	cout<<"Cout allocation/deallocation int*"<<(rdtsc() - tick)/nbr_test<<endl;
+	cout<<"Cout allocation/deallocation int*"<<(rdtsc() - tick)/nbr_test<<endl;*/
 	
 	
 	

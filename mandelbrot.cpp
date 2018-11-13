@@ -544,8 +544,11 @@ void Mandelbrot::draw()
 void Mandelbrot::save()
 {
 	matSave( this->img, this->rep);
-	flip( *(this->img), *(this->img), 0);
-	matSave( this->img, this->rep);
+	if(mpf_cmp_ui(this->pos_y, 0) != 0)
+	{
+		flip( *(this->img), *(this->img), 0);
+		matSave( this->img, this->rep);
+	}
 }
 
 bool Mandelbrot::IsGood(){

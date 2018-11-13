@@ -41,27 +41,27 @@ class Mandelbrot
 		cv::Mat *divMat, *img, *sEMat;
 		char* rep;
 
-		//void* threadCalc(void* arg);
+		// void* threadCalc(void* arg);
 		void threadCalc(int deb, int fin);
 		void threadCalc2(int deb, int fin, mpf_t* x, mpf_t* y);
 		void threadCalc2_2(int deb, int fin, mpf_t* x, mpf_t* y);
 		void threadCalc3(int deb, int fin, mpf_t* x, mpf_t* y);
-		void partialDraw();
+		// void partialDraw();
 		
 	public:
 		Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations, int color, char* rep = nullptr);
-		//Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations, int color, char* rep);
+		// Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations, int color, char* rep);
 		~Mandelbrot();
 		void escapeSpeedCalc();
 		void escapeSpeedCalcThread();
 		void escapeSpeedCalcThread2();
 		void escapeSpeedCalcThread3();
 		void draw();
-		//void draw2();
+		// void draw2();
 		void save();
 		bool IsGood();
 		void IterUp();
-		//int DeepEnough(auto enough);
+		// int DeepEnough(auto enough);
 		void dichotomie(int enough);
 };
 

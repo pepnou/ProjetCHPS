@@ -63,9 +63,7 @@ void Mandelbrot::del_mem()
 	delete this->img;
 	delete this->sEMat;
 }
-<<<<<<< HEAD
-void Mandelbrot::escapeSpeedCalc()
-=======
+
 
 /*void Mandelbrot::escapeSpeedCalcThread2()
 >>>>>>> refs/remotes/origin/master
@@ -553,8 +551,11 @@ void Mandelbrot::draw()
 void Mandelbrot::save()
 {
 	matSave( this->img, this->rep);
-	flip( *(this->img), *(this->img), 0);
-	matSave( this->img, this->rep);
+	if(mpf_cmp_ui(this->pos_y, 0) != 0)
+	{
+		flip( *(this->img), *(this->img), 0);
+		matSave( this->img, this->rep);
+	}
 }
 
 bool Mandelbrot::IsGood(){
@@ -569,25 +570,13 @@ bool Mandelbrot::IsGood(){
 	blur( *(src_gray), *(detected_edges), Size(3,3) );
 	Canny( *(detected_edges), *(detected_edges), lowThreshold, lowThreshold*ratio, kernel_size);
 
-	/*double res = 0.0;
-
-	for(int j = 0; j < this->im_height; j++)
-	{
-		for(int i = 0; i < this->im_width; i++)
-		{
-			int tmp = (detected_edges->at<char>( j, i)+256)%256; //Excuse me what the fuck ?
-			res += tmp;
-		}
-	}
-	res /= (this->im_height*this->im_width);*/
-
 	double res = countNonZero(*detected_edges)*255/(this->im_height*this->im_width);
 	// cout << res << endl;
 
 	delete src_gray;
 	delete detected_edges;
 
-	if(res >= THRESHOLD)
+	if(res >= this->Threshold)
 		return true;
 	else
 		return false;
@@ -608,48 +597,16 @@ bool Mandelbrot::IsGood_2(bool* filtre){
 	cvtColor( *(this->img), *(src_gray), CV_BGR2GRAY );
 	blur( *(src_gray), *(detected_edges), Size(3,3) );
 	Canny( *(detected_edges), *(detected_edges), lowThreshold, lowThreshold*ratio, kernel_size);
+	matSave( this->img, "tout_va_bien");
 	matSave( detected_edges, "tout_va_bien");
-{	//filtre good enough to save
-		int y0 = this->im_width/2;
-		int x0 = this->im_height/2;
-		int sigma_x = x0/2;
-		int sigma_y = y0/2;
 
-
-		for (int i = 0; i < im_height; i++)
-		{
-			for (int j = 0; j < im_width; j++)
-			{
-
-				double X = (pow(i - x0, 2)/(2*pow(sigma_x, 2)));
-
-				double Y = (pow(j - y0, 2)/(2*pow(sigma_y, 2)));
-
-				double flou = exp(-(X + Y));
-
-				cout<<(int)detected_edges->at<char>( i, j)<<endl<<endl;
-
-				detected_edges->at<char>( i, j) = (double)flou*255 + detected_edges->at<char>( i, j);
-
-			}
-		}
-
-	matSave( detected_edges, "ca_va_plus");
-
-	}
-
-	while(detected_edges->cols > 1 || detected_edges->rows > 1){
-		
-    	pyrDown( *(detected_edges), *(detected_edges), Size( detected_edges->cols/2, detected_edges->rows/2) );
-	}
-	int res = detected_edges->at<char>( 0);
-
-	//cout<<res<<endl;
+	double res = countNonZero(*detected_edges)*255/(this->im_height*this->im_width);
 
 	if(res<this->Threshold)
 		continue_y_or_n = false;
 	else
 		continue_y_or_n = true;
+
 
 	if(continue_y_or_n){
 
@@ -658,11 +615,59 @@ bool Mandelbrot::IsGood_2(bool* filtre){
 
 	//matSave( this->img, "reduction");
 
-		if(/*good filtered*/1)
+		int y0 = this->im_width/2;
+		int x0 = this->im_height/2;
+		int sigma_x = x0/2;
+		int sigma_y = y0/2;
+
+		cout<<detected_edges->channels()<<endl<<endl;
+		cout<<detected_edges->elemSize1()<<endl<<endl;
+
+		/*cout<<*detected_edges<<endl<<endl;
+
+		for (int i = 0; i < im_height; i++)
+		{
+			for (int j = 0; j < im_width; j++)
+			{
+				cout<<(int)detected_edges->at<char>(i, j)<<" ";
+			}
+			cout<<endl;
+		}*/
+
+		for (int i = 0; i < im_height; i++)
+		{
+			for (int j = 0; j < im_width; j++)
+			{
+
+				double X =(pow(i - x0, 2)/(2*pow(sigma_x, 2)));
+
+				double Y =(pow(j - y0, 2)/(2*pow(sigma_y, 2)));
+
+				double flou = exp(-(X + Y));
+				//cout<<flou<<" ";
+
+				// detected_edges->at<char>(i, j) *= (1-flou)*255;
+				detected_edges->at<char>(i, j) = ((detected_edges->at<char>(i, j)+256)%256) * flou;
+			}
+			//cout<<endl;
+		}
+
+		/*cout<<endl;
+		cout<<endl;*/
+
+		matSave( detected_edges, "ca_va_plus");
+
+		res = countNonZero(*detected_edges)*255/(this->im_height*this->im_width);
+
+
+		if(res >= this->Threshold)
 			*filtre = true;
 		else
 			*filtre = false;
 	}
+
+	delete src_gray;
+	delete detected_edges;
 
 	return continue_y_or_n;
 }
@@ -746,10 +751,12 @@ void Mandelbrot::dichotomie(int enough)
 
 	bool filtre;
 
-	if(this->IsGood_2(&filtre))
+	if(this->IsGood_2(&filtre)/*this->IsGood*/)
 	{
+		//this->save();
 		if(filtre)
 			this->save();
+
 		//this->worthsaving();
 			
 		this->IterUp();
@@ -815,9 +822,7 @@ void Mandelbrot::dichotomie(int enough)
 }
 
 
-
 /*
-
 Any primitive type from the list can be defined by an identifier in the form CV_<bit-depth>{U|S|F}C(<number_of_channels>)
 where U is unsigned integer type, S is signed integer type, and F is float type.
 

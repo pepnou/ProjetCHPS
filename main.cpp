@@ -30,7 +30,7 @@ int main(int argc, char** argv)
 	mpf_t x, y, w, h;
 
 	//C'EST ICI QUE TU CHANGES LES PARAMETRES POUR CHANGER LE RESULTAT FINAL BONHOMME !
-	int im_w = 480, im_h = 270, surech = 1, iteration = 200, enough = 2;
+	int im_w = 7680, im_h = 4320, surech = 1, iteration = 200, enough = 2, color = 1;
 
 	//coordonnée de debut de zoom et taille de la zone de zoomage
 	mpf_init_set_d( x, -0.5);

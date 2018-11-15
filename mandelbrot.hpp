@@ -2,11 +2,7 @@
 #define _MANDEL_
 
 #define ITERATIONS_PER_THREAD 400000000
-<<<<<<< HEAD
 
-=======
-#define THRESHOLD 9
->>>>>>> refs/remotes/origin/master
 // 47x28(1 316) => 18 (50it)
 // 120x67(8 040) => 14 (50it)
 // 240x135(32 400) => 9 (50it)
@@ -67,12 +63,8 @@ class Mandelbrot
 		void save();
 		bool IsGood();
 		void IterUp();
-<<<<<<< HEAD
 		bool IsGood_2(bool* filtre);
 		//int DeepEnough(auto enough);
-=======
-		// int DeepEnough(auto enough);
->>>>>>> refs/remotes/origin/master
 		void dichotomie(int enough);
 };
 

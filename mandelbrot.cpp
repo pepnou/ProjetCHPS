@@ -563,18 +563,6 @@ bool Mandelbrot::IsGood(){
 	blur( *(src_gray), *(detected_edges), Size(3,3) );
 	Canny( *(detected_edges), *(detected_edges), lowThreshold, lowThreshold*ratio, kernel_size);
 
-	/*double res = 0.0;
-
-	for(int j = 0; j < this->im_height; j++)
-	{
-		for(int i = 0; i < this->im_width; i++)
-		{
-			int tmp = (detected_edges->at<char>( j, i)+256)%256; //Excuse me what the fuck ?
-			res += tmp;
-		}
-	}
-	res /= (this->im_height*this->im_width);*/
-
 	double res = countNonZero(*detected_edges)*255/(this->im_height*this->im_width);
 	// cout << res << endl;
 

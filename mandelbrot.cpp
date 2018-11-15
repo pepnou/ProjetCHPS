@@ -542,8 +542,8 @@ bool Mandelbrot::IsGood_2(bool* filtre){
 
 	bool continue_y_or_n;
 
-	Mat* src_gray = new Mat(im_height, im_width, CV_8UC3);
-	Mat* detected_edges = new Mat(im_height, im_width, CV_8UC1);
+	Mat* src_gray = new Mat(im_height, im_width, CV_8UC3);		//entier non signé 8 bit à 3 dimension
+	Mat* detected_edges = new Mat(im_height, im_width, CV_8UC1);	//pareil a 2 dimension
 
 	int lowThreshold = 30;		//comment changer ça ?
 	int ratio = 3;				//inutile de changer ca

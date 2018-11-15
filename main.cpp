@@ -31,10 +31,12 @@ int main(int argc, char** argv)
 
 	int im_w = 96, im_h = 54, surech = 4, iteration = 50, enough = 6, color = 1;
 
+	//coordonnée de debut de zoom et taille de la zone de zoomage
 	mpf_init_set_d( x, -0.5);
 	mpf_init_set_d( y, 0.0);
 	mpf_init_set_d( w, 3);
 	mpf_init_set_d( h, 2);
+
 
 	Mandelbrot M( x, y, w, h, im_w, im_h, surech, iteration, color);
 	uint64_t tick;
@@ -54,7 +56,6 @@ int main(int argc, char** argv)
 	M.draw();
 	M.save();
 	cout << rdtsc() - tick << endl;*/
-	
 
 	
 	mpf_clears( x, y, w, h, NULL);	

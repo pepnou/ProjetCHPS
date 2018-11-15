@@ -2,7 +2,7 @@
 #define _MANDEL_
 
 #define ITERATIONS_PER_THREAD 400000000
-#define THRESHOLD 9
+
 // 47x28(1 316) => 18 (50it)
 // 120x67(8 040) => 14 (50it)
 // 240x135(32 400) => 9 (50it)
@@ -37,6 +37,7 @@ class Mandelbrot
 		mpf_t atomic_w, atomic_h;
 		int im_width, im_height, iterations;
 		int surEchantillonage;
+		double Threshold;
 		int color;
 		cv::Mat *divMat, *img, *sEMat;
 		char* rep;
@@ -52,6 +53,7 @@ class Mandelbrot
 		Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations, int color, char* rep = nullptr);
 		// Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations, int color, char* rep);
 		~Mandelbrot();
+		void del_mem();
 		void escapeSpeedCalc();
 		void escapeSpeedCalcThread();
 		void escapeSpeedCalcThread2();
@@ -61,7 +63,8 @@ class Mandelbrot
 		void save();
 		bool IsGood();
 		void IterUp();
-		// int DeepEnough(auto enough);
+		bool IsGood_2(bool* filtre);
+		//int DeepEnough(auto enough);
 		void dichotomie(int enough);
 };
 

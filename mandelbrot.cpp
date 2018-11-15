@@ -12,7 +12,7 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, i
 	mpf_set(this->width, w);
 	mpf_set(this->height, h);
 	
-	
+	this->Threshold = 125.7071478402/(pow((im_w*im_h),0.2597528761));
 	//  atomic_w = width / (im_width * surEchantillonage)
 	//  atomic_h = height / (im_height * surEchantillonage)
 	mpf_div_ui(atomic_w, this->width, this->im_width*this->surEchantillonage);
@@ -53,13 +53,20 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, i
 
 Mandelbrot::~Mandelbrot()
 {
+
+}
+
+void Mandelbrot::del_mem()
+{
 	mpf_clears(this->pos_x, this->pos_y, this->width, this->height, this->atomic_w, this->atomic_h, NULL);
 	delete this->divMat;
 	delete this->img;
 	delete this->sEMat;
 }
 
+
 /*void Mandelbrot::escapeSpeedCalcThread2()
+>>>>>>> refs/remotes/origin/master
 {
 	mpf_t tmp1, tmp2;
 	mpf_t *x, *y;
@@ -569,27 +576,154 @@ bool Mandelbrot::IsGood(){
 	delete src_gray;
 	delete detected_edges;
 
-	if(res >= THRESHOLD)
+	if(res >= this->Threshold)
 		return true;
 	else
 		return false;
 }
 
-void Mandelbrot::IterUp(){
-	
-	//equation a changer en fonction de this->pos_x ou de enough
 
-	this->iterations += this->iterations / 4;
+bool Mandelbrot::IsGood_2(bool* filtre){
+
+	bool continue_y_or_n;
+
+	Mat* src_gray = new Mat(im_height, im_width, CV_8UC3);		//entier non signé 8 bit à 3 dimension
+	Mat* detected_edges = new Mat(im_height, im_width, CV_8UC1);	//pareil a 2 dimension
+
+	int lowThreshold = 30;		//comment changer ça ?
+	int ratio = 3;				//inutile de changer ca
+	int kernel_size = 3;		//inutile de changer ca
+
+	cvtColor( *(this->img), *(src_gray), CV_BGR2GRAY );
+	blur( *(src_gray), *(detected_edges), Size(3,3) );
+	Canny( *(detected_edges), *(detected_edges), lowThreshold, lowThreshold*ratio, kernel_size);
+	matSave( this->img, "tout_va_bien");
+	matSave( detected_edges, "tout_va_bien");
+
+	double res = countNonZero(*detected_edges)*255/(this->im_height*this->im_width);
+
+	if(res<this->Threshold)
+		continue_y_or_n = false;
+	else
+		continue_y_or_n = true;
+
+
+	if(continue_y_or_n){
+
+		//https://fr.wikipedia.org/wiki/Fonction_gaussienne
+
+
+	//matSave( this->img, "reduction");
+
+		int y0 = this->im_width/2;
+		int x0 = this->im_height/2;
+		int sigma_x = x0/2;
+		int sigma_y = y0/2;
+
+		cout<<detected_edges->channels()<<endl<<endl;
+		cout<<detected_edges->elemSize1()<<endl<<endl;
+
+		/*cout<<*detected_edges<<endl<<endl;
+
+		for (int i = 0; i < im_height; i++)
+		{
+			for (int j = 0; j < im_width; j++)
+			{
+				cout<<(int)detected_edges->at<char>(i, j)<<" ";
+			}
+			cout<<endl;
+		}*/
+
+		for (int i = 0; i < im_height; i++)
+		{
+			for (int j = 0; j < im_width; j++)
+			{
+
+				double X =(pow(i - x0, 2)/(2*pow(sigma_x, 2)));
+
+				double Y =(pow(j - y0, 2)/(2*pow(sigma_y, 2)));
+
+				double flou = exp(-(X + Y));
+				//cout<<flou<<" ";
+
+				// detected_edges->at<char>(i, j) *= (1-flou)*255;
+				detected_edges->at<char>(i, j) = ((detected_edges->at<char>(i, j)+256)%256) * flou;
+			}
+			//cout<<endl;
+		}
+
+		/*cout<<endl;
+		cout<<endl;*/
+
+		matSave( detected_edges, "ca_va_plus");
+
+		res = countNonZero(*detected_edges)*255/(this->im_height*this->im_width);
+
+
+		if(res >= this->Threshold)
+			*filtre = true;
+		else
+			*filtre = false;
+	}
+
+	delete src_gray;
+	delete detected_edges;
+
+	return continue_y_or_n;
+}
+
+
+void Mandelbrot::IterUp(){
+
+	//augmentation du nombre d'iteration en fonction de la profondeur du zoom actuel
+	//66.5*racine(2*racine(abs(1 - racine(5*(scale)))))	with scale = this->width/3
+
+	mpf_t temp;
+	mpf_inits(temp, NULL);
+
+	//temp = scale = this->width/3
+	mpf_div(temp, atomic_w, this->width);
+
+	//temp = 5*temp
+	mpf_mul_ui(temp, temp, 5);
+
+	//temp = racine(temp)
+	mpf_sqrt(temp, temp);
+
+	//temp = 1 - temp
+	mpf_ui_sub(temp, 1, temp);
+
+	//temp = abs(temp)
+	mpf_abs(temp, temp);
+	
+	//temp = racine(temp)
+	mpf_sqrt(temp, temp);
+
+	//temp = 2.temp
+	mpf_mul_ui(temp, temp, 2);
+
+	//temp = racine(temp)
+	mpf_sqrt(temp, temp);
+
+	//temp = temp*66.5
+	mpf_mul_ui(temp, temp, 110);
+
+	//convertissation
+	double x = mpf_get_d(temp);
+
+	iterations = x;
+
+	mpf_clears(temp, NULL);
 	
 }
 
-void worthcontinue(){
+/*void worthcontinue(){
 
 	//condition de saving
 
 	//this->save();
 
-}
+}*/
 
 void worthsaving(){
 	
@@ -608,19 +742,30 @@ void worthsaving(){
 
 void Mandelbrot::dichotomie(int enough)
 {
+
 	this->escapeSpeedCalcThread3();
 	// this->escapeSpeedCalcThread2();
-	
-	this->draw();
 
-	if(this->IsGood())
+	this->draw();
+	//M.save();
+
+	bool filtre;
+
+	if(this->IsGood_2(&filtre)/*this->IsGood*/)
 	{
-		this->save();
+		//this->save();
+		if(filtre)
+			this->save();
+
 		//this->worthsaving();
+			
 		this->IterUp();
 
 		if(--enough /*this->DeepEnough(enough) || worthcontinue()*/)
-		{
+		{	
+			//augmente la nombre d'iteration max, ceci est un commentaire Nassim tu le vois celui la ?
+			this->IterUp();
+
 			mpf_t nx1, ny1, nx2, ny2, nx3, ny3, nx4, ny4, nh, nw, temp;
 			mpf_inits(nx1, ny1, nx2, ny2, nx3, ny3, nx4, ny4, nh, nw, temp, NULL);
 			
@@ -645,6 +790,10 @@ void Mandelbrot::dichotomie(int enough)
 
 			//new iterations
 			this->IterUp();
+
+			int surEchantillonage_bis = this->surEchantillonage, im_width_bis = this->im_width, im_height_bis = this->im_height, iterations_bis = this->iterations;
+			this->del_mem();
+			//delete l'image ou on est
 			
 			if(mpf_cmp_ui(this->pos_y, 0) != 0)
 			{
@@ -665,15 +814,15 @@ void Mandelbrot::dichotomie(int enough)
 			M4->dichotomie(enough);
 			delete M4;
 
+
 			mpf_clears(nx1, ny1, nx2, ny2, nx3, ny3, nx4, ny4, nh, nw, temp, NULL);
 		}
 	}
+
 }
 
 
-
 /*
-
 Any primitive type from the list can be defined by an identifier in the form CV_<bit-depth>{U|S|F}C(<number_of_channels>)
 where U is unsigned integer type, S is signed integer type, and F is float type.
 

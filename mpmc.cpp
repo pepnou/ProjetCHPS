@@ -19,6 +19,6 @@ void Mpmc::pop(work* arg)
 {
 	int old_val;
 	int tmp = this->last_read;
-	if((this->last_write - tmp + this->size) % this->size > 0)
-		compare_and_swap();
+	//if((this->last_write - tmp + this->size) % this->size > 0)
+		//compare_and_swap();
 }

@@ -12,7 +12,8 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, i
 	mpf_set(this->width, w);
 	mpf_set(this->height, h);
 	
-	this->Threshold = 125.7071478402/(pow((im_w*im_h),0.2597528761));
+	this->ThresholdCont = /*125.7071478402/(pow((im_w*im_h),0.2597528761))*/ 15;
+	this->ThresholdSave = /*125.7071478402/(pow((im_w*im_h),0.2597528761))*/ 15;
 	//  atomic_w = width / (im_width * surEchantillonage)
 	//  atomic_h = height / (im_height * surEchantillonage)
 	mpf_div_ui(atomic_w, this->width, this->im_width*this->surEchantillonage);
@@ -551,11 +552,11 @@ void Mandelbrot::draw()
 void Mandelbrot::save()
 {
 	matSave( this->img, this->rep);
-	if(mpf_cmp_ui(this->pos_y, 0) != 0)
+	/*if(mpf_cmp_ui(this->pos_y, 0) != 0)
 	{
 		flip( *(this->img), *(this->img), 0);
 		matSave( this->img, this->rep);
-	}
+	}*/
 }
 
 bool Mandelbrot::IsGood(){
@@ -576,7 +577,7 @@ bool Mandelbrot::IsGood(){
 	delete src_gray;
 	delete detected_edges;
 
-	if(res >= this->Threshold)
+	if(res >= this->ThresholdCont)
 		return true;
 	else
 		return false;
@@ -597,12 +598,14 @@ bool Mandelbrot::IsGood_2(bool* filtre){
 	cvtColor( *(this->img), *(src_gray), CV_BGR2GRAY );
 	blur( *(src_gray), *(detected_edges), Size(3,3) );
 	Canny( *(detected_edges), *(detected_edges), lowThreshold, lowThreshold*ratio, kernel_size);
-	matSave( this->img, "tout_va_bien");
-	matSave( detected_edges, "tout_va_bien");
+	//matSave( this->img, "tout_va_bien");
+	//matSave( detected_edges, "tout_va_bien");
 
-	double res = countNonZero(*detected_edges)*255/(this->im_height*this->im_width);
+	double res = countNonZero(*detected_edges)*1000/(this->im_height*this->im_width);
 
-	if(res<this->Threshold)
+	cout<<res<<endl;
+
+	if(res<this->ThresholdCont)
 		continue_y_or_n = false;
 	else
 		continue_y_or_n = true;
@@ -620,9 +623,6 @@ bool Mandelbrot::IsGood_2(bool* filtre){
 		int sigma_x = x0/2;
 		int sigma_y = y0/2;
 
-		cout<<detected_edges->channels()<<endl<<endl;
-		cout<<detected_edges->elemSize1()<<endl<<endl;
-
 		/*cout<<*detected_edges<<endl<<endl;
 
 		for (int i = 0; i < im_height; i++)
@@ -633,6 +633,8 @@ bool Mandelbrot::IsGood_2(bool* filtre){
 			}
 			cout<<endl;
 		}*/
+
+		res = 0.0;
 
 		for (int i = 0; i < im_height; i++)
 		{
@@ -647,7 +649,9 @@ bool Mandelbrot::IsGood_2(bool* filtre){
 				//cout<<flou<<" ";
 
 				// detected_edges->at<char>(i, j) *= (1-flou)*255;
-				detected_edges->at<char>(i, j) = ((detected_edges->at<char>(i, j)+256)%256) * flou;
+
+				//detected_edges->at<char>(i, j) = ((detected_edges->at<char>(i, j)+256)%256) * flou;
+				res += (((detected_edges->at<char>(i, j)+256)%256) * flou);
 			}
 			//cout<<endl;
 		}
@@ -655,12 +659,13 @@ bool Mandelbrot::IsGood_2(bool* filtre){
 		/*cout<<endl;
 		cout<<endl;*/
 
-		matSave( detected_edges, "ca_va_plus");
+		//matSave( detected_edges, "ca_va_plus");
 
-		res = countNonZero(*detected_edges)*255/(this->im_height*this->im_width);
+		//res = countNonZero(*detected_edges)*255/(this->im_height*this->im_width);
+		res /= (this->im_height*this->im_width)*1000/255;
 
-
-		if(res >= this->Threshold)
+		cout<<res<<endl<<endl;
+		if(res >= this->ThresholdSave)
 			*filtre = true;
 		else
 			*filtre = false;

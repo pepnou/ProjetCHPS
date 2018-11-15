@@ -9,6 +9,12 @@
 // 480x270(129 600) => 5 (50it)
 // 1920x1080(2 073 600) => 3 (50it)
 
+// 47x28(1 316) => 18 (50it)
+// 120x67(8 040) => 14 (50it)
+// 240x135(32 400) => 9 (50it)
+// 480x270(129 600) => 5 (50it)
+// 1920x1080(2 073 600) => 3 (50it)
+
 #include <iostream>
 #include <iomanip>
 #include <cstdlib>
@@ -37,7 +43,7 @@ class Mandelbrot
 		mpf_t atomic_w, atomic_h;
 		int im_width, im_height, iterations;
 		int surEchantillonage;
-		double Threshold;
+		double ThresholdCont, ThresholdSave;
 		int color;
 		cv::Mat *divMat, *img, *sEMat;
 		char* rep;

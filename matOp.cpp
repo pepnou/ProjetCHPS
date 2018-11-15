@@ -9,8 +9,6 @@ void matSave(Mat* mat, char* rep)
 	vector<int> compression_params;
     compression_params.push_back( IMWRITE_PNG_COMPRESSION);
     compression_params.push_back(9);
-
-
 	
 	char nom_img[128];
 	sprintf( nom_img, "mkdir -p ../img/%s", rep);

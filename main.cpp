@@ -38,23 +38,26 @@ int main(int argc, char** argv)
 	mpf_init_set_d( w, 3);
 	mpf_init_set_d( h, 2);
 
-	Mandelbrot M( x, y, w, h, im_w, im_h, surech, iteration);
-	//M.escapeSpeedCalcThread2();
-	//M.draw();
-	//M.save();
+
+	Mandelbrot M( x, y, w, h, im_w, im_h, surech, iteration, color);
+	uint64_t tick;
 	
-	// system("date");
-	//cout << rdtsc() - tick << endl;
-	// system("date");
-	//uint64_t tick = rdtsc();
-
-
-	// M.escapeSpeedCalcThread2();
-
+	tick = rdtsc();
 	M.dichotomie(enough);
-	
-	// M.draw2();
-	// M.save();
+	cout << rdtsc() - tick << endl;
+
+	/*tick = rdtsc();
+	M.escapeSpeedCalcThread2();
+	M.draw();
+	M.save();
+	cout << rdtsc() - tick << endl;
+
+	tick = rdtsc();
+	M.escapeSpeedCalcThread3();
+	M.draw();
+	M.save();
+	cout << rdtsc() - tick << endl;*/
+
 	
 	mpf_clears( x, y, w, h, NULL);	
 	exit(0);

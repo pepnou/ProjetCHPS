@@ -35,7 +35,7 @@ void Mpmc::push(work arg)
 	} while(loop);
 }
 
-void Mpmc::pop(work* arg)
+void Mpmc::pop(/*work* arg*/)
 {
 	offset_t tmp;
 	bool loop = true;
@@ -46,8 +46,9 @@ void Mpmc::pop(work* arg)
 			if(this->last_read.compare_exchange_strong( tmp, tmp+1))
 			{
 				while(this->write_ok.load() - ((tmp + 1) % this->size) < 0);
-				arg->arg = this->buf[(tmp + 1) % this->size].arg;
-				arg->f = this->buf[(tmp + 1) % this->size].f;
+				/*arg->arg = this->buf[(tmp + 1) % this->size].arg;
+				arg->f = this->buf[(tmp + 1) % this->size].f;*/
+				this->buf[(tmp + 1) % this->size].f(this->buf[(tmp + 1) % this->size].arg);
 				while(!this->read_ok.compare_exchange_strong( tmp, (tmp + 1) % this->size));
 				loop = false;
 			}

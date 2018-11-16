@@ -5,6 +5,9 @@
 #include <atomic>
 #include <iostream>
 
+#include "mandelbrot.hpp"
+class Mandelbrot;
+
 #define offset_t size_t
 
 typedef struct 
@@ -27,7 +30,17 @@ class Mpmc
 		Mpmc(size_t size);
 		~Mpmc();
 		void push(work arg);
-		void pop(work* arg);
+		void pop(/*work* arg*/);
 };
+
+typedef struct 
+{
+	mpf_t *x;
+	mpf_t *y;
+	int ligne;
+	Mandelbrot* M;
+}threadDraw;
+
+
 
 #endif

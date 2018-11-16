@@ -36,6 +36,8 @@
 #include "matOp.hpp"
 #include "mpmc.hpp"
 
+class Mpmc;
+
 class Mandelbrot
 {
 	private:
@@ -49,12 +51,17 @@ class Mandelbrot
 		cv::Mat *divMat, *img, *sEMat;
 		char* rep;
 
+		Mpmc* mpmc;
+		std::atomic<std::uint64_t> tasks;
+
 		// void* threadCalc(void* arg);
 		void threadCalc(int deb, int fin);
 		void threadCalc2(int deb, int fin, mpf_t* x, mpf_t* y);
 		void threadCalc2_2(int deb, int fin, mpf_t* x, mpf_t* y);
 		void threadCalc3(int deb, int fin, mpf_t* x, mpf_t* y);
+		void threadCalc4(void* arg);
 		// void partialDraw();
+		friend void CallThreadCalc(void* arg);
 		
 	public:
 		Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations, int color, char* rep = nullptr);
@@ -65,6 +72,7 @@ class Mandelbrot
 		void escapeSpeedCalcThread();
 		void escapeSpeedCalcThread2();
 		void escapeSpeedCalcThread3();
+		void escapeSpeedCalcThread4();
 		void draw();
 		// void draw2();
 		void save();
@@ -74,5 +82,7 @@ class Mandelbrot
 		//int DeepEnough(auto enough);
 		void dichotomie(int enough);
 };
+
+void CallThreadCalc(void* arg);
 
 #endif

@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <atomic>
+#include <iostream>
 
 #define offset_t size_t
 
@@ -17,8 +18,10 @@ class Mpmc
 	private:
 		size_t size;
 		work* buf;
-		offset_t last_write = 0, write_ok = 0;
-		offset_t last_read = 0, read_ok = 0;
+		std::atomic<offset_t> last_write;
+		std::atomic<offset_t> write_ok;
+		std::atomic<offset_t> last_read;
+		std::atomic<offset_t> read_ok;
 
 	public:
 		Mpmc(size_t size);

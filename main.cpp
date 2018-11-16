@@ -3,6 +3,9 @@
 using namespace cv;
 using namespace std;
 
+void ntm(void* tg)
+{}
+
 int main(int argc, char** argv)
 {
 	/*namespace po = boost::program_options;
@@ -29,7 +32,23 @@ int main(int argc, char** argv)
 	
 	mpf_t x, y, w, h;
 
-	int im_w = 47, im_h = 28, surech = 4, iteration = 100, enough = 5, color = 1;
+	int i = 1;
+	work wo, wooooooo;
+	wo.arg = (void*)&i;
+	wo.f = ntm;
+
+	dbg
+	Mpmc* mpmc = new Mpmc(50);
+	dbg
+	mpmc->push(wo);
+	dbg
+	mpmc->pop(&wooooooo);
+	dbg
+
+	cout<<*((int*)wooooooo.arg)<<endl;
+	delete mpmc;
+
+	/*int im_w = 480, im_h = 270, surech = 4, iteration = 100, enough = 3, color = 1;
 
 	//coordonnée de debut de zoom et taille de la zone de zoomage
 	mpf_init_set_d( x, -0.5);
@@ -43,7 +62,7 @@ int main(int argc, char** argv)
 	
 	tick = rdtsc();
 	M.dichotomie(enough);
-	cout << rdtsc() - tick << endl;
+	cout << rdtsc() - tick << endl;*/
 
 	/*tick = rdtsc();
 	M.escapeSpeedCalcThread2();
@@ -58,6 +77,6 @@ int main(int argc, char** argv)
 	cout << rdtsc() - tick << endl;*/
 
 	
-	mpf_clears( x, y, w, h, NULL);	
+	//mpf_clears( x, y, w, h, NULL);	
 	exit(0);
 }

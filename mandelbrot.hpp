@@ -9,7 +9,7 @@
 // 480x270(129 600) => 5 (50it)
 // 1920x1080(2 073 600) => 3 (50it)
 
-// 47x28(1 316) => 18 (50it)
+// 47x28(1 316) => 10 (50it)
 // 120x67(8 040) => 14 (50it)
 // 240x135(32 400) => 9 (50it)
 // 480x270(129 600) => 5 (50it)
@@ -34,6 +34,7 @@
 #include "load.hpp"
 #include "rdtsc.hpp"
 #include "matOp.hpp"
+#include "mpmc.hpp"
 
 class Mandelbrot
 {

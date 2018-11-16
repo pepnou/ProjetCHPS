@@ -12,8 +12,8 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, i
 	mpf_set(this->width, w);
 	mpf_set(this->height, h);
 	
-	this->ThresholdCont = /*125.7071478402/(pow((im_w*im_h),0.2597528761))*/ 15;
-	this->ThresholdSave = /*125.7071478402/(pow((im_w*im_h),0.2597528761))*/ 15;
+	this->ThresholdCont = /*125.7071478402/(pow((im_w*im_h),0.2597528761))*/ 10;
+	this->ThresholdSave = /*125.7071478402/(pow((im_w*im_h),0.2597528761))*/ 10;
 	//  atomic_w = width / (im_width * surEchantillonage)
 	//  atomic_h = height / (im_height * surEchantillonage)
 	mpf_div_ui(atomic_w, this->width, this->im_width*this->surEchantillonage);
@@ -662,7 +662,7 @@ bool Mandelbrot::IsGood_2(bool* filtre){
 		//matSave( detected_edges, "ca_va_plus");
 
 		//res = countNonZero(*detected_edges)*255/(this->im_height*this->im_width);
-		res /= (this->im_height*this->im_width)*1000/255;
+		res = res/(this->im_height*this->im_width)*1000/255;
 
 		cout<<res<<endl<<endl;
 		if(res >= this->ThresholdSave)
@@ -759,7 +759,7 @@ void Mandelbrot::dichotomie(int enough)
 	if(this->IsGood_2(&filtre)/*this->IsGood*/)
 	{
 		//this->save();
-		if(filtre)
+		//if(filtre)
 			this->save();
 
 		//this->worthsaving();

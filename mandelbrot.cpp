@@ -428,7 +428,7 @@ void Mandelbrot::escapeSpeedCalcThread4()
 		this->mpmc->push(wo);
 	}
 	
-	while(!this->tasks.load());
+	while(this->tasks.load());
 
 
 	/*for (int i = 0; i < nbr_threads; ++i)
@@ -469,7 +469,7 @@ void Mandelbrot::escapeSpeedCalcThread4()
 
 
 
-
+	dbg
 
 
 
@@ -484,8 +484,10 @@ void Mandelbrot::escapeSpeedCalcThread4()
 		wo.arg = (void*)&args[i];
 		this->mpmc->push(wo);
 	}
+
+	dbg
 	
-	while(!this->tasks.load());
+	while(this->tasks.load());
 
 
 
@@ -549,6 +551,8 @@ void Mandelbrot::threadCalc4(void* arg)
 
 	mpf_t xn, yn, xnp1, ynp1, mod, xsqr, ysqr, tmp;
 	mpf_inits( xn, yn, xnp1, ynp1, mod, tmp, xsqr, ysqr, NULL);
+
+	cout<<"Calcul ligne : "<<args->ligne<<endl;
 
 	/*for(int j = deb; j < fin; j++)
 	{*/

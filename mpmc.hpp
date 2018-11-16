@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <atomic>
 #include <iostream>
+#include <thread>
 
 #include "mandelbrot.hpp"
 class Mandelbrot;
@@ -15,6 +16,14 @@ typedef struct
 	void* arg;
 	void (*f)(void*);
 }work;
+
+typedef struct 
+{
+	mpf_t *x;
+	mpf_t *y;
+	int ligne;
+	Mandelbrot* M;
+}threadDraw;
 
 class Mpmc
 {
@@ -33,14 +42,25 @@ class Mpmc
 		void pop(/*work* arg*/);
 };
 
-typedef struct 
+class MyThreads
 {
-	mpf_t *x;
-	mpf_t *y;
-	int ligne;
-	Mandelbrot* M;
-}threadDraw;
+	private:
+		std::thread* threads;
+		int nbT;
+		Mpmc* mpmc;
 
+	public:
+		MyThreads(int nbT);
+		~MyThreads();
+		Mpmc* getMpmc();
+};
 
+void mainThread(void* arg);
+void terminate(void* arg);
+
+/*std::thread* createThread(int nbT, Mpmc* mpmc);
+void joinThread(int nbT, std::thread* threads, Mpmc* mpmc);
+void mainThread(void* arg);
+void terminate(void* arg);*/
 
 #endif

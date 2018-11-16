@@ -55,3 +55,52 @@ void Mpmc::pop(/*work* arg*/)
 		}
 	} while(loop);
 }
+
+
+MyThreads::MyThreads(int nbT) : nbT(nbT)
+{
+	this->threads = new thread[nbT];
+	this->mpmc = new Mpmc(nbT*10);
+	for(int i = 0; i < nbT; i++)
+	{
+		this->threads[i] = thread( mainThread, (void*)mpmc);
+	}
+}
+
+MyThreads::~MyThreads()
+{
+	work w;
+	w.f = terminate;
+	w.arg = nullptr;
+	for(int i = 0; i < this->nbT; i++)
+	{
+		this->mpmc->push(w);
+	}
+
+	for(int i = 0; i < nbT; i++)
+	{
+		this->threads[i].join();
+	}
+
+	delete [] this->threads;
+	delete this->mpmc;
+}
+
+void mainThread(void* arg)
+{
+	Mpmc* mpmc = (Mpmc*)arg;
+	while(1)
+	{
+		mpmc->pop();
+	}
+}
+
+void terminate(void* arg)
+{
+	exit(0);
+}
+
+Mpmc* MyThreads::getMpmc()
+{
+	return this->mpmc;
+}

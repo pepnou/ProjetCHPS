@@ -35,28 +35,27 @@ void Mpmc::push(work arg)
 	} while(loop);
 }
 
-void Mpmc::pop(/*work* arg*/)
+bool Mpmc::pop(/*work* arg*/)
 {
-	dbg
-	offset_t tmp;
+	offset_t current, next;
 	bool loop = true;
 	do {
-		tmp = this->last_read.load();
-		if((this->last_write.load() - tmp + this->size) % this->size > 0)
+		current = this->last_read.load();
+		next = (current + 1) % this->size;
+		if((this->last_write.load() - current + this->size) % this->size > 0)
 		{
-			if(this->last_read.compare_exchange_strong( tmp, (tmp + 1) % this->size))
+			if(this->last_read.compare_exchange_strong( current, next))
 			{
-				dbg
-				while(this->write_ok.load() - ((tmp + 1) % this->size) < 0);
-				dbg
-				this->buf[(tmp + 1) % this->size].f(this->buf[(tmp + 1) % this->size].arg);
-				dbg
-				while(!this->read_ok.compare_exchange_strong( tmp, (tmp + 1) % this->size));
-				dbg
+				while(this->write_ok.load() - next < 0);
+				if(this->buf[next].f == exitThread)
+					return false;
+				this->buf[next].f(this->buf[next].arg);
+				while(!this->read_ok.compare_exchange_strong( current, next));
 				loop = false;
 			}
 		}
 	} while(loop);
+	return true;
 }
 
 
@@ -73,14 +72,14 @@ MyThreads::MyThreads(int nbT) : nbT(nbT)
 MyThreads::~MyThreads()
 {
 	work w;
-	w.f = terminate;
+	w.f = exitThread;
 	w.arg = nullptr;
 	for(int i = 0; i < this->nbT; i++)
 	{
 		this->mpmc->push(w);
 	}
-
-	for(int i = 0; i < nbT; i++)
+	
+	for(int i = 0; i < this->nbT; i++)
 	{
 		this->threads[i].join();
 	}
@@ -92,14 +91,11 @@ MyThreads::~MyThreads()
 void mainThread(void* arg)
 {
 	Mpmc* mpmc = (Mpmc*)arg;
-	while(1)
-		mpmc->pop();
+	while(mpmc->pop());
 }
 
-void terminate(void* arg)
-{
-	exit(0);
-}
+void exitThread(void* arg)
+{}
 
 Mpmc* MyThreads::getMpmc()
 {

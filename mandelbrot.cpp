@@ -65,7 +65,7 @@ void Mandelbrot::del_mem()
 	delete this->divMat;
 	delete this->img;
 	delete this->sEMat;
-	delete mpmc;
+	// delete mpmc;
 }
 
 
@@ -416,7 +416,7 @@ void Mandelbrot::escapeSpeedCalcThread4()
 	threadDraw *args = new threadDraw[this->im_height];
 	work wo;
 	wo.f = CallThreadCalc;
-
+	
 	for(int i = 0; i < this->im_height; i++)
 	{
 		this->tasks.fetch_add(1);
@@ -427,30 +427,14 @@ void Mandelbrot::escapeSpeedCalcThread4()
 		wo.arg = (void*)&args[i];
 		this->mpmc->push(wo);
 	}
-
-	while(this->tasks.load());
-
-
-	/*for (int i = 0; i < nbr_threads; ++i)
-	{
-		threads[i] = thread( &Mandelbrot::threadCalc3, this, (i*(this->im_height)/nbr_threads), ((i+1)*(this->im_height)/nbr_threads), x, y);
-	}
-	for (int i = 0; i < nbr_threads; ++i)
-	{
-		threads[i].join();
-	}*/
-
-
-
-
-
-
-
-
-
-
-
-	// this->partialDraw();
+	
+	while(this->tasks.load() != 0);
+	
+	
+	
+	
+	
+	
 	this->draw();
 	Mat kernel = Mat::ones( 7, 7, CV_8UC1 );
 
@@ -469,54 +453,16 @@ void Mandelbrot::escapeSpeedCalcThread4()
 
 
 
-	dbg
-
-
 
 
 	for(int i = 0; i < this->im_height; i++)
 	{
 		this->tasks.fetch_add(1);
-		args[i].x = x;
-		args[i].y = y;
-		args[i].ligne = i;
-		args[i].M = this;
 		wo.arg = (void*)&args[i];
 		this->mpmc->push(wo);
 	}
 
-	dbg
-	
-	while(this->tasks.load());
-
-
-
-
-
-
-
-	/*for (int i = 0; i < nbr_threads; ++i)
-	{
-		threads[i] = thread( &Mandelbrot::threadCalc3, this, (i*(this->im_height)/nbr_threads), ((i+1)*(this->im_height)/nbr_threads), x, y);
-	}
-	for (int i = 0; i < nbr_threads; ++i)
-	{
-		threads[i].join();
-	}*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	while(this->tasks.load() != 0);
 
 
 
@@ -549,12 +495,10 @@ void Mandelbrot::threadCalc4(void* arg)
 {
 	threadDraw* args = (threadDraw*)arg;
 
-	cout<<args->ligne<<endl;
-
 	mpf_t xn, yn, xnp1, ynp1, mod, xsqr, ysqr, tmp;
 	mpf_inits( xn, yn, xnp1, ynp1, mod, tmp, xsqr, ysqr, NULL);
 
-	cout<<"Calcul ligne : "<<args->ligne<<endl;
+	// cout<<"Calcul ligne : "<<args->ligne<<endl;
 
 	/*for(int j = deb; j < fin; j++)
 	{*/
@@ -614,8 +558,9 @@ void Mandelbrot::threadCalc4(void* arg)
 			}
 		}
 	//}
-	mpf_clears( xn, yn, xnp1, ynp1, mod, tmp, xsqr, ysqr, NULL);
-	this->tasks.fetch_sub(1);
+	//this->tasks.fetch_sub(1);
+	this->tasks.fetch_add(-1);
+	//cout<<this->tasks.fetch_sub(1)<<endl;
 }
 
 /*void Mandelbrot::partialDraw()
@@ -862,7 +807,7 @@ bool Mandelbrot::IsGood_2(bool* filtre){
 
 	double res = countNonZero(*detected_edges)*1000/(this->im_height*this->im_width);
 
-	cout<<res<<endl;
+	//cout<<res<<endl;
 
 	if(res<this->ThresholdCont)
 		continue_y_or_n = false;
@@ -923,7 +868,7 @@ bool Mandelbrot::IsGood_2(bool* filtre){
 		//res = countNonZero(*detected_edges)*255/(this->im_height*this->im_width);
 		res = res/(this->im_height*this->im_width)*1000/255;
 
-		cout<<res<<endl<<endl;
+		//cout<<res<<endl<<endl;
 		if(res >= this->ThresholdSave)
 			*filtre = true;
 		else
@@ -1006,6 +951,7 @@ void worthsaving(){
 
 void Mandelbrot::dichotomie(int enough)
 {
+	cout<<this->im_height<<endl;
 	this->escapeSpeedCalcThread4();
 	// this->escapeSpeedCalcThread3();
 	// this->escapeSpeedCalcThread2();
@@ -1055,7 +1001,7 @@ void Mandelbrot::dichotomie(int enough)
 			//new iterations
 			this->IterUp();
 
-			int surEchantillonage_bis = this->surEchantillonage, im_width_bis = this->im_width, im_height_bis = this->im_height, iterations_bis = this->iterations;
+			//int surEchantillonage_bis = this->surEchantillonage, im_width_bis = this->im_width, im_height_bis = this->im_height, iterations_bis = this->iterations;
 			this->del_mem();
 			//delete l'image ou on est
 			

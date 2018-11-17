@@ -32,8 +32,8 @@ int main(int argc, char** argv)
 	
 	mpf_t x, y, w, h;
 	const int NBR_THREADS = std::thread::hardware_concurrency();
-	//MyThreads* MT = new MyThreads(NBR_THREADS);
-	MyThreads* MT = new MyThreads(1);
+	MyThreads* MT = new MyThreads(NBR_THREADS);
+	//MyThreads* MT = new MyThreads(1);
 	Mpmc* mpmc = MT->getMpmc();
 
 
@@ -64,7 +64,7 @@ int main(int argc, char** argv)
 	M.draw();
 	M.save();
 	cout << rdtsc() - tick << endl;*/
-
+		
 	delete MT;
 	mpf_clears( x, y, w, h, NULL);	
 	exit(0);

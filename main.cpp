@@ -32,11 +32,12 @@ int main(int argc, char** argv)
 	
 	mpf_t x, y, w, h;
 	const int NBR_THREADS = std::thread::hardware_concurrency();
-	MyThreads* MT = new MyThreads(NBR_THREADS);
+	//MyThreads* MT = new MyThreads(NBR_THREADS);
+	MyThreads* MT = new MyThreads(1);
 	Mpmc* mpmc = MT->getMpmc();
 
 
-	int im_w = 960, im_h = 540, surech = 4, iteration = 200, enough = 1, color = 1;
+	int im_w = 480, im_h = 270, surech = 2, iteration = 100, enough = 3, color = 1;
 
 	//coordonnée de debut de zoom et taille de la zone de zoomage
 	mpf_init_set_d( x, -0.5);

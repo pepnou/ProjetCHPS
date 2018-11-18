@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 	Mpmc* mpmc = MT->getMpmc();
 
 
-	int im_w = 480, im_h = 270, surech = 2, iteration = 100, enough = 3, color = 1;
+	int im_w = 960, im_h = 540, surech = 2, iteration = 100, enough = 2, color = 1;
 
 	//coordonnée de debut de zoom et taille de la zone de zoomage
 	mpf_init_set_d( x, -0.5);
@@ -49,10 +49,10 @@ int main(int argc, char** argv)
 	Mandelbrot M( x, y, w, h, im_w, im_h, surech, iteration, color, mpmc);
 	uint64_t tick;
 	
-	tick = rdtsc();
+	//tick = rdtsc();
 	M.dichotomie(enough);
-	cout << rdtsc() - tick << endl;
-
+	//cout << rdtsc() - tick << endl;
+	cout<<"sortie"<<endl;
 	/*tick = rdtsc();
 	M.escapeSpeedCalcThread2();
 	M.draw();
@@ -64,7 +64,7 @@ int main(int argc, char** argv)
 	M.draw();
 	M.save();
 	cout << rdtsc() - tick << endl;*/
-		
+	
 	delete MT;
 	mpf_clears( x, y, w, h, NULL);	
 	exit(0);

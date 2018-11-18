@@ -55,9 +55,7 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, i
 }
 
 Mandelbrot::~Mandelbrot()
-{
-
-}
+{}
 
 void Mandelbrot::del_mem()
 {
@@ -419,15 +417,19 @@ void Mandelbrot::escapeSpeedCalcThread4()
 	
 	for(int i = 0; i < this->im_height; i++)
 	{
-		this->tasks.fetch_add(1);
+		cout<<this->tasks.fetch_add(1)<<endl;
+		
+		
 		args[i].x = x;
 		args[i].y = y;
 		args[i].ligne = i;
 		args[i].M = this;
+		//cout<<"+1"<<endl;
+		
 		wo.arg = (void*)&args[i];
 		this->mpmc->push(wo);
 	}
-	
+		
 	while(this->tasks.load() != 0);
 	
 	
@@ -458,6 +460,8 @@ void Mandelbrot::escapeSpeedCalcThread4()
 	for(int i = 0; i < this->im_height; i++)
 	{
 		this->tasks.fetch_add(1);
+		//cout<<"+2"<<endl;
+		
 		wo.arg = (void*)&args[i];
 		this->mpmc->push(wo);
 	}
@@ -490,7 +494,6 @@ void CallThreadCalc(void* arg)
 	args->M->threadCalc4(arg);
 }
 
-//void Mandelbrot::threadCalc4(int deb, int fin, mpf_t* x, mpf_t* y)
 void Mandelbrot::threadCalc4(void* arg)
 {
 	threadDraw* args = (threadDraw*)arg;
@@ -558,9 +561,10 @@ void Mandelbrot::threadCalc4(void* arg)
 			}
 		}
 	//}
+	cout<<"-"<<endl;
 	//this->tasks.fetch_sub(1);
-	this->tasks.fetch_add(-1);
-	//cout<<this->tasks.fetch_sub(1)<<endl;
+	//cout<<"Calcul ligne : "<<args->ligne<<endl;
+	cout<<this->tasks.fetch_sub(1)<<endl;
 }
 
 /*void Mandelbrot::partialDraw()
@@ -951,7 +955,7 @@ void worthsaving(){
 
 void Mandelbrot::dichotomie(int enough)
 {
-	cout<<this->im_height<<endl;
+	//cout<<this->im_height<<endl;
 	this->escapeSpeedCalcThread4();
 	// this->escapeSpeedCalcThread3();
 	// this->escapeSpeedCalcThread2();

@@ -11,7 +11,7 @@ set (SRC main.cpp mandelbrot.cpp color.cpp load.cpp rdtsc.cpp matOp.cpp mpmc.cpp
 set (TEST_SRC perfTest.cpp rdtsc.cpp)
 set (GMP_INCLUDE /usr/local/include/)
 set (THREAD_INCLUDE /usr/include/c++/7.2.0/thread )
-set (COMPILATION_OPTION "-O0" "-Wall" "-g")
+set (COMPILATION_OPTION "-O3" "-Wall" "-g")
 
 
 add_executable(ProjetFractale ${SRC})

@@ -417,8 +417,8 @@ void Mandelbrot::escapeSpeedCalcThread4()
 	
 	for(int i = 0; i < this->im_height; i++)
 	{
-		cout<<this->tasks.fetch_add(1)<<endl;
-		
+		//cout<<this->tasks.fetch_add(1)<<endl;
+		this->tasks.fetch_add(1);
 		
 		args[i].x = x;
 		args[i].y = y;
@@ -430,7 +430,8 @@ void Mandelbrot::escapeSpeedCalcThread4()
 		this->mpmc->push(wo);
 	}
 		
-	while(this->tasks.load() != 0);
+	while(this->tasks.load() != 0)
+		this_thread::yield();
 	
 	
 	
@@ -460,13 +461,13 @@ void Mandelbrot::escapeSpeedCalcThread4()
 	for(int i = 0; i < this->im_height; i++)
 	{
 		this->tasks.fetch_add(1);
-		//cout<<"+2"<<endl;
-		
+
 		wo.arg = (void*)&args[i];
 		this->mpmc->push(wo);
 	}
 
-	while(this->tasks.load() != 0);
+	while(this->tasks.load() != 0)
+		this_thread::yield();
 
 
 
@@ -494,8 +495,12 @@ void CallThreadCalc(void* arg)
 	args->M->threadCalc4(arg);
 }
 
+#include<fstream>
 void Mandelbrot::threadCalc4(void* arg)
 {
+	//stringstream tmp2(""); tmp2 << "dbg_" << this_thread::get_id();
+	//ofstream dbgout(tmp2.str(),"a");
+	
 	threadDraw* args = (threadDraw*)arg;
 
 	mpf_t xn, yn, xnp1, ynp1, mod, xsqr, ysqr, tmp;
@@ -561,10 +566,10 @@ void Mandelbrot::threadCalc4(void* arg)
 			}
 		}
 	//}
-	cout<<"-"<<endl;
-	//this->tasks.fetch_sub(1);
+	//dbgout<<"-"<<endl;
+	this->tasks.fetch_sub(1);
 	//cout<<"Calcul ligne : "<<args->ligne<<endl;
-	cout<<this->tasks.fetch_sub(1)<<endl;
+	//dbgout<<this->tasks.fetch_sub(1)<<endl;
 }
 
 /*void Mandelbrot::partialDraw()

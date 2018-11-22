@@ -1,5 +1,7 @@
-Nom des png avec les coordonnée de l'image
+Nom des png avec les coordonnée de l'image dans un txt
 
 "color = 1" a changer en "color = rainbow" ou "color = jaune_bleu" ...
 
-little interface pour lancer, stopper, generer, progres
+parametre dans la ligne de commande (boost)
+
+animation avec changement d iteration

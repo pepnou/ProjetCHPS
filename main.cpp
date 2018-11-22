@@ -42,8 +42,8 @@ int main(int argc, char** argv)
 	uint64_t tick;
 	
 	tick = rdtsc();
-	M.dichotomie(enough);
-	cout << rdtsc() - tick << endl;
+	//M.dichotomie(enough);
+	//cout << rdtsc() - tick << endl;
 
 	/*tick = rdtsc();
 	M.escapeSpeedCalcThread2();
@@ -57,6 +57,19 @@ int main(int argc, char** argv)
 	M.save();
 	cout << rdtsc() - tick << endl;*/
 
+	
+	//mpf_clears( x, y, w, h, NULL);	
+	//exit(0);
+	
+	M.random_img(enough);
+
+	//M.dichotomie(enough);
+
+	cout << rdtsc() - tick << endl;
+	//system("date");
+	
+	// M.draw2();
+	// M.save();
 	
 	mpf_clears( x, y, w, h, NULL);	
 	exit(0);

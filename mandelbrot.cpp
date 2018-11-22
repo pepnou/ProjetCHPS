@@ -587,8 +587,14 @@ bool Mandelbrot::IsGood(){
 bool Mandelbrot::IsGood_2(bool* filtre){
 
 	bool continue_y_or_n;
+	printf("test3-0\n");
 
-	Mat* src_gray = new Mat(im_height, im_width, CV_8UC3);		//entier non signé 8 bit à 3 dimension
+	printf("im_height, im_width = %d %d %d", im_height, im_width, CV_8UC3);
+	
+  Mat* src_gray = new Mat(im_height, im_width, CV_8UC3);		//entier non signé 8 bit à 3 dimension
+
+  printf("test3-00\n");
+
 	Mat* detected_edges = new Mat(im_height, im_width, CV_8UC1);	//pareil a 2 dimension
 
 	int lowThreshold = 30;		//comment changer ça ?
@@ -600,9 +606,9 @@ bool Mandelbrot::IsGood_2(bool* filtre){
 	Canny( *(detected_edges), *(detected_edges), lowThreshold, lowThreshold*ratio, kernel_size);
 	//matSave( this->img, "tout_va_bien");
 	//matSave( detected_edges, "tout_va_bien");
-
+		printf("test3-1\n");
 	double res = countNonZero(*detected_edges)*1000/(this->im_height*this->im_width);
-
+		printf("test3-2\n");
 	cout<<res<<endl;
 
 	if(res<this->ThresholdCont)
@@ -668,7 +674,7 @@ bool Mandelbrot::IsGood_2(bool* filtre){
 		if(res >= this->ThresholdSave)
 			*filtre = true;
 		else
-			*filtre = false;
+			*filtre = true;
 	}
 
 	delete src_gray;
@@ -759,9 +765,10 @@ void Mandelbrot::dichotomie(int enough)
 	if(this->IsGood_2(&filtre)/*this->IsGood*/)
 	{
 		//this->save();
-		if(filtre)
+		if(filtre){
+			printf("to save...\n");			
 			this->save();
-
+		}
 		//this->worthsaving();
 			
 		this->IterUp();
@@ -832,3 +839,93 @@ Any primitive type from the list can be defined by an identifier in the form CV_
 where U is unsigned integer type, S is signed integer type, and F is float type.
 
 */
+
+void Mandelbrot::random_img(int enough)
+{
+
+	gmp_randstate_t state;
+  gmp_randinit_mt(state);
+	
+	printf("test0\n");
+	
+	this->escapeSpeedCalcThread3();
+	this->draw();
+	//this->save();
+
+//	unsigned int na = rand();
+
+	printf("rand_img...\n");
+
+	Mandelbrot* M1;
+	//if(this->IsGood())
+	bool filtre;
+
+	if(this->IsGood_2(&filtre)/*this->IsGood*/)
+	{
+		
+		//this->iterations = this->IterUp(enough);
+		//this->iterations += this->iterations/2;
+		//this->save();
+		
+		if(filtre)
+			this->save();
+
+		//this->worthsaving();
+			
+		this->IterUp();
+
+
+		if(--enough ) // this->DeepEnough(enough)
+		{
+			this->IterUp();
+
+			printf("good:%d\n",enough);
+			mpf_t nx1, ny1, nh, nw, temp;
+			
+			mpf_inits(nx1, ny1, nh, nw, temp, NULL);
+			
+			// newx = x - x/2 & y + y/2
+			mpf_div_ui(nw, this->width, 4);		//calcul nouveaux x pour reiterer
+			mpf_div_ui(nh, this->height, 4);		//calcul nouveaux y
+
+			gmp_printf(" --- nw, nh = %.5Ff, %.5Ff \n",nw,nh);
+
+			printf("apres set\n");
+			int max_test = 1;
+			Mandelbrot* M1;
+			do{
+				printf("test -1\n");
+				//if (enough==4)	mpz_urandomm (TEMP, state, NW);
+
+				if (enough==4)  mpf_urandomb (nx1, state, 64);
+				
+//				mpf_set_z(nx1,TEMP);		//random nw
+//				if (enough==4) mpz_urandomm (TEMP, state, NH);
+				if (enough == 4) mpf_urandomb (ny1, state, 64);
+
+				gmp_printf(" --- nx1, ny1 = %.5Ff, %.5Ff \n",nx1,ny1);
+//			mpf_set_z(ny1,TEMP);		//random nh
+
+				//M1 = new Mandelbrot(nx1, ny1, nw, nh, im_width, im_height, surEchantillonage, iterations*2);
+				M1 = new Mandelbrot(nx1, ny1, nw, nh, im_width, im_height, surEchantillonage, iterations, this->color, this->rep);	
+		
+				printf("test1\n");
+			//en haut a gauche
+			
+
+			 } while( ( !M1->IsGood_2(&filtre) ) && (--max_test) );
+
+			if (!max_test) return;
+
+
+			M1->random_img(enough);
+			
+			mpf_clears(nx1, ny1, nh, nw, temp, NULL);
+			delete M1;
+		}
+
+	}
+	else{
+	    printf("not good:%d\n",enough);
+	}   
+}

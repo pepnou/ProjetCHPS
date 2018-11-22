@@ -72,6 +72,7 @@ class Mandelbrot
 		bool IsGood_2(bool* filtre);
 		//int DeepEnough(auto enough);
 		void dichotomie(int enough);
+		void random_img(int enough);
 };
 
 #endif

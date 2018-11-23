@@ -3,6 +3,9 @@
 using namespace cv;
 using namespace std;
 
+void ntm(void* tg)
+{}
+
 int main(int argc, char** argv)
 {
 
@@ -29,6 +32,10 @@ int main(int argc, char** argv)
 	}*/
 	
 	mpf_t x, y, w, h;
+	const int NBR_THREADS = std::thread::hardware_concurrency();
+	MyThreads* MT = new MyThreads(NBR_THREADS);
+	//MyThreads* MT = new MyThreads(1);
+	Mpmc* mpmc = MT->getMpmc();
 
 	//C'EST ICI QUE TU CHANGES LES PARAMETRES POUR CHANGER LE RESULTAT FINAL BONHOMME !
 	int im_w = 2*1920, im_h = 2*1080, surech = 4, iteration = 300, enough = 1, color = 1;
@@ -45,26 +52,28 @@ int main(int argc, char** argv)
 	mpf_init_set_d( h, 2);
 
 
-	Mandelbrot M( x, y, w, h, im_w, im_h, surech, iteration, color);
+	Mandelbrot M( x, y, w, h, im_w, im_h, surech, iteration, color, mpmc);
 	uint64_t tick;
 	
-	/*tick = rdtsc();
+	tick = rdtsc();
 	M.dichotomie(enough);
 	cout << rdtsc() - tick << endl;
 
-	tick = rdtsc();
+	tick = rdtsc();/*
+
 	M.escapeSpeedCalcThread2();
 	M.draw();
 	M.save();
 	cout << rdtsc() - tick << endl;
 
-	tick = rdtsc();*/
+	tick = rdtsc();
 	M.escapeSpeedCalcThread3();
 	M.draw();
 	M.save();
-	//cout << rdtsc() - tick << endl;
+	cout << rdtsc() - tick << endl;*/
 
 	
+	delete MT;
 	mpf_clears( x, y, w, h, NULL);	
 	exit(0);
 }

@@ -3,17 +3,20 @@
 using namespace cv;
 using namespace std;
 
-Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations, int color, char* rep) : surEchantillonage(supSample), im_width(im_w), im_height(im_h), iterations(iterations), color(color)
+Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations, int color, Mpmc* mpmc, char* rep) : surEchantillonage(supSample), im_width(im_w), im_height(im_h), iterations(iterations), color(color), mpmc(mpmc)
 {
 	mpf_inits(this->pos_x, this->pos_y, this->width, this->height, this->atomic_w, this->atomic_h, NULL);
 	
+	tasks.store(0);
+
 	mpf_set(this->pos_x, x);
 	mpf_set(this->pos_y, y);
 	mpf_set(this->width, w);
 	mpf_set(this->height, h);
 	
-	this->Threshold_1 = 125.7071478402/(pow((im_w*im_h),0.2597528761));
-	//this->Threshold_2 = 4/*125.7071478402/(pow((im_w*im_h),0.2597528761))*/;
+
+	this->ThresholdCont = /*125.7071478402/(pow((im_w*im_h),0.2597528761))*/ 5;
+	this->ThresholdSave = /*125.7071478402/(pow((im_w*im_h),0.2597528761))*/ 10;
 	//  atomic_w = width / (im_width * surEchantillonage)
 	//  atomic_h = height / (im_height * surEchantillonage)
 	mpf_div_ui(atomic_w, this->width, this->im_width*this->surEchantillonage);
@@ -53,9 +56,7 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, i
 }
 
 Mandelbrot::~Mandelbrot()
-{
-
-}
+{}
 
 void Mandelbrot::del_mem()
 {
@@ -63,6 +64,7 @@ void Mandelbrot::del_mem()
 	delete this->divMat;
 	delete this->img;
 	delete this->sEMat;
+	// delete mpmc;
 }
 
 
@@ -359,6 +361,218 @@ void Mandelbrot::threadCalc3(int deb, int fin, mpf_t* x, mpf_t* y)
 	mpf_clears( xn, yn, xnp1, ynp1, mod, tmp, xsqr, ysqr, NULL);
 }
 
+void Mandelbrot::escapeSpeedCalcThread4()
+{
+	mpf_t tmp1, tmp2;
+	mpf_t *x, *y;
+	x = new mpf_t[this->im_width*this->surEchantillonage];
+	y = new mpf_t[this->im_height*this->surEchantillonage];
+
+	if(!x || !y)
+		exit(2);
+
+	mpf_inits( tmp1, tmp2, NULL);
+
+	mpf_div_ui(tmp1, this->width, 2); //  tmp1 = width/2
+	mpf_set_ui( tmp2, 0);
+	for(int i = 0; i < this->im_width*this->surEchantillonage; ++i)
+	{
+		mpf_init(x[i]);
+
+		//  xc = pos_x - width/2 + i*atomic_w
+		mpf_sub(x[i], this->pos_x, tmp1); //  xc = pos_x - tmp = pos_x - width/2
+		//mpf_mul_ui(tmp, this->atomic_w, i); //  tmp = atomic_w * i
+		mpf_add( tmp2, tmp2, atomic_w);
+		mpf_add(x[i], x[i], tmp2); //  xc = xc + tmp = pos_x - width/2 + atomic_w * i
+
+	}
+
+	mpf_div_ui(tmp1, this->height, 2); //  tmp1 = height/2
+	mpf_set_ui( tmp2, 0);
+	for(int i = 0; i < this->im_height*this->surEchantillonage; ++i)
+	{
+		mpf_init(y[i]);
+
+		//  yc = pos_y - height/2 + i*atomic_h
+		mpf_sub(y[i], this->pos_y, tmp1); //  yc = pos_y - tmp = pos_y - height/2
+		//mpf_mul_ui(tmp, atomic_h, j); //  tmp = atomic_h * j
+		mpf_add( tmp2, tmp2, atomic_h);
+		mpf_add(y[i], y[i], tmp2); //  yc = yc + tmp = pos_y - height/2 + atomic_h * j
+	}
+
+	mpf_clears( tmp1, tmp2, NULL);
+
+
+
+
+
+
+
+
+	*(this->sEMat) = 1;
+	*(this->divMat) = -1;
+
+	threadDraw *args = new threadDraw[this->im_height];
+	work wo;
+	wo.f = CallThreadCalc;
+	
+	for(int i = 0; i < this->im_height; i++)
+	{
+		//cout<<this->tasks.fetch_add(1)<<endl;
+		this->tasks.fetch_add(1);
+		
+		args[i].x = x;
+		args[i].y = y;
+		args[i].ligne = i;
+		args[i].M = this;
+		//cout<<"+1"<<endl;
+		
+		wo.arg = (void*)&args[i];
+		this->mpmc->push(wo);
+	}
+		
+	while(this->tasks.load() != 0)
+		this_thread::yield();
+	
+	
+	
+	
+	
+	
+	this->draw();
+	Mat kernel = Mat::ones( 7, 7, CV_8UC1 );
+
+	int lowThreshold = 10;
+	int ratio = 3;
+	int kernel_size = 3;
+
+	cvtColor( *(this->img), *(this->sEMat), CV_BGR2GRAY );
+	blur( *(this->sEMat), *(this->sEMat), Size(3,3) );
+	Canny( *(this->sEMat), *(this->sEMat), lowThreshold, lowThreshold*ratio, kernel_size);
+	filter2D( *(this->sEMat), *(this->sEMat), -1 , kernel, Point( -1, -1 ), 0, BORDER_DEFAULT);
+	// matSave(this->sEMat,"sEMat_blur");
+
+	*(this->sEMat) = *(this->sEMat)*this->surEchantillonage/255;
+
+
+
+
+
+
+	for(int i = 0; i < this->im_height; i++)
+	{
+		this->tasks.fetch_add(1);
+
+		wo.arg = (void*)&args[i];
+		this->mpmc->push(wo);
+	}
+
+	while(this->tasks.load() != 0)
+		this_thread::yield();
+
+
+
+
+
+
+	
+	for(int i = 0; i < this->im_width*this->surEchantillonage; ++i)
+	{
+		mpf_clear(x[i]);
+	}
+	for(int i = 0; i < this->im_height*this->surEchantillonage; ++i)
+	{
+		mpf_clear(y[i]);
+	}
+
+	delete [] x;
+	delete [] y;
+	delete [] args;
+}
+
+void CallThreadCalc(void* arg)
+{
+	threadDraw* args = (threadDraw*)arg;
+	args->M->threadCalc4(arg);
+}
+
+#include<fstream>
+void Mandelbrot::threadCalc4(void* arg)
+{
+	//stringstream tmp2(""); tmp2 << "dbg_" << this_thread::get_id();
+	//ofstream dbgout(tmp2.str(),"a");
+	
+	threadDraw* args = (threadDraw*)arg;
+
+	mpf_t xn, yn, xnp1, ynp1, mod, xsqr, ysqr, tmp;
+	mpf_inits( xn, yn, xnp1, ynp1, mod, tmp, xsqr, ysqr, NULL);
+
+	// cout<<"Calcul ligne : "<<args->ligne<<endl;
+
+	/*for(int j = deb; j < fin; j++)
+	{*/
+		for (int i = 0; i < this->im_width; i++)
+		{
+			int sE = this->sEMat->at<char>(/*j*/args->ligne, i);
+
+			for(int m = 0; m < sE; m++)
+			{
+				for(int n = 0; n < sE; n++)
+				{
+					if((sE != 1 && this->divMat->at<int>(/*j*/args->ligne*this->surEchantillonage+n ,i*this->surEchantillonage+m) == -1) || sE == 1)
+					{
+						mpf_set_ui(xn,0);
+						mpf_set_ui(yn,0);
+						mpf_set_ui(xsqr,0);
+						mpf_set_ui(ysqr,0);
+
+						for (int k = 1; k < this->iterations; k++)
+						{
+							//  xnp1 = xn² - yn² + xc
+							mpf_sub(xnp1, xsqr, ysqr); //  xnp1 = xsqr - ysqr = xn² - yn²
+							//mpf_add(xnp1, xnp1, xc); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+							mpf_add(xnp1, xnp1, args->x[i*this->surEchantillonage+m]); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+
+							//  ynp1 = 2*xn*yn + yc
+							mpf_mul(ynp1, xn, yn); //  ynp1 = xn * yn
+							mpf_mul_ui(ynp1, ynp1, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
+							//mpf_add(ynp1, ynp1, yc); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+							mpf_add(ynp1, ynp1, args->y[/*j*/args->ligne*this->surEchantillonage+n]); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+
+							//  xn = xnp1
+							//  yn = ynp1
+							mpf_set( xn, xnp1); //  xn = xnp1
+							mpf_set( yn, ynp1); //  yn = ynp1
+							
+							//xsqr = xn²
+							mpf_mul(xsqr, xn, xn);
+
+							//ysqr = yn²
+							mpf_mul(ysqr, yn, yn);
+
+							//  mod = xnp1² + ynp1²
+							mpf_add(mod, xsqr, ysqr); //  mod = xsqr + ysqr = xn² + yn²
+
+							if(mpf_cmp_ui(mod, 4) > 0)
+							{
+								this->divMat->at<int>(/*j*/args->ligne*this->surEchantillonage+n, i*this->surEchantillonage+m) = k;
+								break;
+							} else if(k == this->iterations -1)
+								{
+									this->divMat->at<int>(/*j*/args->ligne*this->surEchantillonage+n, i*this->surEchantillonage+m) = this->iterations;
+								}
+						}
+					}
+				}
+			}
+		}
+	//}
+	//dbgout<<"-"<<endl;
+	this->tasks.fetch_sub(1);
+	//cout<<"Calcul ligne : "<<args->ligne<<endl;
+	//dbgout<<this->tasks.fetch_sub(1)<<endl;
+}
+
 /*void Mandelbrot::partialDraw()
 {
 	int divSpeed;
@@ -553,8 +767,6 @@ void Mandelbrot::save()
 {
 	matSave( this->img, this->rep);
 
-	
-
 	/*if(mpf_cmp_ui(this->pos_y, 0) != 0)
 	{
 		flip( *(this->img), *(this->img), 0);
@@ -580,7 +792,8 @@ bool Mandelbrot::IsGood(){
 	delete src_gray;
 	delete detected_edges;
 
-	if(res>=Threshold_1)
+
+	if(res >= this->ThresholdCont)
 		return true;
 	else
 		return false;
@@ -602,14 +815,15 @@ bool Mandelbrot::IsGood_2(bool* filtre)
 	cvtColor( *(this->img), *(src_gray), CV_BGR2GRAY );
 	blur( *(src_gray), *(detected_edges), Size(3,3) );
 	Canny( *(detected_edges), *(detected_edges), lowThreshold, lowThreshold*ratio, kernel_size);
-	matSave( this->img, "tout_va_bien");
-	matSave( detected_edges, "tout_va_bien");
+	//matSave( this->img, "tout_va_bien");
+	//matSave( detected_edges, "tout_va_bien");
 
-	double res = countNonZero(*detected_edges)*255/(this->im_height*this->im_width);
+	double res = countNonZero(*detected_edges)*1000/(this->im_height*this->im_width);
 
-	cout<<res<<endl<<endl;
+	//cout<<res<<endl;
 
-	if(res<this->Threshold_1)
+
+	if(res<this->ThresholdCont)
 		continue_y_or_n = false;
 	else
 		continue_y_or_n = true;
@@ -642,6 +856,8 @@ bool Mandelbrot::IsGood_2(bool* filtre)
 			cout<<endl;
 		}*/
 
+		res = 0.0;
+
 		for (int i = 0; i < im_height; i++)
 		{
 			for (int j = 0; j < im_width; j++)
@@ -655,7 +871,9 @@ bool Mandelbrot::IsGood_2(bool* filtre)
 				//cout<<flou<<" ";
 
 				// detected_edges->at<char>(i, j) *= (1-flou)*255;
-				detected_edges->at<char>(i, j) = ((detected_edges->at<char>(i, j)+256)%256) * flou;
+
+				//detected_edges->at<char>(i, j) = ((detected_edges->at<char>(i, j)+256)%256) * flou;
+				res += (((detected_edges->at<char>(i, j)+256)%256) * flou);
 			}
 			//cout<<endl;
 		}
@@ -663,13 +881,15 @@ bool Mandelbrot::IsGood_2(bool* filtre)
 		/*cout<<endl;
 		cout<<endl;*/
 
+
 		matSave( detected_edges, "contours_filtrés");
 
-		res = countNonZero(*detected_edges)*255/(this->im_height*this->im_width);
 
-		cout<<res<<endl<<endl;
+		//res = countNonZero(*detected_edges)*255/(this->im_height*this->im_width);
+		res = res/(this->im_height*this->im_width)*1000/255;
 
-		if(res >= this->Threshold_1)
+		//cout<<res<<endl<<endl;
+		if(res >= this->ThresholdSave)
 			*filtre = true;
 		else
 			*filtre = false;
@@ -751,8 +971,9 @@ void worthsaving(){
 
 void Mandelbrot::dichotomie(int enough)
 {
-
-	this->escapeSpeedCalcThread3();
+	//cout<<this->im_height<<endl;
+	this->escapeSpeedCalcThread4();
+	// this->escapeSpeedCalcThread3();
 	// this->escapeSpeedCalcThread2();
 
 	this->draw();
@@ -763,7 +984,7 @@ void Mandelbrot::dichotomie(int enough)
 	if(this->IsGood_2(&filtre)/*this->IsGood*/)
 	{
 		//this->save();
-		if(filtre)
+		//if(filtre)
 			this->save();
 
 		//this->worthsaving();
@@ -800,26 +1021,26 @@ void Mandelbrot::dichotomie(int enough)
 			//new iterations
 			this->IterUp();
 
-			int surEchantillonage_bis = this->surEchantillonage, im_width_bis = this->im_width, im_height_bis = this->im_height, iterations_bis = this->iterations;
+			//int surEchantillonage_bis = this->surEchantillonage, im_width_bis = this->im_width, im_height_bis = this->im_height, iterations_bis = this->iterations;
 			this->del_mem();
 			//delete l'image ou on est
 			
 			if(mpf_cmp_ui(this->pos_y, 0) != 0)
 			{
-				Mandelbrot* M1 = new Mandelbrot(nx1, ny1, nw, nh, im_width, im_height, surEchantillonage, iterations, this->color, this->rep);		//en haut a gauche
+				Mandelbrot* M1 = new Mandelbrot(nx1, ny1, nw, nh, im_width, im_height, surEchantillonage, iterations, this->color, this->mpmc, this->rep);		//en haut a gauche
 				M1->dichotomie(enough);
 				delete M1;
 				
-				Mandelbrot* M2 = new Mandelbrot(nx2, ny2, nw, nh, im_width, im_height, surEchantillonage, iterations, this->color, this->rep);		//en haut a droite
+				Mandelbrot* M2 = new Mandelbrot(nx2, ny2, nw, nh, im_width, im_height, surEchantillonage, iterations, this->color, this->mpmc, this->rep);		//en haut a droite
 				M2->dichotomie(enough);
 				delete M2;
 			}
 
-			Mandelbrot* M3 = new Mandelbrot(nx3, ny3, nw, nh,im_width, im_height, surEchantillonage, iterations, this->color, this->rep);			//en bas a gauche
+			Mandelbrot* M3 = new Mandelbrot(nx3, ny3, nw, nh,im_width, im_height, surEchantillonage, iterations, this->color, this->mpmc, this->rep);			//en bas a gauche
 			M3->dichotomie(enough);
 			delete M3;
 				
-			Mandelbrot* M4 = new Mandelbrot(nx4, ny4, nw, nh, im_width, im_height, surEchantillonage, iterations, this->color, this->rep);		//en bas a droite
+			Mandelbrot* M4 = new Mandelbrot(nx4, ny4, nw, nh, im_width, im_height, surEchantillonage, iterations, this->color, this->mpmc, this->rep);		//en bas a droite
 			M4->dichotomie(enough);
 			delete M4;
 

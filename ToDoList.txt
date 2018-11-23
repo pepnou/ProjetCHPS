@@ -1,3 +1,5 @@
 fichier text pour les co de chaque image generée
 
-little interface pour lancer, stopper, generer, progres
+parametre dans la ligne de commande (boost)
+
+animation avec changement d iteration

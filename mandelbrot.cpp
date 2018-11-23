@@ -764,8 +764,38 @@ void Mandelbrot::draw()
 
 void Mandelbrot::save()
 {
-	matSave( this->img, this->rep);
-	/*if(mpf_cmp_ui(this->pos_y, 0) != 0)
+    int nume;
+	nume=matSave( this->img, this->rep);
+    //ofstream lesImages("../img/info.txt");
+
+    char nom_inf[128];
+    sprintf( nom_inf, "../img/%s/info.txt", this->rep);
+
+    FILE* fichier = fopen(nom_inf, "a");
+
+    fprintf(fichier,"mandel%d",nume);
+    fprintf(fichier,"\n\tx : ");
+    mpf_out_str(fichier, 10, 150, pos_x);
+    fprintf(fichier,"\n\ty : ");
+    mpf_out_str(fichier, 10, 150, pos_y);
+    fprintf(fichier,"\n\tw : ");
+    mpf_out_str(fichier, 10, 150, width);
+    fprintf(fichier,"\n\th : ");
+    mpf_out_str(fichier, 10, 150, height);
+    fprintf(fichier,"\n");
+
+    //mpf_out_str(fichier, 10, 150, height);
+   // cout<<pos_x;
+    //gmp_printf ("fixed point mpf %.*Ff with %d digits\n", 10, this->pos_x, 10);
+    fclose(fichier);
+   // gmp_printf ("fixed point mpf %.*Ff with %d digits\n", 10, this->height, 10);
+
+    //mpz_out_str(fichier, 10, this->height);
+
+   //size_t mpf_out_str (FILE *lesImages, int base, size t n_digits, const mpf t op);
+   // lesImages<<this->im_width;lesImages<<" ";lesImages<<this->im_height;lesImages<<"  ";lesImages<<this->pos_x;lesImages<<" ";lesImages<<this->pos_y;lesImages<<endl;
+   // mpz_out_str(lesImages, 16, im_height);
+   /*if(mpf_cmp_ui(this->pos_y, 0) != 0)
 	{
 		flip( *(this->img), *(this->img), 0);
 		matSave( this->img, this->rep);
@@ -1039,6 +1069,12 @@ void Mandelbrot::dichotomie(int enough)
 	}
 
 }
+
+/*Mandelbrot::Mandelbrot ImageHD(string &nomImage_HD)
+{
+
+
+}*/
 
 
 /*

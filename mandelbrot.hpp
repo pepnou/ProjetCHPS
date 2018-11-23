@@ -22,8 +22,9 @@
 #include <thread>
 #include <vector>
 #include <ctime>
-
+#include <fstream>
 #include <gmp.h>
+#include <string>
 
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
@@ -80,6 +81,8 @@ class Mandelbrot
 		bool IsGood_2(bool* filtre);
 		//int DeepEnough(auto enough);
 		void dichotomie(int enough);
+	    FILE* fichier;
+	   // Mandelbrot ImageHD(string &nomImage_HD);
 };
 
 void CallThreadCalc(void* arg);

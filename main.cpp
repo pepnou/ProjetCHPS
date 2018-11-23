@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 	Mpmc* mpmc = MT->getMpmc();
 
 
-	int im_w = 960, im_h = 540, surech = 3, iteration = 100, enough = 2, color = 1;
+	int im_w = 96, im_h = 54, surech = 1, iteration = 100, enough = 10, color = 1;
 
 	//coordonnée de debut de zoom et taille de la zone de zoomage
 	mpf_init_set_d( x, -0.5);

@@ -8,6 +8,8 @@ namespace po = boost::program_options;
 int main(int argc, char** argv)
 {
 	int im_w = 1920, im_h = 1080, surech = 4, iteration = 100, enough = 1, color = RAINBOW;
+	int nbt = thread::hardware_concurrency();
+	bool verbose = false;
 	
 	mpf_t x, y, w, h;
 	/*mpf_init_set_d( x, -0.5);
@@ -24,26 +26,29 @@ int main(int argc, char** argv)
 	{
 		po::options_description generic("Generic options");
 		generic.add_options()
-			("help,h", ": describe arguments")
+			("help", ": describe arguments")
 			("verbose,v", ": be verbose")
 			;
 
 		po::options_description config("Configuration");
 		config.add_options()
-			("im-width,W", po::value< int >(), ": width of the generated images")
-			("im-height,H", po::value< int >(), ": height of the generated images")
-			("Xposition,X", po::value< string >(), ": x position")
-			("Yposition,Y", po::value< string >(), ": y position")
-			("width,W", po::value< string >(), ": width of the fractal zone in the complex plane")
-			("height,H", po::value< string >(), ": height of the fractal zone in the complex plane")
-			("color,C", po::value< int >(), ": the color algorithm used, see --color-help")
+			("im-width,w", po::value< int >(), ": width of the generated images")
+			("im-height,h", po::value< int >(), ": height of the generated images")
+			("Xposition,X", po::value< string >(), ": abscissa of the center of the current fractal zone in the complex plane, should be between -2 and 2")
+			("Yposition,Y", po::value< string >(), ": ordinate of the center of the current fractal zone in the complex plane, should be between -2 and 2")
+			("width,W", po::value< string >(), ": width of the current fractal zone in the complex plane, see --help-dimension")
+			("height,H", po::value< string >(), ": height of the current fractal zone in the complex plane, see --help-dimension")
+			("color,C", po::value< int >(), ": the color algorithm used, see --help-color")
 			("enough,E", po::value< int >(), ": the maximum number of dichotomical division before stoping")
 			("super-sampling,S", po::value< int >(), ": the maximum number of points calculated per pixel")
+			("thread,T", po::value< int >(), ": the maximum number of thread, see --help-thread")
 			;
 
 		po::options_description hidden("Hidden options");
 		hidden.add_options()
-			("color-help,ch", ": describe arguments")
+			("help-color", "")
+			("help-thread", "")
+			("help-dimension", "")
 			;
 
 		po::options_description cmdline_options;
@@ -64,10 +69,7 @@ int main(int argc, char** argv)
 
 		if (vm.count("Xposition"))
 		{
-			cout<<vm["Xposition"].as<string>().c_str()<<endl;
 			mpf_set_str( x, vm["Xposition"].as<string>().c_str(), 10);
-			mpf_out_str(NULL, 10, 100000, x);
-
 		}
 
 		if (vm.count("Yposition"))
@@ -108,6 +110,11 @@ int main(int argc, char** argv)
 		if (vm.count("super-sampling"))
 		{
 			surech = vm["super-sampling"].as<int>();
+		}
+
+		if (vm.count("thread"))
+		{
+			surech = vm["thread"].as<int>();
 		}
 
 
@@ -175,6 +182,50 @@ int main(int argc, char** argv)
 			surech = vm2["super-sampling"].as<int>();
 		}
 
+		if (vm2.count("thread"))
+		{
+			if(vm2["thread"].as<int>() == -1 || vm2["thread"].as<int>()>thread::hardware_concurrency())
+				nbt = thread::hardware_concurrency();
+			else
+				nbt = vm2["thread"].as<int>();
+		}
+
+		if (vm2.count("verbose"))
+		{
+			verbose = true;
+		}
+
+
+		if (vm2.count("color-help"))
+		{
+			cout<< "This option allows you to choose from the three currently implemented coloring algorithm, it should only take a number between 1 et 3" << endl
+				<< "\t1: This algorithm take the escape speed time of a point (or multiple if you are using the super sampling), reduce it between 0 et 360 using a modulo and then use it as hue in the hsb color representation" << endl
+				<< "\t2:This algorithm take the escape speed time of a point (or multiple if you are using the super sampling), reduce it between 0 et 360 using a modulo and then cut it in 4 phase to allow to go from blue, to black, to yellow, to white and to blue again" << endl
+				<< "\t3: This algorithm take the escape speed time of a point (or multiple if you are using the super sampling), calculate three value using alpha*cos(escape_speed) or alpha*sin(escape_speed) and then use them as red, green and blue components" << endl
+				<< endl;
+			exit(0);
+		}
+
+		if (vm2.count("thread-help"))
+		{
+			cout<< "This option allows you to choose the maximum number of thread created by the program." << endl
+				<< "Note that one more thread is created to explore the fractal and create tasks for the other thread." << endl
+				<< "If you want to use all your possible threds, use -1." << endl
+				<< "There is no current way to only use one thread." << endl
+				<< endl;
+			exit(0);
+		}
+
+		if (vm2.count("thread-help"))
+		{
+			cout<< "This option allows yout to choose the width and the height of the current fractal zone in the complex plane." << endl
+				<< "Note that if the ratio of the image is different than the one of the complex plan, generated images will be out of shape." << endl
+				<< endl;
+			exit(0);
+		}
+
+
+
 		mp_exp_t e1, e2, e3, e4;
 		char *char_width, *char_height, *char_x, *char_y;
 		char tmpx[3] = {'0','.','\0'}, tmpy[3] = {'0','.','\0'};
@@ -198,15 +249,16 @@ int main(int argc, char** argv)
 		char_height = mpf_get_str( NULL, &e4, 10, 1000, h);
 
 		ofstream ofs("Config.cfg",ofstream::trunc);
-		ofs << "Xposition=" << tmpx << char_x << "e" << e1 << "\n"
-			<< "Yposition=" << tmpy << char_y << "e" << e2 << "\n"
-			<< "im-width=" << im_w << "\n"
-			<< "im-height=" << im_h << "\n"
-			<< "width=" << "0." << char_width << "e" << e3 << "\n"
-			<< "height=" << "0." << char_height << "e" << e4 << "\n"
-			<< "color=" << color << "\n"
-			<< "enough=" << enough << "\n"
-			<< "super-sampling=" << surech << "\n";
+		ofs << "Xposition=" << tmpx << char_x << "e" << e1 << endl
+			<< "Yposition=" << tmpy << char_y << "e" << e2 << endl
+			<< "im-width=" << im_w << endl
+			<< "im-height=" << im_h << endl
+			<< "width=" << "0." << char_width << "e" << e3 << endl
+			<< "height=" << "0." << char_height << "e" << e4 << endl
+			<< "color=" << color << endl
+			<< "enough=" << enough << endl
+			<< "super-sampling=" << surech << endl
+			<< "thread=" << nbt << endl;
 	}
 	catch(std::exception& E)
 	{
@@ -214,42 +266,18 @@ int main(int argc, char** argv)
 	}
 
 
-	
-	/*mpf_t x, y, w, h;
-	const int NBR_THREADS = std::thread::hardware_concurrency();
-	MyThreads* MT = new MyThreads(NBR_THREADS);
-	//MyThreads* MT = new MyThreads(1);
+
+	MyThreads* MT = new MyThreads(nbt);
 	Mpmc* mpmc = MT->getMpmc();
-
-
-	int im_w = 960, im_h = 540, surech = 3, iteration = 100, enough = 2, color = RAINBOW;
-
-	//coordonnée de debut de zoom et taille de la zone de zoomage
-	mpf_init_set_d( x, -0.5);
-	mpf_init_set_d( y, 0.0);
-	mpf_init_set_d( w, 3);
-	mpf_init_set_d( h, 2);
-
 	Mandelbrot M( x, y, w, h, im_w, im_h, surech, iteration, color, mpmc);
-	uint64_t tick;*/
-	
-	/*tick = rdtsc();
-	M.dichotomie(enough);
-	cout << rdtsc() - tick << endl;*/
-	
-	/*tick = rdtsc();
-	M.escapeSpeedCalcThread2();
-	M.draw();
-	M.save();
-	cout << rdtsc() - tick << endl;
 
-	tick = rdtsc();
-	M.escapeSpeedCalcThread3();
-	M.draw();
-	M.save();
-	cout << rdtsc() - tick << endl;*/
+	uint64_t tick;
 	
-	/*delete MT;
-	mpf_clears( x, y, w, h, NULL);*/
+	tick = rdtsc();
+	M.dichotomie(enough);
+	if(verbose)cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
+	
+	delete MT;
+	mpf_clears( x, y, w, h, NULL);
 	exit(0);
 }

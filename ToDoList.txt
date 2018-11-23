@@ -3,3 +3,5 @@ fichier text pour les co de chaque image generée
 parametre dans la ligne de commande (boost)
 
 animation avec changement d iteration
+
+test

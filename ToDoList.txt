@@ -1,5 +1,3 @@
-Nom des png avec les coordonnée de l'image
-
-"color = 1" a changer en "color = rainbow" ou "color = jaune_bleu" ...
+fichier text pour les co de chaque image generée
 
 little interface pour lancer, stopper, generer, progres

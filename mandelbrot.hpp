@@ -3,11 +3,11 @@
 
 #define ITERATIONS_PER_THREAD 400000000
 
-// 47x28(1 316) => 18 (50it)
-// 120x67(8 040) => 14 (50it)
-// 240x135(32 400) => 9 (50it)
-// 480x270(129 600) => 5 (50it)
-// 1920x1080(2 073 600) => 3 (50it)
+// 47x28(1 316) =>  (100it)
+// 120x67(8 040) =>  (100it)
+// 240x135(32 400) =>  (100it)
+// 480x270(129 600) =>  (100it)
+// 1920x1080(2 073 600) =>  (100it)
 
 #include <iostream>
 #include <iomanip>
@@ -37,7 +37,7 @@ class Mandelbrot
 		mpf_t atomic_w, atomic_h;
 		int im_width, im_height, iterations;
 		int surEchantillonage;
-		double Threshold;
+		double Threshold_1, Threshold_2;
 		int color;
 		cv::Mat *divMat, *img, *sEMat;
 		char* rep;

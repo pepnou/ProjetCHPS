@@ -12,7 +12,8 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, i
 	mpf_set(this->width, w);
 	mpf_set(this->height, h);
 	
-	this->Threshold = 125.7071478402/(pow((im_w*im_h),0.2597528761));
+	this->Threshold_1 = 125.7071478402/(pow((im_w*im_h),0.2597528761));
+	//this->Threshold_2 = 4/*125.7071478402/(pow((im_w*im_h),0.2597528761))*/;
 	//  atomic_w = width / (im_width * surEchantillonage)
 	//  atomic_h = height / (im_height * surEchantillonage)
 	mpf_div_ui(atomic_w, this->width, this->im_width*this->surEchantillonage);
@@ -551,11 +552,14 @@ void Mandelbrot::draw()
 void Mandelbrot::save()
 {
 	matSave( this->img, this->rep);
-	if(mpf_cmp_ui(this->pos_y, 0) != 0)
+
+	
+
+	/*if(mpf_cmp_ui(this->pos_y, 0) != 0)
 	{
 		flip( *(this->img), *(this->img), 0);
 		matSave( this->img, this->rep);
-	}
+	}*/
 }
 
 bool Mandelbrot::IsGood(){
@@ -576,14 +580,15 @@ bool Mandelbrot::IsGood(){
 	delete src_gray;
 	delete detected_edges;
 
-	if(res >= this->Threshold)
+	if(res>=Threshold_1)
 		return true;
 	else
 		return false;
 }
 
 
-bool Mandelbrot::IsGood_2(bool* filtre){
+bool Mandelbrot::IsGood_2(bool* filtre)
+{
 
 	bool continue_y_or_n;
 
@@ -602,13 +607,16 @@ bool Mandelbrot::IsGood_2(bool* filtre){
 
 	double res = countNonZero(*detected_edges)*255/(this->im_height*this->im_width);
 
-	if(res<this->Threshold)
+	cout<<res<<endl<<endl;
+
+	if(res<this->Threshold_1)
 		continue_y_or_n = false;
 	else
 		continue_y_or_n = true;
 
 
-	if(continue_y_or_n){
+	if(continue_y_or_n)
+	{
 
 		//https://fr.wikipedia.org/wiki/Fonction_gaussienne
 
@@ -620,8 +628,8 @@ bool Mandelbrot::IsGood_2(bool* filtre){
 		int sigma_x = x0/2;
 		int sigma_y = y0/2;
 
-		cout<<detected_edges->channels()<<endl<<endl;
-		cout<<detected_edges->elemSize1()<<endl<<endl;
+		//cout<<detected_edges->channels()<<endl<<endl;
+		//cout<<detected_edges->elemSize1()<<endl<<endl;
 
 		/*cout<<*detected_edges<<endl<<endl;
 
@@ -655,12 +663,13 @@ bool Mandelbrot::IsGood_2(bool* filtre){
 		/*cout<<endl;
 		cout<<endl;*/
 
-		matSave( detected_edges, "ca_va_plus");
+		matSave( detected_edges, "contours_filtrés");
 
 		res = countNonZero(*detected_edges)*255/(this->im_height*this->im_width);
 
+		cout<<res<<endl<<endl;
 
-		if(res >= this->Threshold)
+		if(res >= this->Threshold_1)
 			*filtre = true;
 		else
 			*filtre = false;

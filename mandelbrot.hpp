@@ -75,6 +75,7 @@ class Mandelbrot
 		void draw();
 		// void draw2();
 		void save();
+		void animation();
 		bool IsGood();
 		void IterUp();
 		bool IsGood_2(bool* filtre);

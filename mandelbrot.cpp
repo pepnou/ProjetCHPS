@@ -1,11 +1,12 @@
 #include "mandelbrot.hpp"
 
+using namespace VideoWriter;
 using namespace cv;
 using namespace std;
 
 Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations, int color, Mpmc* mpmc, char* rep) : surEchantillonage(supSample), im_width(im_w), im_height(im_h), iterations(iterations), color(color), mpmc(mpmc)
 {
-	mpf_inits(this->pos_x, this->pos_y, this->width, this->height, this->atomic_w, this->atomic_h, NULL);
+	mpf_inits(this->pos_x, this->pos_y, F, this->atomic_w, this->atomic_h, NULL);
 	
 	tasks.store(0);
 
@@ -772,6 +773,56 @@ void Mandelbrot::save()
 		flip( *(this->img), *(this->img), 0);
 		matSave( this->img, this->rep);
 	}*/
+}
+
+void Mandelbrot::animation()
+{
+	static int num = 0;
+
+	if(num == 0)
+	{
+		sprintf( nom_img, "mkdir -p ../img/%s", rep);
+		system(nom_img);
+	}
+
+	vid video(this->img,CV_FOURCC('M','J','P','G'),10, Size(this->width, this->height));
+
+	char nom_img[128];
+	sprintf( nom_img, "../img/%s/mandel%d.png", rep, num++);
+	cout<<"calculating : "<<nom_img<<endl;
+
+
+	while(condition)
+	{
+		//boom boom, refaire la matrice avec plus d'iterations
+		vid_save(Mat* mat/*arguments?*/);
+	}
+
+	#include "vid_save.hpp"
+
+
+	void vid_save(Mat* mat/*arguments ?*/)
+	{
+		static int num = 0;
+
+		if(num == 0)
+		{
+			sprintf( nom_img, "mkdir -p ../img/%s", rep);
+			system(nom_img);
+		}
+
+		try
+	    {
+	    	vid<<this->img;
+	        write(const Mat& image);
+	    }
+	    catch (const Exception& ex)
+	    {
+	        fprintf(stderr, "Exception adding frame to vid : %s\n", ex.what());
+	    }
+	}
+
+	cou<<"done"<<endl;
 }
 
 bool Mandelbrot::IsGood(){

@@ -11,8 +11,12 @@ void matSave(Mat* mat, char* rep)
     compression_params.push_back(9);
 	
 	char nom_img[128];
-	sprintf( nom_img, "mkdir -p ../img/%s", rep);
-	system(nom_img);
+	if(num == 0)
+	{
+		sprintf( nom_img, "mkdir -p ../img/%s", rep);
+		system(nom_img);
+	}
+	
 	sprintf( nom_img, "../img/%s/mandel%d.png", rep, num++);
 	cout<<nom_img<<endl;
 	try

@@ -1,6 +1,4 @@
-Nom des png avec les coordonnée de l'image dans un txt
-
-"color = 1" a changer en "color = rainbow" ou "color = jaune_bleu" ...
+fichier text pour les co de chaque image generée
 
 parametre dans la ligne de commande (boost)
 

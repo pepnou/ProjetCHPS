@@ -8,6 +8,7 @@ void ntm(void* tg)
 
 int main(int argc, char** argv)
 {
+
 	/*namespace po = boost::program_options;
 	
 	po::options_description options("Options");
@@ -36,8 +37,17 @@ int main(int argc, char** argv)
 	//MyThreads* MT = new MyThreads(1);
 	Mpmc* mpmc = MT->getMpmc();
 
+	//C'EST ICI QUE TU CHANGES LES PARAMETRES POUR CHANGER LE RESULTAT FINAL BONHOMME !
+	int im_w = 2*1920, im_h = 2*1080, surech = 4, iteration = 300, enough = 1, color = 1;
+	//algo couleur :
+	// 1 -> normal arc en ciel
+	// 2 -> bleu blanc jaune noir
+ 	// 3 -> arc en ciel forme kirby
 
+<<<<<<< HEAD
 	int im_w = 96, im_h = 54, surech = 1, iteration = 100, enough = 10, color = 1;
+=======
+>>>>>>> bb0f3b086ac8b9f59b14634209c6753ade84ff4d
 
 	//coordonnée de debut de zoom et taille de la zone de zoomage
 	mpf_init_set_d( x, -0.5);
@@ -52,8 +62,9 @@ int main(int argc, char** argv)
 	tick = rdtsc();
 	M.dichotomie(enough);
 	cout << rdtsc() - tick << endl;
-	
-	/*tick = rdtsc();
+
+	tick = rdtsc();/*
+
 	M.escapeSpeedCalcThread2();
 	M.draw();
 	M.save();
@@ -64,6 +75,7 @@ int main(int argc, char** argv)
 	M.draw();
 	M.save();
 	cout << rdtsc() - tick << endl;*/
+
 	
 	delete MT;
 	mpf_clears( x, y, w, h, NULL);	

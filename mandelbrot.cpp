@@ -496,7 +496,7 @@ void CallThreadCalc(void* arg)
 	args->M->threadCalc4(arg);
 }
 
-#include<fstream>
+//#include<fstream>
 void Mandelbrot::threadCalc4(void* arg)
 {
 	//stringstream tmp2(""); tmp2 << "dbg_" << this_thread::get_id();

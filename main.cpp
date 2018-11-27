@@ -7,11 +7,15 @@ namespace po = boost::program_options;
 
 int main(int argc, char** argv)
 {
+	mpf_set_default_prec(MAX_PREC);
+	//10^-618
+
 	int im_w = 1920, im_h = 1080, surech = 4, iteration = 100, enough = 1, color = RAINBOW;
 	int nbt = thread::hardware_concurrency();
 	bool verbose = false;
 	
 	mpf_t x, y, w, h;
+
 	/*mpf_init_set_d( x, -0.5);
 	mpf_init_set_d( y, 0.0);
 	mpf_init_set_d( w, 3);
@@ -89,12 +93,34 @@ int main(int argc, char** argv)
 
 		if (vm.count("width"))
 		{
+			// 2^x > 10^n
+			// x > log2(10^n) = n*log2(10) = n*ln(10)/ln(2)
+
+			int prec = ceil(vm["width"].as<string>().length()*log(10)/log(2));
+			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
+			prec = (prec < 64)?64:prec;
+			prec = (prec > MAX_PREC)?MAX_PREC:prec;
+
+			mpf_set_prec_raw( w, prec);
+			mpf_set_prec( w, prec);
+
 			mpf_set_str( w, vm["width"].as<string>().c_str(), 10);
 		}
 		
 		if (vm.count("height"))
 		{
-			mpf_set_str( h, vm["height"].as<string>().c_str(), 10);
+			// 2^x > 10^n
+			// x > log2(10^n) = n*log2(10) = n*ln(10)/ln(2)
+
+			int prec = ceil(vm["width"].as<string>().length()*log(10)/log(2));
+			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
+			prec = (prec < 64)?64:prec;
+			prec = (prec > MAX_PREC)?MAX_PREC:prec;
+
+			mpf_set_prec_raw( w, prec);
+			mpf_set_prec( h, prec);
+
+			mpf_set_str( h, vm["width"].as<string>().c_str(), 10);
 		}
 		
 		if (vm.count("color"))
@@ -264,8 +290,6 @@ int main(int argc, char** argv)
 	{
 		std::cout << E.what() << std::endl;
 	}
-
-
 
 	MyThreads* MT = new MyThreads(nbt);
 	Mpmc* mpmc = MT->getMpmc();

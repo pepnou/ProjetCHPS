@@ -32,6 +32,7 @@ int main(int argc, char** argv)
 		generic.add_options()
 			("help", ": describe arguments")
 			("verbose,v", ": be verbose")
+			("config,c", ": only generate config file")
 			;
 
 		po::options_description config("Configuration");
@@ -112,7 +113,7 @@ int main(int argc, char** argv)
 			// 2^x > 10^n
 			// x > log2(10^n) = n*log2(10) = n*ln(10)/ln(2)
 
-			int prec = ceil(vm["width"].as<string>().length()*log(10)/log(2));
+			int prec = ceil(vm["height"].as<string>().length()*log(10)/log(2));
 			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
 			prec = (prec < 64)?64:prec;
 			prec = (prec > MAX_PREC)?MAX_PREC:prec;
@@ -120,7 +121,7 @@ int main(int argc, char** argv)
 			mpf_set_prec_raw( w, prec);
 			mpf_set_prec( h, prec);
 
-			mpf_set_str( h, vm["width"].as<string>().c_str(), 10);
+			mpf_set_str( h, vm["height"].as<string>().c_str(), 10);
 		}
 		
 		if (vm.count("color"))
@@ -222,7 +223,7 @@ int main(int argc, char** argv)
 		}
 
 
-		if (vm2.count("color-help"))
+		if (vm2.count("help-color"))
 		{
 			cout<< "This option allows you to choose from the three currently implemented coloring algorithm, it should only take a number between 1 et 3" << endl
 				<< "\t1: This algorithm take the escape speed time of a point (or multiple if you are using the super sampling), reduce it between 0 et 360 using a modulo and then use it as hue in the hsb color representation" << endl
@@ -232,7 +233,7 @@ int main(int argc, char** argv)
 			exit(0);
 		}
 
-		if (vm2.count("thread-help"))
+		if (vm2.count("help-thread"))
 		{
 			cout<< "This option allows you to choose the maximum number of thread created by the program." << endl
 				<< "Note that one more thread is created to explore the fractal and create tasks for the other thread." << endl
@@ -242,7 +243,7 @@ int main(int argc, char** argv)
 			exit(0);
 		}
 
-		if (vm2.count("thread-help"))
+		if (vm2.count("help-dimension"))
 		{
 			cout<< "This option allows yout to choose the width and the height of the current fractal zone in the complex plane." << endl
 				<< "Note that if the ratio of the image is different than the one of the complex plan, generated images will be out of shape." << endl
@@ -285,6 +286,11 @@ int main(int argc, char** argv)
 			<< "enough=" << enough << endl
 			<< "super-sampling=" << surech << endl
 			<< "thread=" << nbt << endl;
+
+		if (vm2.count("config"))
+		{
+			exit(0);
+		}
 	}
 	catch(std::exception& E)
 	{

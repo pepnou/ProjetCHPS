@@ -186,11 +186,33 @@ int main(int argc, char** argv)
 
 		if (vm2.count("width"))
 		{
+			// 2^x > 10^n
+			// x > log2(10^n) = n*log2(10) = n*ln(10)/ln(2)
+
+			int prec = ceil(vm2["width"].as<string>().length()*log(10)/log(2));
+			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
+			prec = (prec < 64)?64:prec;
+			prec = (prec > MAX_PREC)?MAX_PREC:prec;
+
+			mpf_set_prec_raw( w, prec);
+			mpf_set_prec( w, prec);
+
 			mpf_set_str( w, vm2["width"].as<string>().c_str(), 10);
 		}
 		
 		if (vm2.count("height"))
 		{
+			// 2^x > 10^n
+			// x > log2(10^n) = n*log2(10) = n*ln(10)/ln(2)
+
+			int prec = ceil(vm2["height"].as<string>().length()*log(10)/log(2));
+			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
+			prec = (prec < 64)?64:prec;
+			prec = (prec > MAX_PREC)?MAX_PREC:prec;
+
+			mpf_set_prec_raw( w, prec);
+			mpf_set_prec( h, prec);
+
 			mpf_set_str( h, vm2["height"].as<string>().c_str(), 10);
 		}
 		

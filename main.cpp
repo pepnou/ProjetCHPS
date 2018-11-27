@@ -3,34 +3,8 @@
 using namespace cv;
 using namespace std;
 
-void ntm(void* tg)
-{}
-
 int main(int argc, char** argv)
 {
-
-	/*namespace po = boost::program_options;
-	
-	po::options_description options("Options");
-	options.add_options()
-	("help,h", "describe arguments")
-	("verbose,v", "be verbose");
-	
-	po::positional_options_description positional;
-
-	po::variables_map vm;
-	po::store(po::command_line_parser(argc, argv)
-		.options(options)
-		.positional(positional)
-		.run(),
-		vm);
-	po::notify(vm);
-
-	if (vm.count("help")) {
-	std::cout << options << "\n";
-	exit(0);
-	}*/
-	
 	mpf_t x, y, w, h;
 	const int NBR_THREADS = std::thread::hardware_concurrency();
 	MyThreads* MT = new MyThreads(NBR_THREADS);
@@ -38,16 +12,11 @@ int main(int argc, char** argv)
 	Mpmc* mpmc = MT->getMpmc();
 
 	//C'EST ICI QUE TU CHANGES LES PARAMETRES POUR CHANGER LE RESULTAT FINAL BONHOMME !
-	int im_w = 2*1920, im_h = 2*1080, surech = 4, iteration = 300, enough = 1, color = 1;
+	int im_w = 1920, im_h = 1080, surech = 4, iteration = 300, enough = 1, color = 1;
 	//algo couleur :
 	// 1 -> normal arc en ciel
 	// 2 -> bleu blanc jaune noir
  	// 3 -> arc en ciel forme kirby
-
-<<<<<<< HEAD
-	int im_w = 96, im_h = 54, surech = 1, iteration = 100, enough = 10, color = 1;
-=======
->>>>>>> bb0f3b086ac8b9f59b14634209c6753ade84ff4d
 
 	//coordonnée de debut de zoom et taille de la zone de zoomage
 	mpf_init_set_d( x, -0.5);
@@ -62,19 +31,6 @@ int main(int argc, char** argv)
 	tick = rdtsc();
 	M.dichotomie(enough);
 	cout << rdtsc() - tick << endl;
-
-	tick = rdtsc();/*
-
-	M.escapeSpeedCalcThread2();
-	M.draw();
-	M.save();
-	cout << rdtsc() - tick << endl;
-
-	tick = rdtsc();
-	M.escapeSpeedCalcThread3();
-	M.draw();
-	M.save();
-	cout << rdtsc() - tick << endl;*/
 
 	
 	delete MT;

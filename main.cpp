@@ -366,17 +366,14 @@ int main(int argc, char** argv)
 	}
 
 
-	int* divs = { 2};
-
-
 	MyThreads* MT = new MyThreads(nbt);
 	Mpmc* mpmc = MT->getMpmc();
-	Mandelbrot M( x, mpf_get_prec(x), y, mpf_get_prec(x), w, h, im_w, im_h, surech, iteration, color, mpmc);
+	Mandelbrot M( x, y, w, h, im_w, im_h, surech, iteration, color, mpmc);
 
 	uint64_t tick;
 	
 	tick = rdtsc();
-	M.dichotomie( enough, 1, );
+	M.dichotomie( enough, 0);
 	if(verbose)cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
 	
 	delete MT;

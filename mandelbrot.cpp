@@ -1109,6 +1109,37 @@ void Mandelbrot::dichotomie(int enough, int prec)
 	}
 }
 
+void Mandelbrot::video()
+{
+	stringstream videoName("");
+	videoName << "mkdir -p ../video/" << this->rep;
+	system(videoName.str().c_str());
+
+	videoName.str("");
+
+	videoName << "../video/" << this->rep << "/test.avi";
+	cout  << videoName.str().c_str() << endl;
+
+
+
+	Size S = Size(this->im_width*this->surEchantillonage, this->im_height*this->surEchantillonage);
+	VideoWriter outputVideo;
+
+	int ex = outputVideo.fourcc('H','2','6','4');
+
+	outputVideo.open(videoName.str().c_str(), ex, 10, S, true);
+	
+	if (!outputVideo.isOpened())
+	{
+		cout  << "Could not open the output video for write. " << endl;
+	}
+	else
+	{
+
+	}
+	del_mem();
+}
+
 /*Mandelbrot::Mandelbrot ImageHD(string &nomImage_HD)
 {
 

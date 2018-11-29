@@ -13,7 +13,7 @@ int main(int argc, char** argv)
 	//C'EST ICI QUE TU CHANGES LES PARAMETRES POUR CHANGER LE RESULTAT FINAL BONHOMME !
 	int im_w = 1920, im_h = 1080, surech = 4, iteration = 100, enough = 1, color = RAINBOW;
 	int nbt = thread::hardware_concurrency();
-	bool verbose = false;
+	bool verbose = false, video = false;
 	
 	mpf_t x, y, w, h;
 
@@ -34,6 +34,7 @@ int main(int argc, char** argv)
 			("help", ": describe arguments")
 			("verbose,v", ": be verbose")
 			("config,c", ": only generate config file")
+			("video,V", ": generate videos instead of images")
 			;
 
 		po::options_description config("Configuration");
@@ -306,6 +307,11 @@ int main(int argc, char** argv)
 			exit(0);
 		}
 
+		if (vm2.count("video"))
+		{
+			video = true;
+		}
+
 
 
 		mp_exp_t e1, e2, e3, e4;
@@ -373,7 +379,10 @@ int main(int argc, char** argv)
 	uint64_t tick;
 	
 	tick = rdtsc();
-	M.dichotomie( enough, 0);
+	if(!video)
+		M.dichotomie( enough, 0);
+	else
+		M.video();
 	if(verbose)cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
 	
 	delete MT;

@@ -81,6 +81,7 @@ class Mandelbrot
 		bool IsGood_2(bool* filtre);
 		//int DeepEnough(auto enough);
 		void dichotomie(int enough, int prec);
+		void video();
 };
 
 void CallThreadCalc(void* arg);

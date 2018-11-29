@@ -1124,12 +1124,13 @@ void Mandelbrot::video()
 
 
 
-	Size S = Size(this->im_width*this->surEchantillonage, this->im_height*this->surEchantillonage);
+	//Size S = Size(this->im_width*this->surEchantillonage, this->im_height*this->surEchantillonage);
+	Size S = Size( this->img->cols, this->img->rows);
 	VideoWriter outputVideo;
 
 	int ex = outputVideo.fourcc('H','2','6','4');
 
-	outputVideo.open(videoName.str().c_str(), ex, 10, S, true);
+	outputVideo.open(videoName.str().c_str(), ex, 20, S, true);
 	
 	if (!outputVideo.isOpened())
 	{
@@ -1206,7 +1207,7 @@ void Mandelbrot::video()
 		int iterCurrent = 1;
 
 		//do
-		for(int k = 0; k < 200; k++)
+		for(int k = 0; k < 100; k++)
 		{
 			for(int i = 0; i < this->im_width*this->surEchantillonage; i++)
 			{
@@ -1239,36 +1240,40 @@ void Mandelbrot::video()
 			this->iterations = iterCurrent;
 
 			draw();
-			save();
+			//save();
 
+			outputVideo << *(this->img);
+			outputVideo << *(this->img);
+			outputVideo << *(this->img);
 			outputVideo << *(this->img);
 
 			iterCurrent++;
 		}/* while(1);*/
 
 		mpf_clears( xsqr, ysqr, xy, mod, NULL);
-
+		
 		for(int i = 0; i < this->im_width*this->surEchantillonage; i++)
 		{
 			mpf_clear(x[i]);
 
 			for(int j = 0; j < this->im_height*this->surEchantillonage; j++)
 			{
-				mpf_clear(y[i]);
-
 				mpf_clear(iter[i][j][0]);
 				mpf_clear(iter[i][j][1]);
-
+				
 				delete [] iter[i][j];
 			}
 			delete [] iter[i];
 		}
 		delete [] iter;
-		
+
+		for(int j = 0; j < this->im_height*this->surEchantillonage; j++)
+			mpf_clear(y[j]);
+
 		delete [] x;
 		delete [] y;
-
 	}
+	
 	del_mem();
 }
 

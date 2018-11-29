@@ -372,20 +372,28 @@ int main(int argc, char** argv)
 	}
 
 
-	MyThreads* MT = new MyThreads(nbt);
-	Mpmc* mpmc = MT->getMpmc();
-	Mandelbrot M( x, y, w, h, im_w, im_h, surech, iteration, color, mpmc);
-
-	uint64_t tick;
-	
-	tick = rdtsc();
 	if(!video)
+	{
+		MyThreads* MT = new MyThreads(nbt);
+		Mpmc* mpmc = MT->getMpmc();
+		Mandelbrot M( x, y, w, h, im_w, im_h, surech, iteration, color, mpmc);
+
+		uint64_t tick = rdtsc();
 		M.dichotomie( enough, 0);
+		if(verbose)cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
+
+		delete MT;
+	}
 	else
+	{
+		Mandelbrot M( x, y, w, h, im_w, im_h, surech, iteration, color, nullptr);
+
+		uint64_t tick = rdtsc();
 		M.video();
-	if(verbose)cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
+		if(verbose)cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
+	}
+
 	
-	delete MT;
 	mpf_clears( x, y, w, h, NULL);
 	exit(0);
 }

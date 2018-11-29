@@ -1036,6 +1036,11 @@ void Mandelbrot::dichotomie(int enough, int n_div, int* divs)
 
 			for(int i = 0; i < n_div; i++)
 			{
+				mpf_t pos* = new mpf_t[divs[i]*2 + 2];
+
+				for(int j = 0; j < divs[i]*2 + 2; j++)
+					mpf_init = pos[j];
+
 
 				mpf_t nx1, ny1, nx2, ny2, nx3, ny3, nx4, ny4, nh, nw, temp;
 				mpf_inits(nx1, ny1, nx2, ny2, nx3, ny3, nx4, ny4, nh, nw, temp, NULL);

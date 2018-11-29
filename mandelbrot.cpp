@@ -1,12 +1,12 @@
 #include "mandelbrot.hpp"
 
-using namespace VideoWriter;
+//using namespace VideoWriter;
 using namespace cv;
 using namespace std;
 
 Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations, int color, Mpmc* mpmc, char* rep) : surEchantillonage(supSample), im_width(im_w), im_height(im_h), iterations(iterations), color(color), mpmc(mpmc)
 {
-	mpf_inits(this->pos_x, this->pos_y, F, this->atomic_w, this->atomic_h, NULL);
+	mpf_inits(this->pos_x, this->pos_y, this->atomic_w, this->atomic_h, NULL);
 	
 	tasks.store(0);
 
@@ -775,7 +775,7 @@ void Mandelbrot::save()
 	}*/
 }
 
-void Mandelbrot::animation()
+/*void Mandelbrot::animation()
 {
 	static int num = 0;
 
@@ -795,13 +795,13 @@ void Mandelbrot::animation()
 	while(condition)
 	{
 		//boom boom, refaire la matrice avec plus d'iterations
-		vid_save(Mat* mat/*arguments?*/);
-	}
+		vid_save(Mat* matarguments?);
+	}*/
 
-	#include "vid_save.hpp"
+	//#include "vid_save.hpp"
 
 
-	void vid_save(Mat* mat/*arguments ?*/)
+	/*void vid_save(Mat* matarguments ?)
 	{
 		static int num = 0;
 
@@ -823,7 +823,7 @@ void Mandelbrot::animation()
 	}
 
 	cou<<"done"<<endl;
-}
+}*/
 
 bool Mandelbrot::IsGood(){
 	Mat* src_gray = new Mat(im_height, im_width, CV_8UC3);
@@ -1020,7 +1020,7 @@ void worthsaving(){
 	return true;		//pas assez, on continue
 }*/
 
-void Mandelbrot::dichotomie(int enough)
+void Mandelbrot::dichotomie(int enough/*, int div*/)
 {
 	//cout<<this->im_height<<endl;
 	this->escapeSpeedCalcThread4();

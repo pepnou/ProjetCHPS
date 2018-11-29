@@ -75,12 +75,12 @@ class Mandelbrot
 		void draw();
 		// void draw2();
 		void save();
-		void animation();
+		//void animation();
 		bool IsGood();
 		void IterUp();
 		bool IsGood_2(bool* filtre);
 		//int DeepEnough(auto enough);
-		void dichotomie(int enough);
+		void dichotomie(int enough/*, int div*/);
 };
 
 void CallThreadCalc(void* arg);

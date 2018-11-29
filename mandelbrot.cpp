@@ -4,13 +4,15 @@
 using namespace cv;
 using namespace std;
 
-Mandelbrot::Mandelbrot(mpf_t x, int prec_x, mpf_t y, int prec_y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations, int color, Mpmc* mpmc, char* rep) : surEchantillonage(supSample), im_width(im_w), im_height(im_h), iterations(iterations), color(color), mpmc(mpmc)
+Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations, int color, Mpmc* mpmc, char* rep) : surEchantillonage(supSample), im_width(im_w), im_height(im_h), iterations(iterations), color(color), mpmc(mpmc)
 {
-	mpf_init2(this->x, prec_x);
-	mpf_init2(this->y, prec_y);
+	mpf_init2(this->pos_x, mpf_get_prec(x));
+	mpf_init2(this->pos_y, mpf_get_prec(y));
 	
 	mpf_init2(this->width, mpf_get_prec(w));
 	mpf_init2(this->height, mpf_get_prec(h));
+
+	//ecrire un truc pour que ca compile ici a cause de l'autre connard
 
 	tasks.store(0);
 
@@ -1055,106 +1057,163 @@ void worthsaving(){
 	return true;		//pas assez, on continue
 }*/
 
-void Mandelbrot::dichotomie(int enough, int n_div, int* divs)
+void Mandelbrot::dichotomie(int enough)
 
 {
-	//cout<<this->im_height<<endl;
 	this->escapeSpeedCalcThread4();
-	// this->escapeSpeedCalcThread3();
-	// this->escapeSpeedCalcThread2();
 
 	this->draw();
-	//M.save();
 
 	bool filtre;
 
 	if(this->IsGood_2(&filtre)/*this->IsGood*/)
 	{
-		//this->save();
-		//if(filtre)
-			this->save();
 
-		//this->worthsaving();
-			
-		this->IterUp();
+		if(filtre)
+			this->save();
 
 		if(--enough /*this->DeepEnough(enough) || worthcontinue()*/)
 		{	
 			//augmente la nombre d'iteration max, ceci est un commentaire Nassim tu le vois celui la ?
 			this->IterUp();
 
-			/*mpf_t pos** = new mpf_t*[n_div];
-				for(int j = 0; j < n_div; j++)
-					pos[j] = new mpf_t[divs[j]*2 + 2];*/
 
-			for(int i = 0; i < n_div; i++)
+			mpf_t nx1, ny1, nx2, ny3, nh, nw, temp;
+			mpf_inits(nx1, ny1, nx2, ny3, nh, nw, temp, NULL);
+			
+			// newx = x - this->width/2
+			mpf_div_ui(temp, this->width, 4);		//calcul nouveaux x pour reiterer
+			mpf_sub(nx1, this->pos_x, temp);
+			mpf_add(nx2, this->pos_x, temp);
+			
+			// newy = y + this->height/2
+			mpf_div_ui(temp, this->height, 4);		//calcul nouveaux y
+			mpf_add(ny1, this->pos_y, temp);
+			mpf_sub(ny3, this->pos_y, temp);
+			
+			// newh = h/2
+			mpf_div_ui(nh, this->height, 2);
+			
+			//neww = w/2
+			mpf_div_ui(nw, this->width, 2);
+
+			//int surEchantillonage_bis = this->surEchantillonage, im_width_bis = this->im_width, im_height_bis = this->im_height, iterations_bis = this->iterations;
+			this->del_mem();
+			//delete l'image ou on est
+			
+			if(mpf_cmp_ui(this->pos_y, 0) != 0)
 			{
-				mpf_t pos* = new mpf_t[divs[i]*2 + 2];
-
-				for(int j = 0; j < divs[i]*2 + 2; j++)
-					mpf_init = pos[j];
-
-
-				mpf_t nx1, ny1, nx2, ny2, nx3, ny3, nx4, ny4, nh, nw, temp;
-				mpf_inits(nx1, ny1, nx2, ny2, nx3, ny3, nx4, ny4, nh, nw, temp, NULL);
+				Mandelbrot* M1 = new Mandelbrot(nx1, ny1, nw, nh, im_width, im_height, surEchantillonage, iterations, this->color, this->mpmc, this->rep);		//en haut a gauche
+				M1->dichotomie(enough);
+				delete M1;
 				
-				// newx = x - x/2 & y + y/2
-				mpf_div_ui(temp, this->width, 4);		//calcul nouveaux x pour reiterer
-				mpf_sub(nx1, this->pos_x, temp);
-				mpf_add(nx2, this->pos_x, temp);
-				mpf_sub(nx3, this->pos_x, temp);
-				mpf_add(nx4, this->pos_x, temp);
-				
-				mpf_div_ui(temp, this->height, 4);		//calcul nouveaux y
-				mpf_add(ny1, this->pos_y, temp);
-				mpf_add(ny2, this->pos_y, temp);
-				mpf_sub(ny3, this->pos_y, temp);
-				mpf_sub(ny4, this->pos_y, temp);
-				
-				// newh = h/2
-				mpf_div_ui(nh, this->height, 2);
-				
-				//neww = w/2
-				mpf_div_ui(nw, this->width, 2);
-
-				//new iterations
-				this->IterUp();
-
-				//int surEchantillonage_bis = this->surEchantillonage, im_width_bis = this->im_width, im_height_bis = this->im_height, iterations_bis = this->iterations;
-				this->del_mem();
-				//delete l'image ou on est
-				
-				if(mpf_cmp_ui(this->pos_y, 0) != 0)
-				{
-					Mandelbrot* M1 = new Mandelbrot(nx1, ny1, nw, nh, im_width, im_height, surEchantillonage, iterations, this->color, this->mpmc, this->rep);		//en haut a gauche
-					M1->dichotomie(enough, n_div, divs);
-					delete M1;
-					
-					Mandelbrot* M2 = new Mandelbrot(nx2, ny2, nw, nh, im_width, im_height, surEchantillonage, iterations, this->color, this->mpmc, this->rep);		//en haut a droite
-					M2->dichotomie(enough, n_div, divs);
-					delete M2;
-				}
-
-				Mandelbrot* M3 = new Mandelbrot(nx3, ny3, nw, nh,im_width, im_height, surEchantillonage, iterations, this->color, this->mpmc, this->rep);			//en bas a gauche
-				M3->dichotomie(enough, n_div, divs);
-				delete M3;
-					
-				Mandelbrot* M4 = new Mandelbrot(nx4, ny4, nw, nh, im_width, im_height, surEchantillonage, iterations, this->color, this->mpmc, this->rep);		//en bas a droite
-				M4->dichotomie(enough, n_div, divs);
-				delete M4;
-
-
-				mpf_clears(nx1, ny1, nx2, ny2, nx3, ny3, nx4, ny4, nh, nw, temp, NULL);
+				Mandelbrot* M2 = new Mandelbrot(nx2, ny1, nw, nh, im_width, im_height, surEchantillonage, iterations, this->color, this->mpmc, this->rep);		//en haut a droite
+				M2->dichotomie(enough);
+				delete M2;
 			}
+
+			Mandelbrot* M3 = new Mandelbrot(nx1, ny3, nw, nh,im_width, im_height, surEchantillonage, iterations, this->color, this->mpmc, this->rep);			//en bas a gauche
+			M3->dichotomie(enough);
+			delete M3;
+				
+			Mandelbrot* M4 = new Mandelbrot(nx2, ny3, nw, nh, im_width, im_height, surEchantillonage, iterations, this->color, this->mpmc, this->rep);		//en bas a droite
+			M4->dichotomie(enough);
+			delete M4;
+
+
+			mpf_clears(nx1, ny1, nx2, ny3, nh, nw, temp, NULL);
 		}
 	}
 }
 
-/*Mandelbrot::Mandelbrot ImageHD(string &nomImage_HD)
+
+void Mandelbrot::dichotomie2(int enough, int n_div, int* divs)
 {
+	this->escapeSpeedCalcThread4();
 
+	this->draw();
 
-}*/
+	bool filtre;
+
+	if(this->IsGood_2(&filtre)/*this->IsGood*/)
+	{
+		if(filtre)
+			this->save();
+
+		if(--enough)
+		{	
+			//augmente la nombre d'iteration max, ceci est un commentaire Nassim tu le vois celui la ?
+			this->IterUp();
+
+			for(int i = 0; i < n_div; i++)
+			{
+				mpf_t temp, delta_x, delta_y;
+				mpf_inits(temp, delta_x, delta_y, NULL);
+
+				mpf_t* tab_x = new mpf_t[divs[i]];
+				mpf_t* tab_y = new mpf_t[divs[i]];
+
+				//initialise chacun des elements du tableau avant de pouvoir s'en servir
+				for (int init = 0; init < divs[i]; ++init)
+				{
+					mpf_init(tab_x[init]);
+					mpf_init(tab_y[init]);
+				}
+
+					//tab_x[0] = pos_x - pos_x/ndiv*2
+				mpf_div_ui(temp, this->width, n_div*2);
+				mpf_sub(tab_x[0], this->pos_x, temp);
+
+					//tab_y[0] = pos_y - pos_y/ndiv*2
+				mpf_div_ui(temp, this->height, n_div*2);
+				mpf_sub(tab_y[0], this->pos_y, temp);
+
+					//calcul de delta_x, la distance entre de nouveaux points en x
+				mpf_div_ui(delta_x, this->width, n_div);
+					//calcul de delta_x, la distance entre de nouveaux points en x
+				mpf_div_ui(delta_y, this->height, n_div);
+
+				for (int c = 1; c < divs[i]; ++c)
+				{
+					//tab_x[c] = tab_x[0] + c*delta_x
+					mpf_mul_ui(temp, delta_x, c);
+					mpf_add(tab_y[c], tab_y[0], temp);
+
+					//tab_y[c] = tab_y[0] + c*delta_y
+					mpf_mul_ui(temp, delta_y, c);
+					mpf_add(tab_y[c], tab_y[0], temp);
+				}
+
+				//delete l'image ou on est
+				this->del_mem();
+
+				for (int x = 0; x < n_div; ++x)
+				{
+					for (int y = 0; y < n_div; ++y)
+					{
+						if(mpf_cmp_ui(this->pos_y, 0) != 0)
+						{
+						Mandelbrot* M = new Mandelbrot(tab_x[x], tab_y[y], delta_x, delta_y ,im_width, im_height, surEchantillonage, iterations, this->color, this->mpmc, this->rep);			//en bas a gauche
+						M->dichotomie2(enough, n_div, divs);
+						delete M;
+						}
+					}
+				}
+
+				//delete chacun des element du tableau avant pour pouvoir virer le tableau
+				for (int del = 0; del < divs[i]; ++del)
+				{
+					mpf_clear(tab_x[del]);
+					mpf_clear(tab_y[del]);
+				}
+
+				delete [] tab_y;
+				delete [] tab_y;
+				mpf_clears(temp, delta_x, delta_y, NULL);
+			}
+		}
+	}
+}
 
 
 /*

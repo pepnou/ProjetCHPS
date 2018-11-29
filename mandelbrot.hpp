@@ -65,7 +65,7 @@ class Mandelbrot
 		friend void CallThreadCalc(void* arg);
 		
 	public:
-		Mandelbrot(mpf_t x, int prec_x, mpf_t y, int prec_y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations, int color, Mpmc* mpmc,  char* rep = nullptr);
+		Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations, int color, Mpmc* mpmc,  char* rep = nullptr);
 		~Mandelbrot();
 		void del_mem();
 		void escapeSpeedCalc();
@@ -81,7 +81,8 @@ class Mandelbrot
 		void IterUp();
 		bool IsGood_2(bool* filtre);
 		//int DeepEnough(auto enough);
-		void dichotomie(int enough, int n_div, int* divs);
+		void dichotomie(int enough);
+		void dichotomie2(int enough, int n_div, int* divs);
 	    //FILE* fichier;
 	    // Mandelbrot ImageHD(string &nomImage_HD);
 };

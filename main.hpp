@@ -8,4 +8,4 @@
 #define JAUNE_BLEU 2
 #define SINCOS 3
 
-#define MAX_PREC 2048
+//#define MAX_PREC 2048

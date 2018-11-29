@@ -7,7 +7,7 @@ namespace po = boost::program_options;
 
 int main(int argc, char** argv)
 {
-	mpf_set_default_prec(MAX_PREC);
+	//mpf_set_default_prec(MAX_PREC);
 	//10^-618
 
 	//C'EST ICI QUE TU CHANGES LES PARAMETRES POUR CHANGER LE RESULTAT FINAL BONHOMME !
@@ -75,11 +75,27 @@ int main(int argc, char** argv)
 
 		if (vm.count("Xposition"))
 		{
+			int prec = ceil(vm["Xposition"].as<string>().length()*log(10)/log(2));
+			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
+			prec = (prec < 64)?64:prec;
+			//prec = (prec > MAX_PREC)?MAX_PREC:prec;
+
+			mpf_set_prec_raw( x, prec);
+			mpf_set_prec( x, prec);
+
 			mpf_set_str( x, vm["Xposition"].as<string>().c_str(), 10);
 		}
 
 		if (vm.count("Yposition"))
 		{
+			int prec = ceil(vm["Yposition"].as<string>().length()*log(10)/log(2));
+			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
+			prec = (prec < 64)?64:prec;
+			//prec = (prec > MAX_PREC)?MAX_PREC:prec;
+
+			mpf_set_prec_raw( y, prec);
+			mpf_set_prec( y, prec);
+
 			mpf_set_str( y, vm["Yposition"].as<string>().c_str(), 10);
 		}
 		
@@ -101,7 +117,7 @@ int main(int argc, char** argv)
 			int prec = ceil(vm["width"].as<string>().length()*log(10)/log(2));
 			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
 			prec = (prec < 64)?64:prec;
-			prec = (prec > MAX_PREC)?MAX_PREC:prec;
+			//prec = (prec > MAX_PREC)?MAX_PREC:prec;
 
 			mpf_set_prec_raw( w, prec);
 			mpf_set_prec( w, prec);
@@ -117,7 +133,7 @@ int main(int argc, char** argv)
 			int prec = ceil(vm["height"].as<string>().length()*log(10)/log(2));
 			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
 			prec = (prec < 64)?64:prec;
-			prec = (prec > MAX_PREC)?MAX_PREC:prec;
+			//prec = (prec > MAX_PREC)?MAX_PREC:prec;
 
 			mpf_set_prec_raw( w, prec);
 			mpf_set_prec( h, prec);
@@ -167,11 +183,27 @@ int main(int argc, char** argv)
 
 		if (vm2.count("Xposition"))
 		{
+			int prec = ceil(vm2["Xposition"].as<string>().length()*log(10)/log(2));
+			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
+			prec = (prec < 64)?64:prec;
+			//prec = (prec > MAX_PREC)?MAX_PREC:prec;
+
+			mpf_set_prec_raw( x, prec);
+			mpf_set_prec( x, prec);
+
 			mpf_set_str( x, vm2["Xposition"].as<string>().c_str(), 10);
 		}
 
 		if (vm2.count("Yposition"))
 		{
+			int prec = ceil(vm2["Yposition"].as<string>().length()*log(10)/log(2));
+			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
+			prec = (prec < 64)?64:prec;
+			//prec = (prec > MAX_PREC)?MAX_PREC:prec;
+
+			mpf_set_prec_raw( y, prec);
+			mpf_set_prec( y, prec);
+
 			mpf_set_str( y, vm2["Yposition"].as<string>().c_str(), 10);
 		}
 		
@@ -193,7 +225,7 @@ int main(int argc, char** argv)
 			int prec = ceil(vm2["width"].as<string>().length()*log(10)/log(2));
 			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
 			prec = (prec < 64)?64:prec;
-			prec = (prec > MAX_PREC)?MAX_PREC:prec;
+			//prec = (prec > MAX_PREC)?MAX_PREC:prec;
 
 			mpf_set_prec_raw( w, prec);
 			mpf_set_prec( w, prec);
@@ -209,7 +241,7 @@ int main(int argc, char** argv)
 			int prec = ceil(vm2["height"].as<string>().length()*log(10)/log(2));
 			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
 			prec = (prec < 64)?64:prec;
-			prec = (prec > MAX_PREC)?MAX_PREC:prec;
+			//prec = (prec > MAX_PREC)?MAX_PREC:prec;
 
 			mpf_set_prec_raw( w, prec);
 			mpf_set_prec( h, prec);
@@ -320,14 +352,31 @@ int main(int argc, char** argv)
 		std::cout << E.what() << std::endl;
 	}
 
+
+	if(mpf_get_prec(w) > mpf_get_prec(x))
+	{
+		mpf_set_prec_raw( x, mpf_get_prec(w));
+		mpf_set_prec( x, mpf_get_prec(w));
+	}
+
+	if(mpf_get_prec(h) > mpf_get_prec(y))
+	{
+		mpf_set_prec_raw( y, mpf_get_prec(h));
+		mpf_set_prec( y, mpf_get_prec(h));
+	}
+
+
+	int* divs = { 2};
+
+
 	MyThreads* MT = new MyThreads(nbt);
 	Mpmc* mpmc = MT->getMpmc();
-	Mandelbrot M( x, y, w, h, im_w, im_h, surech, iteration, color, mpmc);
+	Mandelbrot M( x, mpf_get_prec(x), y, mpf_get_prec(x), w, h, im_w, im_h, surech, iteration, color, mpmc);
 
 	uint64_t tick;
 	
 	tick = rdtsc();
-	M.dichotomie(enough);
+	M.dichotomie( enough, 1, );
 	if(verbose)cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
 	
 	delete MT;

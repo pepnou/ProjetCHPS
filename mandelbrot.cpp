@@ -10,12 +10,16 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, i
 	mpf_init2(this->width, mpf_get_prec(w));
 	mpf_init2(this->height, mpf_get_prec(h));
 
+	mpf_init2(atomic_w, mpf_get_prec(w) + ceil(log(im_w*supSample) / log(2)));
+	mpf_init2(atomic_h, mpf_get_prec(h) + ceil(log(im_h*supSample) / log(2)));
+
 	tasks.store(0);
 
 	mpf_set(this->pos_x, x);
 	mpf_set(this->pos_y, y);
 	mpf_set(this->width, w);
 	mpf_set(this->height, h);
+
 	
 
 	this->ThresholdCont = /*125.7071478402/(pow((im_w*im_h),0.2597528761))*/ 5;

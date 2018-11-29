@@ -3,7 +3,7 @@
 using namespace cv;
 using namespace std;
 
-void matSave(Mat* mat, char* rep)
+int matSave(Mat* mat, char* rep)
 {
 	static int num = 0;
 	vector<int> compression_params;
@@ -11,13 +11,12 @@ void matSave(Mat* mat, char* rep)
     compression_params.push_back(9);
 	
 	char nom_img[128];
-	if(num == 0)
-	{
-		sprintf( nom_img, "mkdir -p ../img/%s", rep);
-		system(nom_img);
-	}
-	
-	sprintf( nom_img, "../img/%s/mandel%d.png", rep, num++);
+
+	sprintf( nom_img, "mkdir -p ../img/%s", rep);
+	system(nom_img);
+
+    sprintf( nom_img, "../img/%s/mandel%d.png", rep, num++);
+
 	cout<<nom_img<<endl;
 	try
     {
@@ -27,4 +26,5 @@ void matSave(Mat* mat, char* rep)
     {
         fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
     }
+    return num-1;
 }

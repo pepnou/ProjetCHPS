@@ -81,10 +81,10 @@ class Mandelbrot
 		void IterUp();
 		bool IsGood_2(bool* filtre);
 		//int DeepEnough(auto enough);
-		void dichotomie(int enough);
+		void dichotomie(int enough, int prec);
 		void dichotomie2(int enough, int n_div, int* divs);
-	    //FILE* fichier;
-	    // Mandelbrot ImageHD(string &nomImage_HD);
+		void video();
+
 };
 
 void CallThreadCalc(void* arg);

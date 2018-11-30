@@ -8,11 +8,19 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, i
 {
 	mpf_init2(this->pos_x, mpf_get_prec(x));
 	mpf_init2(this->pos_y, mpf_get_prec(y));
+<<<<<<< HEAD
 	
 	mpf_init2(this->width, mpf_get_prec(w));
 	mpf_init2(this->height, mpf_get_prec(h));
 
 	//ecrire un truc pour que ca compile ici a cause de l'autre connard
+=======
+	mpf_init2(this->width, mpf_get_prec(w));
+	mpf_init2(this->height, mpf_get_prec(h));
+
+	mpf_init2(atomic_w, mpf_get_prec(w) + ceil(log(im_w*supSample) / log(2)));
+	mpf_init2(atomic_h, mpf_get_prec(h) + ceil(log(im_h*supSample) / log(2)));
+>>>>>>> master
 
 	tasks.store(0);
 
@@ -20,6 +28,7 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, i
 	mpf_set(this->pos_y, y);
 	mpf_set(this->width, w);
 	mpf_set(this->height, h);
+
 	
 
 	this->ThresholdCont = /*125.7071478402/(pow((im_w*im_h),0.2597528761))*/ 5;
@@ -1053,7 +1062,11 @@ void worthsaving(){
 	return true;		//pas assez, on continue
 }*/
 
+<<<<<<< HEAD
 void Mandelbrot::dichotomie(int enough)
+=======
+void Mandelbrot::dichotomie(int enough, int prec)
+>>>>>>> master
 {
 	this->escapeSpeedCalcThread4();
 
@@ -1069,9 +1082,11 @@ void Mandelbrot::dichotomie(int enough)
 
 		if(--enough /*this->DeepEnough(enough) || worthcontinue()*/)
 		{	
+			int n_prec = prec + ceil(log(/*divs[i]*/2)/log(2));
 			//augmente la nombre d'iteration max, ceci est un commentaire Nassim tu le vois celui la ?
 			this->IterUp();
 
+<<<<<<< HEAD
 
 			mpf_t nx1, ny1, nx2, ny3, nh, nw, temp;
 			mpf_inits(nx1, ny1, nx2, ny3, nh, nw, temp, NULL);
@@ -1194,6 +1209,75 @@ void Mandelbrot::dichotomie2(int enough, int n_div, int* divs)
 						}
 					}
 				}
+=======
+			mpf_t nx1, ny1, nx2, ny2, nx3, ny3, nx4, ny4, nh, nw, temp;
+			//mpf_inits(nx1, ny1, nx2, ny2, nx3, ny3, nx4, ny4, nh, nw, temp, NULL);
+
+			if(mpf_get_prec(this->pos_x)>=mpf_get_prec(this->pos_y))
+				mpf_init2(temp, mpf_get_prec(this->pos_x) + n_prec/64);
+			else
+				mpf_init2(temp, mpf_get_prec(this->pos_y) + n_prec/64);
+
+			mpf_init2(nx1, mpf_get_prec(this->pos_x) + n_prec/64);
+			mpf_init2(nx2, mpf_get_prec(this->pos_x) + n_prec/64);
+			mpf_init2(nx3, mpf_get_prec(this->pos_x) + n_prec/64);
+			mpf_init2(nx4, mpf_get_prec(this->pos_x) + n_prec/64);
+
+			mpf_init2(ny1, mpf_get_prec(this->pos_y) + n_prec/64);
+			mpf_init2(ny2, mpf_get_prec(this->pos_y) + n_prec/64);
+			mpf_init2(ny3, mpf_get_prec(this->pos_y) + n_prec/64);
+			mpf_init2(ny4, mpf_get_prec(this->pos_y) + n_prec/64);
+
+			mpf_init2(nw, mpf_get_prec(this->width));
+			mpf_init2(nh, mpf_get_prec(this->height));
+
+			n_prec %= 64;
+			
+			// newx = x - x/2 & y + y/2
+			mpf_div_ui(temp, this->width, 4);		//calcul nouveaux x pour reiterer
+			mpf_sub(nx1, this->pos_x, temp);
+			mpf_add(nx2, this->pos_x, temp);
+			mpf_sub(nx3, this->pos_x, temp);
+			mpf_add(nx4, this->pos_x, temp);
+			
+			mpf_div_ui(temp, this->height, 4);		//calcul nouveaux y
+			mpf_add(ny1, this->pos_y, temp);
+			mpf_add(ny2, this->pos_y, temp);
+			mpf_sub(ny3, this->pos_y, temp);
+			mpf_sub(ny4, this->pos_y, temp);
+			
+			// newh = h/2
+			mpf_div_ui(nh, this->height, 2);
+			
+			//neww = w/2
+			mpf_div_ui(nw, this->width, 2);
+
+			//new iterations
+			this->IterUp();
+
+			//int surEchantillonage_bis = this->surEchantillonage, im_width_bis = this->im_width, im_height_bis = this->im_height, iterations_bis = this->iterations;
+			this->del_mem();
+			//delete l'image ou on est
+			
+			if(mpf_cmp_ui(this->pos_y, 0) != 0)
+			{
+				Mandelbrot* M1 = new Mandelbrot(nx1, ny1, nw, nh, im_width, im_height, surEchantillonage, iterations, this->color, this->mpmc, this->rep);		//en haut a gauche
+				M1->dichotomie(enough, n_prec);
+				delete M1;
+				
+				Mandelbrot* M2 = new Mandelbrot(nx2, ny2, nw, nh, im_width, im_height, surEchantillonage, iterations, this->color, this->mpmc, this->rep);		//en haut a droite
+				M2->dichotomie(enough, n_prec);
+				delete M2;
+			}
+
+			Mandelbrot* M3 = new Mandelbrot(nx3, ny3, nw, nh,im_width, im_height, surEchantillonage, iterations, this->color, this->mpmc, this->rep);			//en bas a gauche
+			M3->dichotomie(enough, n_prec);
+			delete M3;
+				
+			Mandelbrot* M4 = new Mandelbrot(nx4, ny4, nw, nh, im_width, im_height, surEchantillonage, iterations, this->color, this->mpmc, this->rep);		//en bas a droite
+			M4->dichotomie(enough, n_prec);
+			delete M4;
+>>>>>>> master
 
 				//delete chacun des element du tableau avant pour pouvoir virer le tableau
 				for (int del = 0; del < divs[i]; ++del)
@@ -1202,14 +1286,187 @@ void Mandelbrot::dichotomie2(int enough, int n_div, int* divs)
 					mpf_clear(tab_y[del]);
 				}
 
+<<<<<<< HEAD
 				delete [] tab_y;
 				delete [] tab_y;
 				mpf_clears(temp, delta_x, delta_y, NULL);
 			}
+=======
+			mpf_clears(nx1, ny1, nx2, ny2, nx3, ny3, nx4, ny4, nh, nw, temp, NULL);
+>>>>>>> master
 		}
 	}
 }
 
+<<<<<<< HEAD
+=======
+void Mandelbrot::video()
+{
+	//a voir pour la precision
+
+	stringstream videoName("");
+	videoName << "mkdir -p ../video/" << this->rep;
+	system(videoName.str().c_str());
+
+	videoName.str("");
+
+	videoName << "../video/" << this->rep << "/test.avi";
+	cout  << videoName.str().c_str() << endl;
+
+
+
+	//Size S = Size(this->im_width*this->surEchantillonage, this->im_height*this->surEchantillonage);
+	Size S = Size( this->img->cols, this->img->rows);
+	VideoWriter outputVideo;
+
+	int ex = outputVideo.fourcc('H','2','6','4');
+
+	outputVideo.open(videoName.str().c_str(), ex, 20, S, true);
+	
+	if (!outputVideo.isOpened())
+	{
+		cout  << "Could not open the output video for write. " << endl;
+	}
+	else
+	{
+		mpf_t*** iter = new mpf_t**[this->im_width*this->surEchantillonage];
+		for(int i = 0; i < this->im_width*this->surEchantillonage; i++)
+		{
+			iter[i] = new mpf_t*[this->im_height*this->surEchantillonage];
+			for(int j = 0; j < this->im_height*this->surEchantillonage; j++)
+			{
+				iter[i][j] = new mpf_t[2];
+
+				mpf_init2(iter[i][j][0], mpf_get_prec(this->pos_x));
+				mpf_init2(iter[i][j][1], mpf_get_prec(this->pos_x));
+
+				mpf_set_ui(iter[i][j][0], 0);
+				mpf_set_ui(iter[i][j][1], 0);
+			}
+		}
+
+
+
+
+
+
+
+
+		mpf_t *x, *y, tmp1, tmp2;
+		x = new mpf_t[this->im_width*this->surEchantillonage];
+		y = new mpf_t[this->im_height*this->surEchantillonage];
+
+		mpf_inits( tmp1, tmp2, NULL);
+
+		mpf_div_ui(tmp1, this->width, 2); //  tmp1 = width/2
+		mpf_set_ui( tmp2, 0);
+		for(int i = 0; i < this->im_width*this->surEchantillonage; ++i)
+		{
+			mpf_init(x[i]);
+			//  xc = pos_x - width/2 + i*atomic_w
+			mpf_sub(x[i], this->pos_x, tmp1); //  xc = pos_x - tmp = pos_x - width/2
+			mpf_add( tmp2, tmp2, atomic_w);
+			mpf_add(x[i], x[i], tmp2); //  xc = xc + tmp = pos_x - width/2 + atomic_w * i
+
+		}
+
+		mpf_div_ui(tmp1, this->height, 2); //  tmp1 = height/2
+		mpf_set_ui( tmp2, 0);
+		for(int i = 0; i < this->im_height*this->surEchantillonage; ++i)
+		{
+			mpf_init(y[i]);
+			//  yc = pos_y - height/2 + i*atomic_h
+			mpf_sub(y[i], this->pos_y, tmp1); //  yc = pos_y - tmp = pos_y - height/2
+			mpf_add( tmp2, tmp2, atomic_h);
+			mpf_add(y[i], y[i], tmp2); //  yc = yc + tmp = pos_y - height/2 + atomic_h * j
+		}
+
+		mpf_clears( tmp1, tmp2, NULL);
+
+
+
+
+
+		mpf_t xsqr, ysqr, xy, mod;
+		mpf_inits( xsqr, ysqr, xy, mod, NULL);
+
+		Mat* precMat = new Mat(im_height, im_width, CV_8UC3);
+		Vec3b nullVector = { 0, 0, 0};
+		*(this->divMat) = 1;
+		*precMat = nullVector;
+
+		int iterCurrent = 1;
+
+		//do
+		for(int k = 0; k < 100; k++)
+		{
+			cout<< "iteration : " << k <<endl;
+
+			for(int i = 0; i < this->im_width*this->surEchantillonage; i++)
+			{
+				for(int j = 0; j < this->im_height*this->surEchantillonage; j++)
+				{
+					if(this->divMat->at<int>( j, i) == iterCurrent)
+					{
+						mpf_mul(xsqr, iter[i][j][0], iter[i][j][0]); //xn²
+						mpf_mul(ysqr, iter[i][j][1], iter[i][j][1]); //yn²
+						mpf_mul(xy, iter[i][j][0], iter[i][j][1]); //xn*yn
+
+
+						mpf_sub(iter[i][j][0], xsqr, ysqr); //  xnp1 = xsqr - ysqr = xn² - yn²
+						mpf_add(iter[i][j][0], iter[i][j][0], x[i]); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+
+						mpf_mul_ui(iter[i][j][1], xy, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
+						mpf_add(iter[i][j][1], iter[i][j][1], y[j]); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+
+						//  mod = xnp1² + ynp1²
+						mpf_add(mod, xsqr, ysqr); //  mod = xsqr + ysqr = xn² + yn²
+
+						if(mpf_cmp_ui(mod, 4) > 0)
+							this->divMat->at<int>(j, i) = iterCurrent;
+						else
+							this->divMat->at<int>(j, i) = iterCurrent + 1;
+					}
+				}
+			}
+
+			this->iterations = iterCurrent;
+
+			draw();
+			//save();
+
+			outputVideo << *(this->img);
+
+			iterCurrent++;
+		}/* while(1);*/
+
+		mpf_clears( xsqr, ysqr, xy, mod, NULL);
+		
+		for(int i = 0; i < this->im_width*this->surEchantillonage; i++)
+		{
+			mpf_clear(x[i]);
+
+			for(int j = 0; j < this->im_height*this->surEchantillonage; j++)
+			{
+				mpf_clear(iter[i][j][0]);
+				mpf_clear(iter[i][j][1]);
+				
+				delete [] iter[i][j];
+			}
+			delete [] iter[i];
+		}
+		delete [] iter;
+
+		for(int j = 0; j < this->im_height*this->surEchantillonage; j++)
+			mpf_clear(y[j]);
+
+		delete [] x;
+		delete [] y;
+	}
+	
+	del_mem();
+}
+>>>>>>> master
 
 /*
 Any primitive type from the list can be defined by an identifier in the form CV_<bit-depth>{U|S|F}C(<number_of_channels>)

@@ -56,7 +56,8 @@ class Mandelbrot
 		std::atomic<int> tasks;
 
 		// void* threadCalc(void* arg);
-		void threadCalc(int deb, int fin);
+		//void threadCalc(int deb, int fin);
+		void threadCalc5(int deb, int fin, mpf_t* x, mpf_t* y);
 		void threadCalc2(int deb, int fin, mpf_t* x, mpf_t* y);
 		void threadCalc2_2(int deb, int fin, mpf_t* x, mpf_t* y);
 		void threadCalc3(int deb, int fin, mpf_t* x, mpf_t* y);

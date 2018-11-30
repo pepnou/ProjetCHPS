@@ -249,7 +249,7 @@ void Mandelbrot::escapeSpeedCalcThread3()
 
 	for (int i = 0; i < nbr_threads; ++i)
 	{
-		threads[i] = thread( &Mandelbrot::threadCalc3, this, (i*(this->im_height)/nbr_threads), ((i+1)*(this->im_height)/nbr_threads), x, y);
+		threads[i] = thread( &Mandelbrot::threadCalc5, this, (i*(this->im_height)/nbr_threads), ((i+1)*(this->im_height)/nbr_threads), x, y);
 	}
 	for (int i = 0; i < nbr_threads; ++i)
 	{
@@ -274,7 +274,7 @@ void Mandelbrot::escapeSpeedCalcThread3()
 
 	for (int i = 0; i < nbr_threads; ++i)
 	{
-		threads[i] = thread( &Mandelbrot::threadCalc3, this, (i*(this->im_height)/nbr_threads), ((i+1)*(this->im_height)/nbr_threads), x, y);
+		threads[i] = thread( &Mandelbrot::threadCalc5, this, (i*(this->im_height)/nbr_threads), ((i+1)*(this->im_height)/nbr_threads), x, y);
 	}
 	for (int i = 0; i < nbr_threads; ++i)
 	{
@@ -1094,3 +1094,430 @@ Any primitive type from the list can be defined by an identifier in the form CV_
 where U is unsigned integer type, S is signed integer type, and F is float type.
 
 */
+void Mandelbrot::threadCalc5(int deb, int fin, mpf_t* x, mpf_t* y)
+{
+    mpf_t xn, yn, xnp1, ynp1, mod, xsqr, ysqr, tmp;
+    mpf_inits( xn, yn, xnp1, ynp1, mod, tmp, xsqr, ysqr, NULL);
+
+    //mpf_set_prec( mpf_t, int)
+    //mpf_set_prec_raw( mpf_t, int)
+    /*int **monGradient = new int*[im_height-1];
+    for (int i = 0; i < im_height; i++){
+        monGradient[i] = new int[im_width-1];
+    }*/
+    for(int j = deb; j < fin; j=j+4)
+    {
+        for (int i = 0; i < this->im_width*this->surEchantillonage; i=i+4)
+        {
+            mpf_set_ui(xn,0);
+            mpf_set_ui(yn,0);
+            mpf_set_ui(xsqr,0);
+            mpf_set_ui(ysqr,0);
+
+            for (int k = 1; k < this->iterations; ++k)
+            {
+                //  xnp1 = xn² - yn² + xc
+                mpf_sub(xnp1, xsqr, ysqr); //  xnp1 = xsqr - ysqr = xn² - yn²
+                //mpf_add(xnp1, xnp1, xc); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+                mpf_add(xnp1, xnp1, x[i]); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+
+                //  ynp1 = 2*xn*yn + yc
+                mpf_mul(ynp1, xn, yn); //  ynp1 = xn * yn
+                mpf_mul_ui(ynp1, ynp1, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
+                //mpf_add(ynp1, ynp1, yc); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+                mpf_add(ynp1, ynp1, y[j]); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+
+                //  xn = xnp1
+                //  yn = ynp1
+                mpf_set( xn, xnp1); //  xn = xnp1
+                mpf_set( yn, ynp1); //  yn = ynp1
+
+                //xsqr = xn²
+                mpf_mul(xsqr, xn, xn);
+
+                //ysqr = yn²
+                mpf_mul(ysqr, yn, yn);
+
+                //  mod = xnp1² + ynp1²
+                mpf_add(mod, xsqr, ysqr); //  mod = xsqr + ysqr = xn² + yn²
+
+                if(mpf_cmp_ui(mod, 4) > 0)
+                {
+                    this->divMat->at<int>(j, i) = k;
+                    break;
+                } else if(k == this->iterations -1)
+                {
+                    this->divMat->at<int>(j, i) = this->iterations;
+                }
+
+
+
+
+
+
+
+                if ((j-4 >= 0 ) && divMat->at<int>(i,j) != divMat->at<int>(i,j-4))
+                {
+                    for (int k = 1; k < this->iterations; ++k) {
+                        //  xnp1 = xn² - yn² + xc
+                        mpf_sub(xnp1, xsqr, ysqr); //  xnp1 = xsqr - ysqr = xn² - yn²
+                        //mpf_add(xnp1, xnp1, xc); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+                        mpf_add(xnp1, xnp1, x[i]); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+
+                        //  ynp1 = 2*xn*yn + yc
+                        mpf_mul(ynp1, xn, yn); //  ynp1 = xn * yn
+                        mpf_mul_ui(ynp1, ynp1, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
+                        //mpf_add(ynp1, ynp1, yc); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+                        mpf_add(ynp1, ynp1, y[j - 2]); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+
+                        //  xn = xnp1
+                        //  yn = ynp1
+                        mpf_set(xn, xnp1); //  xn = xnp1
+                        mpf_set(yn, ynp1); //  yn = ynp1
+
+                        //xsqr = xn²
+                        mpf_mul(xsqr, xn, xn);
+
+                        //ysqr = yn²
+                        mpf_mul(ysqr, yn, yn);
+
+                        //  mod = xnp1² + ynp1²
+                        mpf_add(mod, xsqr, ysqr); //  mod = xsqr + ysqr = xn² + yn²
+
+                        if (mpf_cmp_ui(mod, 4) > 0) {
+                            this->divMat->at<int>(j - 2, i) = k;
+                            break;
+                        } else if (k == this->iterations - 1) {
+                            this->divMat->at<int>(j - 2, i) = this->iterations;
+                        }
+                    }
+                } else this->divMat->at<int>(j - 2, i) = this->divMat->at<int>(j , i);
+
+
+                if ((j-4 >= 0 ) && divMat->at<int>(i,j-2) != divMat->at<int>(i,j-4))
+                {
+                    for (int k = 1; k < this->iterations; ++k) {
+                        //  xnp1 = xn² - yn² + xc
+                        mpf_sub(xnp1, xsqr, ysqr); //  xnp1 = xsqr - ysqr = xn² - yn²
+                        //mpf_add(xnp1, xnp1, xc); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+                        mpf_add(xnp1, xnp1, x[i]); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+
+                        //  ynp1 = 2*xn*yn + yc
+                        mpf_mul(ynp1, xn, yn); //  ynp1 = xn * yn
+                        mpf_mul_ui(ynp1, ynp1, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
+                        //mpf_add(ynp1, ynp1, yc); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+                        mpf_add(ynp1, ynp1, y[j - 3]); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+
+                        //  xn = xnp1
+                        //  yn = ynp1
+                        mpf_set(xn, xnp1); //  xn = xnp1
+                        mpf_set(yn, ynp1); //  yn = ynp1
+
+                        //xsqr = xn²
+                        mpf_mul(xsqr, xn, xn);
+
+                        //ysqr = yn²
+                        mpf_mul(ysqr, yn, yn);
+
+                        //  mod = xnp1² + ynp1²
+                        mpf_add(mod, xsqr, ysqr); //  mod = xsqr + ysqr = xn² + yn²
+
+                        if (mpf_cmp_ui(mod, 4) > 0) {
+                            this->divMat->at<int>(j - 3, i) = k;
+                            break;
+                        } else if (k == this->iterations - 1) {
+                            this->divMat->at<int>(j - 3, i) = this->iterations;
+                        }
+                    }
+                } else this->divMat->at<int>(j - 3, i) = this->divMat->at<int>(j-2 , i);
+
+
+
+
+                if ((j-4 >= 0 ) && divMat->at<int>(i,j) != divMat->at<int>(i,j-2))
+                {
+                    for (int k = 1; k < this->iterations; ++k) {
+                        //  xnp1 = xn² - yn² + xc
+                        mpf_sub(xnp1, xsqr, ysqr); //  xnp1 = xsqr - ysqr = xn² - yn²
+                        //mpf_add(xnp1, xnp1, xc); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+                        mpf_add(xnp1, xnp1, x[i]); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+
+                        //  ynp1 = 2*xn*yn + yc
+                        mpf_mul(ynp1, xn, yn); //  ynp1 = xn * yn
+                        mpf_mul_ui(ynp1, ynp1, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
+                        //mpf_add(ynp1, ynp1, yc); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+                        mpf_add(ynp1, ynp1, y[j - 1]); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+
+                        //  xn = xnp1
+                        //  yn = ynp1
+                        mpf_set(xn, xnp1); //  xn = xnp1
+                        mpf_set(yn, ynp1); //  yn = ynp1
+
+                        //xsqr = xn²
+                        mpf_mul(xsqr, xn, xn);
+
+                        //ysqr = yn²
+                        mpf_mul(ysqr, yn, yn);
+
+                        //  mod = xnp1² + ynp1²
+                        mpf_add(mod, xsqr, ysqr); //  mod = xsqr + ysqr = xn² + yn²
+
+                        if (mpf_cmp_ui(mod, 4) > 0) {
+                            this->divMat->at<int>(j - 1, i) = k;
+                            break;
+                        } else if (k == this->iterations - 1) {
+                            this->divMat->at<int>(j - 1, i) = this->iterations;
+                        }
+                    }
+                } else this->divMat->at<int>(j - 1, i) = this->divMat->at<int>(j , i);
+
+
+
+
+                if ((j-4 >= 0 ) && divMat->at<int>(i,j) != divMat->at<int>(i,j-4))
+                {
+                    for (int k = 1; k < this->iterations; ++k) {
+                        //  xnp1 = xn² - yn² + xc
+                        mpf_sub(xnp1, xsqr, ysqr); //  xnp1 = xsqr - ysqr = xn² - yn²
+                        //mpf_add(xnp1, xnp1, xc); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+                        mpf_add(xnp1, xnp1, x[i]); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+
+                        //  ynp1 = 2*xn*yn + yc
+                        mpf_mul(ynp1, xn, yn); //  ynp1 = xn * yn
+                        mpf_mul_ui(ynp1, ynp1, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
+                        //mpf_add(ynp1, ynp1, yc); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+                        mpf_add(ynp1, ynp1, y[j - 2]); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+
+                        //  xn = xnp1
+                        //  yn = ynp1
+                        mpf_set(xn, xnp1); //  xn = xnp1
+                        mpf_set(yn, ynp1); //  yn = ynp1
+
+                        //xsqr = xn²
+                        mpf_mul(xsqr, xn, xn);
+
+                        //ysqr = yn²
+                        mpf_mul(ysqr, yn, yn);
+
+                        //  mod = xnp1² + ynp1²
+                        mpf_add(mod, xsqr, ysqr); //  mod = xsqr + ysqr = xn² + yn²
+
+                        if (mpf_cmp_ui(mod, 4) > 0) {
+                            this->divMat->at<int>(j - 2, i) = k;
+                            break;
+                        } else if (k == this->iterations - 1) {
+                            this->divMat->at<int>(j - 2, i) = this->iterations;
+                        }
+                    }
+                } else this->divMat->at<int>(j - 2, i) = this->divMat->at<int>(j , i);
+
+
+                if ((j-4 >= 0 ) && divMat->at<int>(i,j-2) != divMat->at<int>(i,j-4))
+                {
+                    for (int k = 1; k < this->iterations; ++k) {
+                        //  xnp1 = xn² - yn² + xc
+                        mpf_sub(xnp1, xsqr, ysqr); //  xnp1 = xsqr - ysqr = xn² - yn²
+                        //mpf_add(xnp1, xnp1, xc); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+                        mpf_add(xnp1, xnp1, x[i]); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+
+                        //  ynp1 = 2*xn*yn + yc
+                        mpf_mul(ynp1, xn, yn); //  ynp1 = xn * yn
+                        mpf_mul_ui(ynp1, ynp1, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
+                        //mpf_add(ynp1, ynp1, yc); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+                        mpf_add(ynp1, ynp1, y[j - 3]); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+
+                        //  xn = xnp1
+                        //  yn = ynp1
+                        mpf_set(xn, xnp1); //  xn = xnp1
+                        mpf_set(yn, ynp1); //  yn = ynp1
+
+                        //xsqr = xn²
+                        mpf_mul(xsqr, xn, xn);
+
+                        //ysqr = yn²
+                        mpf_mul(ysqr, yn, yn);
+
+                        //  mod = xnp1² + ynp1²
+                        mpf_add(mod, xsqr, ysqr); //  mod = xsqr + ysqr = xn² + yn²
+
+                        if (mpf_cmp_ui(mod, 4) > 0) {
+                            this->divMat->at<int>(j - 3, i) = k;
+                            break;
+                        } else if (k == this->iterations - 1) {
+                            this->divMat->at<int>(j - 3, i) = this->iterations;
+                        }
+                    }
+                } else this->divMat->at<int>(j - 3, i) = this->divMat->at<int>(j-2 , i);
+
+
+                if ((j-4 > 0 ) && divMat->at<int>(i,j) != divMat->at<int>(i,j-2))
+                {
+                    for (int k = 1; k < this->iterations; ++k) {
+                        //  xnp1 = xn² - yn² + xc
+                        mpf_sub(xnp1, xsqr, ysqr); //  xnp1 = xsqr - ysqr = xn² - yn²
+                        //mpf_add(xnp1, xnp1, xc); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+                        mpf_add(xnp1, xnp1, x[i]); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+
+                        //  ynp1 = 2*xn*yn + yc
+                        mpf_mul(ynp1, xn, yn); //  ynp1 = xn * yn
+                        mpf_mul_ui(ynp1, ynp1, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
+                        //mpf_add(ynp1, ynp1, yc); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+                        mpf_add(ynp1, ynp1, y[j - 1]); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+
+                        //  xn = xnp1
+                        //  yn = ynp1
+                        mpf_set(xn, xnp1); //  xn = xnp1
+                        mpf_set(yn, ynp1); //  yn = ynp1
+
+                        //xsqr = xn²
+                        mpf_mul(xsqr, xn, xn);
+
+                        //ysqr = yn²
+                        mpf_mul(ysqr, yn, yn);
+
+                        //  mod = xnp1² + ynp1²
+                        mpf_add(mod, xsqr, ysqr); //  mod = xsqr + ysqr = xn² + yn²
+
+                        if (mpf_cmp_ui(mod, 4) > 0) {
+                            this->divMat->at<int>(j - 1, i) = k;
+                            break;
+                        } else if (k == this->iterations - 1) {
+                            this->divMat->at<int>(j - 1, i) = this->iterations;
+                        }
+                    }
+                } else this->divMat->at<int>(j - 1, i) = this->divMat->at<int>(j , i);
+
+
+
+                if ((i-4 >= 0 ) && divMat->at<int>(i,j) != divMat->at<int>(i-4,j))
+                {
+                    for (int k = 1; k < this->iterations; ++k) {
+                        //  xnp1 = xn² - yn² + xc
+                        mpf_sub(xnp1, xsqr, ysqr); //  xnp1 = xsqr - ysqr = xn² - yn²
+                        //mpf_add(xnp1, xnp1, xc); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+                        mpf_add(xnp1, xnp1, x[i-2]); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+
+                        //  ynp1 = 2*xn*yn + yc
+                        mpf_mul(ynp1, xn, yn); //  ynp1 = xn * yn
+                        mpf_mul_ui(ynp1, ynp1, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
+                        //mpf_add(ynp1, ynp1, yc); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+                        mpf_add(ynp1, ynp1, y[j ]); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+
+                        //  xn = xnp1
+                        //  yn = ynp1
+                        mpf_set(xn, xnp1); //  xn = xnp1
+                        mpf_set(yn, ynp1); //  yn = ynp1
+
+                        //xsqr = xn²
+                        mpf_mul(xsqr, xn, xn);
+
+                        //ysqr = yn²
+                        mpf_mul(ysqr, yn, yn);
+
+                        //  mod = xnp1² + ynp1²
+                        mpf_add(mod, xsqr, ysqr); //  mod = xsqr + ysqr = xn² + yn²
+
+                        if (mpf_cmp_ui(mod, 4) > 0) {
+                            this->divMat->at<int>(j , i-2) = k;
+                            break;
+                        } else if (k == this->iterations - 1) {
+                            this->divMat->at<int>(j , i-2) = this->iterations;
+                        }
+                    }
+                } else this->divMat->at<int>(j, i-2) = this->divMat->at<int>(j , i);
+
+
+                if ((i-4>= 0 ) && divMat->at<int>(i-2,j) != divMat->at<int>(i-4,j))
+                {
+                    for (int k = 1; k < this->iterations; ++k) {
+                        //  xnp1 = xn² - yn² + xc
+                        mpf_sub(xnp1, xsqr, ysqr); //  xnp1 = xsqr - ysqr = xn² - yn²
+                        //mpf_add(xnp1, xnp1, xc); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+                        mpf_add(xnp1, xnp1, x[i-3]); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+
+                        //  ynp1 = 2*xn*yn + yc
+                        mpf_mul(ynp1, xn, yn); //  ynp1 = xn * yn
+                        mpf_mul_ui(ynp1, ynp1, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
+                        //mpf_add(ynp1, ynp1, yc); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+                        mpf_add(ynp1, ynp1, y[j ]); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+
+                        //  xn = xnp1
+                        //  yn = ynp1
+                        mpf_set(xn, xnp1); //  xn = xnp1
+                        mpf_set(yn, ynp1); //  yn = ynp1
+
+                        //xsqr = xn²
+                        mpf_mul(xsqr, xn, xn);
+
+                        //ysqr = yn²
+                        mpf_mul(ysqr, yn, yn);
+
+                        //  mod = xnp1² + ynp1²
+                        mpf_add(mod, xsqr, ysqr); //  mod = xsqr + ysqr = xn² + yn²
+
+                        if (mpf_cmp_ui(mod, 4) > 0) {
+                            this->divMat->at<int>(j, i-3) = k;
+                            break;
+                        } else if (k == this->iterations - 1) {
+                            this->divMat->at<int>(j, i-3) = this->iterations;
+                        }
+                    }
+                } else this->divMat->at<int>(j , i-3) = this->divMat->at<int>(j , i-2);
+
+
+
+
+                if ((i-4 >= 0 ) && divMat->at<int>(i,j) != divMat->at<int>(i-2,j))
+                {
+                    for (int k = 1; k < this->iterations; ++k) {
+                        //  xnp1 = xn² - yn² + xc
+                        mpf_sub(xnp1, xsqr, ysqr); //  xnp1 = xsqr - ysqr = xn² - yn²
+                        //mpf_add(xnp1, xnp1, xc); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+                        mpf_add(xnp1, xnp1, x[i-1]); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+
+                        //  ynp1 = 2*xn*yn + yc
+                        mpf_mul(ynp1, xn, yn); //  ynp1 = xn * yn
+                        mpf_mul_ui(ynp1, ynp1, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
+                        //mpf_add(ynp1, ynp1, yc); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+                        mpf_add(ynp1, ynp1, y[j ]); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+
+                        //  xn = xnp1
+                        //  yn = ynp1
+                        mpf_set(xn, xnp1); //  xn = xnp1
+                        mpf_set(yn, ynp1); //  yn = ynp1
+
+                        //xsqr = xn²
+                        mpf_mul(xsqr, xn, xn);
+
+                        //ysqr = yn²
+                        mpf_mul(ysqr, yn, yn);
+
+                        //  mod = xnp1² + ynp1²
+                        mpf_add(mod, xsqr, ysqr); //  mod = xsqr + ysqr = xn² + yn²
+
+                        if (mpf_cmp_ui(mod, 4) > 0) {
+                            this->divMat->at<int>(j , i-1) = k;
+                            break;
+                        } else if (k == this->iterations - 1) {
+                            this->divMat->at<int>(j , i-1) = this->iterations;
+                        }
+                    }
+                } else this->divMat->at<int>(j , i-1) = this->divMat->at<int>(j , i);
+
+
+
+
+
+                // tu trouve une solutioon pour faire des pas de surEachantionnage
+
+
+
+
+
+
+                    //monGradient[][]
+            }
+        }
+    }
+    mpf_clears( xn, yn, xnp1, ynp1, mod, tmp, xsqr, ysqr, NULL);
+}

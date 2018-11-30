@@ -1209,6 +1209,8 @@ void Mandelbrot::video()
 		//do
 		for(int k = 0; k < 100; k++)
 		{
+			cout<< "iteration : " << k <<endl;
+
 			for(int i = 0; i < this->im_width*this->surEchantillonage; i++)
 			{
 				for(int j = 0; j < this->im_height*this->surEchantillonage; j++)
@@ -1242,9 +1244,6 @@ void Mandelbrot::video()
 			draw();
 			//save();
 
-			outputVideo << *(this->img);
-			outputVideo << *(this->img);
-			outputVideo << *(this->img);
 			outputVideo << *(this->img);
 
 			iterCurrent++;

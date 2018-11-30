@@ -1109,6 +1109,93 @@ void Mandelbrot::dichotomie(int enough, int prec)
 	}
 }
 
+bool Mandelbrot::alea(int enough, int prec)
+{
+	this->escapeSpeedCalcThread4();
+
+	this->draw();
+
+	bool filtre;
+
+	if(this->IsGood_2(&filtre)/*this->IsGood*/)
+	{
+		//if(filtre)
+			this->save();
+
+			
+		this->IterUp();
+
+		if(--enough)
+		{
+			gmp_randstate_t state;
+			gmp_randinit_default (state);
+			gmp_randseed_ui(state, rand());
+
+			int n_prec = prec + ceil(log(/*divs[i]*/2)/log(2));
+			
+			mpf_t nx, ny, nh, nw, temp, cp_x, cp_y;
+			//mpf_inits(nx1, ny1, nx2, ny2, nx3, ny3, nx4, ny4, nh, nw, temp, NULL);
+
+			if(mpf_get_prec(this->pos_x)>=mpf_get_prec(this->pos_y))
+			{
+				mpf_init2(temp, mpf_get_prec(this->pos_x) + n_prec/64);
+			}
+			else
+			{
+				mpf_init2(temp, mpf_get_prec(this->pos_y) + n_prec/64);
+			}
+
+			mpf_init2(nx, mpf_get_prec(this->pos_x) + n_prec/64);
+			mpf_init2(ny, mpf_get_prec(this->pos_y) + n_prec/64);
+
+			mpf_init2(cp_x, mpf_get_prec(this->pos_x));
+			mpf_init2(cp_y, mpf_get_prec(this->pos_y));
+
+			mpf_init2(nw, mpf_get_prec(this->width));
+			mpf_init2(nh, mpf_get_prec(this->height));
+
+			n_prec %= 64;
+			
+			// newh = h/2
+			mpf_div_ui(nh, this->height, 2);
+			
+			//neww = w/2
+			mpf_div_ui(nw, this->width, 2);
+
+			bool find = false;
+
+			int bcp_trop = 20;
+
+			while(!find && bcp_trop)
+			{
+				mpf_urandomb(nx, state, mpf_get_prec(nx));
+				mpf_mul(nx, nx, nw);
+				mpf_add(nx, nx, cp_x);
+				mpf_div_ui(temp, nw, 2);
+				mpf_sub(nx, nx, temp);
+
+				mpf_urandomb(ny, state, mpf_get_prec(nx));
+				mpf_mul(ny, ny, nh);
+				mpf_add(ny, ny, cp_y);
+				mpf_div_ui(temp, nh, 2);
+				mpf_sub(ny, ny, temp);
+
+
+				Mandelbrot* M = new Mandelbrot(nx, ny, nw, nh, im_width, im_height, surEchantillonage, iterations, this->color, this->mpmc, this->rep);		//en haut a gauche
+				find = M->alea(enough, n_prec);
+				delete M;
+
+				bcp_trop--;
+			}
+			mpf_clears(nx, ny, temp , cp_x, cp_y, NULL);
+		}
+		del_mem();
+		return true;
+	}
+	return false;
+}
+
+
 void Mandelbrot::video()
 {
 	//a voir pour la precision
@@ -1207,7 +1294,7 @@ void Mandelbrot::video()
 		int iterCurrent = 1;
 
 		//do
-		for(int k = 0; k < 100; k++)
+		for(int k = 0; k < 600; k++)
 		{
 			cout<< "iteration : " << k <<endl;
 

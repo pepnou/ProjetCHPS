@@ -7,11 +7,13 @@ namespace po = boost::program_options;
 
 int main(int argc, char** argv)
 {
+	srand(time(NULL));
+
 	//mpf_set_default_prec(MAX_PREC);
 	//10^-618
 
 	//C'EST ICI QUE TU CHANGES LES PARAMETRES POUR CHANGER LE RESULTAT FINAL BONHOMME !
-	int im_w = 1920, im_h = 1080, surech = 4, iteration = 100, enough = 1, color = RAINBOW;
+	int im_w = 1920, im_h = 1080, surech = 4, iteration = 400, enough = 1, color = RAINBOW;
 	int nbt = thread::hardware_concurrency();
 	bool verbose = false, video = false;
 	
@@ -380,6 +382,7 @@ int main(int argc, char** argv)
 
 		uint64_t tick = rdtsc();
 		M.dichotomie( enough, 0);
+		//M.alea( enough, 0);
 		if(verbose)cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
 
 		delete MT;

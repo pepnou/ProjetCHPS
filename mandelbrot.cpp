@@ -812,7 +812,7 @@ void Mandelbrot::save()
 	fclose(fichier);
 }
 
-/*void Mandelbrot::animation()
+/*void Mandelbrot::animation_mais_ca_marche_pô()
 {
 	static int num = 0;
 
@@ -1043,10 +1043,6 @@ void Mandelbrot::IterUp(){
 }*/
 
 void worthsaving(){
-	
-
-
-
 }
 
 /*bool Mandelbrot::DeepEnough(auto enough){
@@ -1058,7 +1054,6 @@ void worthsaving(){
 }*/
 
 void Mandelbrot::dichotomie(int enough)
-
 {
 	this->escapeSpeedCalcThread4();
 

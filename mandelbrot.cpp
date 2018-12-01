@@ -3,7 +3,16 @@
 using namespace cv;
 using namespace std;
 
-Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations, int color, Mpmc* mpmc, char* rep) : surEchantillonage(supSample), im_width(im_w), im_height(im_h), iterations(iterations), color(color), mpmc(mpmc)
+Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations, int color, Mpmc* mpmc, char* rep) 
+	: surEchantillonage(supSample), 
+	im_width(im_w), 
+	im_height(im_h), 
+	iterations(iterations), 
+	color(color), 
+	mpmc(mpmc) ,
+	divMat(new Mat(im_h*supSample, im_w*supSample, CV_32SC1)) ,
+	img(new Mat(im_h, im_w, CV_8UC3)) ,
+	sEMat(new Mat(im_h, im_w, CV_8UC1))
 {
 	mpf_init2(this->pos_x, mpf_get_prec(x));
 	mpf_init2(this->pos_y, mpf_get_prec(y));
@@ -25,7 +34,7 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, i
 	//~ this->ThresholdCont = /*125.7071478402/(pow((im_w*im_h),0.2597528761))*/ 5;
 	//~ this->ThresholdSave = /*125.7071478402/(pow((im_w*im_h),0.2597528761))*/ 10;
 	
-	this->ThresholdCont = 166.63*pow(im_w*im_h,-0.298);
+	this->ThresholdCont = 178.48*pow(im_w*im_h,-0.307);
 	this->ThresholdSave = /*125.7071478402/(pow((im_w*im_h),0.2597528761))*/ 10;
 	
 	//  atomic_w = width / (im_width * surEchantillonage)
@@ -33,9 +42,9 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, i
 	mpf_div_ui(atomic_w, this->width, this->im_width*this->surEchantillonage);
 	mpf_div_ui(atomic_h, this->height, this->im_height*this->surEchantillonage);
 
-	this->divMat = new Mat(im_h*supSample, im_w*supSample, CV_32SC1);
-	this->img = new Mat(im_h, im_w, CV_8UC3);
-	this->sEMat = new Mat(im_h, im_w, CV_8UC1);
+	//this->divMat = new Mat(im_h*supSample, im_w*supSample, CV_32SC1);
+	//this->img = new Mat(im_h, im_w, CV_8UC3);
+	//this->sEMat = new Mat(im_h, im_w, CV_8UC1);
 
 	if(rep == nullptr)
 	{
@@ -63,19 +72,35 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, i
 	{
 		this->rep = rep;
 	}
-		
 }
 
 Mandelbrot::~Mandelbrot()
-{}
+{
+	if(this->divMat != nullptr)
+	{
+		mpf_clears(this->pos_x, this->pos_y, this->width, this->height, this->atomic_w, this->atomic_h, NULL);
+		
+		delete this->divMat;
+		delete this->img;
+		delete this->sEMat;
+		// delete mpmc;
+		this->divMat = nullptr;
+		this->img = nullptr;
+		this->sEMat = nullptr;
+	}
+}
 
 void Mandelbrot::del_mem()
 {
 	mpf_clears(this->pos_x, this->pos_y, this->width, this->height, this->atomic_w, this->atomic_h, NULL);
+	
 	delete this->divMat;
 	delete this->img;
 	delete this->sEMat;
 	// delete mpmc;
+	this->divMat = nullptr;
+	this->img = nullptr;
+	this->sEMat = nullptr;
 }
 
 
@@ -989,29 +1014,6 @@ void Mandelbrot::IterUp(){
 	
 }
 
-/*void worthcontinue(){
-
-	//condition de saving
-
-	//this->save();
-
-}*/
-
-void worthsaving(){
-	
-
-
-
-}
-
-/*bool Mandelbrot::DeepEnough(auto enough){
-	
-	//change enough
-	
-	return false;		//c'est assez on peut s'arreter et cracher l'image
-	return true;		//pas assez, on continue
-}*/
-
 void Mandelbrot::dichotomie(int enough, int prec)
 {
 	//cout<<this->im_height<<endl;
@@ -1038,7 +1040,7 @@ void Mandelbrot::dichotomie(int enough, int prec)
 		this->IterUp();
 
 		if(--enough /*this->DeepEnough(enough) || worthcontinue()*/)
-		{	
+		{
 			int n_prec = prec + ceil(log(/*divs[i]*/2)/log(2));
 			//augmente la nombre d'iteration max, ceci est un commentaire Nassim tu le vois celui la ?
 			this->IterUp();

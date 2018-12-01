@@ -12,7 +12,7 @@ Mpmc::Mpmc(size_t size) : size(size), buf(new work[size])
 
 Mpmc::~Mpmc()
 {
-	delete this->buf;
+	delete [] this->buf;
 }
 
 void Mpmc::push(work arg)

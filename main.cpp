@@ -349,6 +349,9 @@ int main(int argc, char** argv)
 			<< "enough=" << enough << endl
 			<< "super-sampling=" << surech << endl
 			<< "thread=" << nbt << endl;
+			
+		//delete char_x;
+		//delete char_y;
 
 		if (vm2.count("config"))
 		{
@@ -378,24 +381,26 @@ int main(int argc, char** argv)
 	{
 		MyThreads* MT = new MyThreads(nbt);
 		Mpmc* mpmc = MT->getMpmc();
-		Mandelbrot M( x, y, w, h, im_w, im_h, surech, iteration, color, mpmc);
+		Mandelbrot* M = new Mandelbrot( x, y, w, h, im_w, im_h, surech, iteration, color, mpmc);
 
 		uint64_t tick = rdtsc();
-		M.dichotomie( enough, 0);
+		M->dichotomie( enough, 0);
 		//M.alea( enough, 0);
 		if(verbose)cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
 
 		delete MT;
+		delete M;
 	}
 	else
 	{
-		Mandelbrot M( x, y, w, h, im_w, im_h, surech, iteration, color, nullptr);
+		Mandelbrot* M = new Mandelbrot( x, y, w, h, im_w, im_h, surech, iteration, color, nullptr);
 
 		uint64_t tick = rdtsc();
-		M.video();
+		M->video();
 		if(verbose)cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
+		
+		delete M;
 	}
-
 	
 	mpf_clears( x, y, w, h, NULL);
 	exit(0);

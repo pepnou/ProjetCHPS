@@ -22,8 +22,12 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, i
 
 	
 
-	this->ThresholdCont = /*125.7071478402/(pow((im_w*im_h),0.2597528761))*/ 5;
+	//~ this->ThresholdCont = /*125.7071478402/(pow((im_w*im_h),0.2597528761))*/ 5;
+	//~ this->ThresholdSave = /*125.7071478402/(pow((im_w*im_h),0.2597528761))*/ 10;
+	
+	this->ThresholdCont = 166.63*pow(im_w*im_h,-0.298);
 	this->ThresholdSave = /*125.7071478402/(pow((im_w*im_h),0.2597528761))*/ 10;
+	
 	//  atomic_w = width / (im_width * surEchantillonage)
 	//  atomic_h = height / (im_height * surEchantillonage)
 	mpf_div_ui(atomic_w, this->width, this->im_width*this->surEchantillonage);
@@ -770,9 +774,9 @@ void Mandelbrot::draw()
 	}
 }
 
-void Mandelbrot::save()
+void Mandelbrot::save(double t)
 {
-	int nume=matSave( this->img, this->rep);
+	int nume=matSave( this->img, this->rep, t);
 
     char nom_inf[128];
     sprintf( nom_inf, "../img/%s/info.txt", this->rep);
@@ -838,7 +842,7 @@ bool Mandelbrot::IsGood(){
 }
 
 
-bool Mandelbrot::IsGood_2(bool* filtre)
+bool Mandelbrot::IsGood_2(bool* filtre, double* t1, double* t2)
 {
 
 	bool continue_y_or_n;
@@ -860,7 +864,7 @@ bool Mandelbrot::IsGood_2(bool* filtre)
 
 	//cout<<res<<endl;
 
-
+	*t1 = res;
 	if(res<this->ThresholdCont)
 		continue_y_or_n = false;
 	else
@@ -927,6 +931,7 @@ bool Mandelbrot::IsGood_2(bool* filtre)
 		res = res/(this->im_height*this->im_width)*1000/255;
 
 		//cout<<res<<endl<<endl;
+		*t2 = res;
 		if(res >= this->ThresholdSave)
 			*filtre = true;
 		else
@@ -1018,12 +1023,15 @@ void Mandelbrot::dichotomie(int enough, int prec)
 	//M.save();
 
 	bool filtre;
-
-	if(this->IsGood_2(&filtre)/*this->IsGood*/)
+	double t1,t2;
+	
+	bool cont = this->IsGood_2(&filtre, &t1, &t2);
+	this->save(t1);
+	if(cont/*this->IsGood_2(&filtre, &t1, &t2)*//*this->IsGood*/)
 	{
 		//this->save();
 		//if(filtre)
-			this->save();
+			//this->save(t1);
 
 		//this->worthsaving();
 			
@@ -1117,10 +1125,10 @@ bool Mandelbrot::alea(int enough, int prec)
 
 	bool filtre;
 
-	if(this->IsGood_2(&filtre)/*this->IsGood*/)
+	if(1/*this->IsGood_2(&filtre)*//*this->IsGood*/)
 	{
 		//if(filtre)
-			this->save();
+			//this->save();
 
 			
 		this->IterUp();

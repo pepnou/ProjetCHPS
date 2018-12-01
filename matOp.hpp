@@ -13,6 +13,6 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 
-int matSave(cv::Mat* mat, char* rep);
+int matSave(cv::Mat* mat, char* rep, double t);
 
 #endif

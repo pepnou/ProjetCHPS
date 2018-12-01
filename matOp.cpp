@@ -3,23 +3,28 @@
 using namespace cv;
 using namespace std;
 
-int matSave(Mat* mat, char* rep)
+int matSave(Mat* mat, char* rep, double t)
 {
+	int tmp = t;
+	
 	static int num = 0;
 	vector<int> compression_params;
     compression_params.push_back( IMWRITE_PNG_COMPRESSION);
     compression_params.push_back(9);
 	
-	char nom_img[128];
-	sprintf( nom_img, "mkdir -p ../img/%s", rep);
-	system(nom_img);
+	stringstream nom_img("");
+	nom_img << "mkdir -p ../img/" << rep << "/" << tmp << "/";
+	
+	system(nom_img.str().c_str());
+	
+	nom_img.str("");
+	nom_img << "../img/" << rep << "/" << tmp << "/mandel" << num++ << ".png";
 
-    sprintf( nom_img, "../img/%s/mandel%d.png", rep, num++);
+    cout << nom_img.str() << endl;
 
-	cout<<nom_img<<endl;
 	try
     {
-        imwrite(nom_img, *(mat), compression_params);
+        imwrite(nom_img.str().c_str(), *(mat), compression_params);
     }
     catch (const Exception& ex)
     {

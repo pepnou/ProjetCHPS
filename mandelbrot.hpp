@@ -75,10 +75,10 @@ class Mandelbrot
 		void escapeSpeedCalcThread4();
 		void draw();
 		// void draw2();
-		void save();
+		void save(double t);
 		bool IsGood();
 		void IterUp();
-		bool IsGood_2(bool* filtre);
+		bool IsGood_2(bool* filtre, double* t1, double* t2);
 		//int DeepEnough(auto enough);
 		void dichotomie(int enough, int prec);
 		bool alea(int enough, int prec);

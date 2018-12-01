@@ -34,17 +34,13 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, i
 	//~ this->ThresholdCont = /*125.7071478402/(pow((im_w*im_h),0.2597528761))*/ 5;
 	//~ this->ThresholdSave = /*125.7071478402/(pow((im_w*im_h),0.2597528761))*/ 10;
 	
-	this->ThresholdCont = 178.48*pow(im_w*im_h,-0.307);
-	this->ThresholdSave = /*125.7071478402/(pow((im_w*im_h),0.2597528761))*/ 10;
+	this->ThresholdCont = 181.75*pow(im_w*im_h,-0.309);
+	this->ThresholdSave = 93.346*pow(im_w*im_h,-0.217);
 	
 	//  atomic_w = width / (im_width * surEchantillonage)
 	//  atomic_h = height / (im_height * surEchantillonage)
 	mpf_div_ui(atomic_w, this->width, this->im_width*this->surEchantillonage);
 	mpf_div_ui(atomic_h, this->height, this->im_height*this->surEchantillonage);
-
-	//this->divMat = new Mat(im_h*supSample, im_w*supSample, CV_32SC1);
-	//this->img = new Mat(im_h, im_w, CV_8UC3);
-	//this->sEMat = new Mat(im_h, im_w, CV_8UC1);
 
 	if(rep == nullptr)
 	{
@@ -466,10 +462,10 @@ void Mandelbrot::escapeSpeedCalcThread4()
 		wo.arg = (void*)&args[i];
 		this->mpmc->push(wo);
 	}
-		
+	//dbg
 	while(this->tasks.load() != 0)
 		this_thread::yield();
-	
+	//dbg
 	
 	
 	
@@ -502,10 +498,10 @@ void Mandelbrot::escapeSpeedCalcThread4()
 		wo.arg = (void*)&args[i];
 		this->mpmc->push(wo);
 	}
-
+	//dbg
 	while(this->tasks.load() != 0)
 		this_thread::yield();
-
+	//dbg
 
 
 
@@ -800,9 +796,9 @@ void Mandelbrot::draw()
 	}
 }
 
-void Mandelbrot::save(double t)
+void Mandelbrot::save()
 {
-	int nume=matSave( this->img, this->rep, t);
+	int nume=matSave( this->img, this->rep);
 
     char nom_inf[128];
     sprintf( nom_inf, "../img/%s/info.txt", this->rep);
@@ -810,13 +806,13 @@ void Mandelbrot::save(double t)
     FILE* fichier = fopen(nom_inf, "a");
 
     fprintf(fichier,"mandel%d",nume);
-    fprintf(fichier,"\n\tx : ");
+    fprintf(fichier,"\n\tXposition=");
     mpf_out_str(fichier, 10, 150, pos_x);
-    fprintf(fichier,"\n\ty : ");
+    fprintf(fichier,"\n\tYposition=");
     mpf_out_str(fichier, 10, 150, pos_y);
-    fprintf(fichier,"\n\tw : ");
+    fprintf(fichier,"\n\twidth=");
     mpf_out_str(fichier, 10, 150, width);
-    fprintf(fichier,"\n\th : ");
+    fprintf(fichier,"\n\theight=");
     mpf_out_str(fichier, 10, 150, height);
     fprintf(fichier,"\n");
 
@@ -868,7 +864,7 @@ bool Mandelbrot::IsGood(){
 }
 
 
-bool Mandelbrot::IsGood_2(bool* filtre, double* t1, double* t2)
+bool Mandelbrot::IsGood_2(bool* filtre)
 {
 
 	bool continue_y_or_n;
@@ -890,7 +886,6 @@ bool Mandelbrot::IsGood_2(bool* filtre, double* t1, double* t2)
 
 	//cout<<res<<endl;
 
-	*t1 = res;
 	if(res<this->ThresholdCont)
 		continue_y_or_n = false;
 	else
@@ -957,7 +952,6 @@ bool Mandelbrot::IsGood_2(bool* filtre, double* t1, double* t2)
 		res = res/(this->im_height*this->im_width)*1000/255;
 
 		//cout<<res<<endl<<endl;
-		*t2 = res;
 		if(res >= this->ThresholdSave)
 			*filtre = true;
 		else
@@ -1026,21 +1020,15 @@ void Mandelbrot::dichotomie(int enough, int prec)
 	//M.save();
 
 	bool filtre;
-	double t1,t2;
 	
-	bool cont = this->IsGood_2(&filtre, &t1, &t2);
-	this->save(t1);
-	if(cont/*this->IsGood_2(&filtre, &t1, &t2)*//*this->IsGood*/)
+	if(this->IsGood_2(&filtre)/*this->IsGood*/)
 	{
-		//this->save();
-		//if(filtre)
-			//this->save(t1);
-
-		//this->worthsaving();
+		if(filtre)
+			this->save();
 			
 		this->IterUp();
 
-		if(--enough /*this->DeepEnough(enough) || worthcontinue()*/)
+		if(--enough)
 		{
 			int n_prec = prec + ceil(log(/*divs[i]*/2)/log(2));
 			//augmente la nombre d'iteration max, ceci est un commentaire Nassim tu le vois celui la ?
@@ -1128,10 +1116,10 @@ bool Mandelbrot::alea(int enough, int prec)
 
 	bool filtre;
 
-	if(1/*this->IsGood_2(&filtre)*//*this->IsGood*/)
+	if(this->IsGood_2(&filtre)/*this->IsGood*/)
 	{
-		//if(filtre)
-			//this->save();
+		if(filtre)
+			this->save();
 
 			
 		this->IterUp();
@@ -1305,7 +1293,7 @@ void Mandelbrot::video()
 		int iterCurrent = 1;
 
 		//do
-		for(int k = 0; k < 600; k++)
+		for(int k = 0; k < 1000; k++)
 		{
 			cout<< "iteration : " << k <<endl;
 

@@ -341,10 +341,10 @@ int main(int argc, char** argv)
 		char_height = mpf_get_str( NULL, &e4, 10, 1000, h);
 
 		ofstream ofs("Config.cfg",ofstream::trunc);
-		ofs << "Xposition=" << tmpx << char_x << "e" << e1 << endl
-			<< "Yposition=" << tmpy << char_y << "e" << e2 << endl
-			<< "im-width=" << im_w << endl
+		ofs << "im-width=" << im_w << endl
 			<< "im-height=" << im_h << endl
+			<< "Xposition=" << tmpx << char_x << "e" << e1 << endl
+			<< "Yposition=" << tmpy << char_y << "e" << e2 << endl
 			<< "width=" << "0." << char_width << "e" << e3 << endl
 			<< "height=" << "0." << char_height << "e" << e4 << endl
 			<< "color=" << color << endl

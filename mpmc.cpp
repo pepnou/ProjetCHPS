@@ -60,7 +60,7 @@ bool Mpmc::pop(/*work* arg*/)
 			if(this->last_read.compare_exchange_strong( current, next))
 			{
 				//while((this->write_ok.load() - next + this->size) % this->size < 0);
-				if(this->buf[next].f == exitThread)
+				if(this->buf[next].f == nullptr)
 					return false;
 
 				w = this->buf[next];
@@ -91,9 +91,9 @@ MyThreads::MyThreads(int nbT) : nbT(nbT)
 MyThreads::~MyThreads()
 {
 	work w;
-	w.f = exitThread;
+	w.f = nullptr;
 	w.arg = nullptr;
-	//cout<<this->nbT<<endl;
+	
 	for(int i = 0; i < this->nbT; i++)
 	{
 		this->mpmc->push(w);
@@ -112,9 +112,6 @@ void mainThread(void* arg)
 	Mpmc* mpmc = (Mpmc*)arg;
 	while(mpmc->pop());
 }
-
-void exitThread(void* arg)
-{}
 
 Mpmc* MyThreads::getMpmc()
 {

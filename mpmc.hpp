@@ -56,7 +56,6 @@ class MyThreads
 };
 
 void mainThread(void* arg);
-void exitThread(void* arg);
 
 /*std::thread* createThread(int nbT, Mpmc* mpmc);
 void joinThread(int nbT, std::thread* threads, Mpmc* mpmc);

@@ -604,6 +604,7 @@ void Mandelbrot::threadCalc4(void* arg)
 		}
 	//}
 	//dbgout<<"-"<<endl;
+	mpf_clears( xn, yn, xnp1, ynp1, mod, tmp, xsqr, ysqr, NULL);
 	this->tasks.fetch_sub(1);
 	//cout<<"Calcul ligne : "<<args->ligne<<endl;
 	//dbgout<<this->tasks.fetch_sub(1)<<endl;

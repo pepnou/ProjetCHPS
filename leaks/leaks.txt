@@ -1,0 +1,435 @@
+==19913== Memcheck, a memory error detector
+==19913== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==19913== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
+==19913== Command: ./ProjetFractale
+==19913== 
+==19913== Mismatched free() / delete / delete []
+==19913==    at 0x4C2E31B: operator delete(void*) (vg_replace_malloc.c:576)
+==19913==    by 0x129F62: ~Mpmc (mpmc.cpp:15)
+==19913==    by 0x129F62: MyThreads::~MyThreads() (mpmc.cpp:107)
+==19913==    by 0x114BD9: main (main.cpp:388)
+==19913==  Address 0x4a337410 is 0 bytes inside a block of size 6,400 alloc'd
+==19913==    at 0x4C2D97F: operator new[](unsigned long) (vg_replace_malloc.c:423)
+==19913==    by 0x129D18: Mpmc (mpmc.cpp:5)
+==19913==    by 0x129D18: MyThreads::MyThreads(int) (mpmc.cpp:84)
+==19913==    by 0x114B33: main (main.cpp:379)
+==19913== 
+==19913== 
+==19913== HEAP SUMMARY:
+==19913==     in use at exit: 927,899 bytes in 3,597 blocks
+==19913==   total heap usage: 178,961 allocs, 175,364 frees, 11,133,485 bytes allocated
+==19913== 
+==19913== 3 bytes in 1 blocks are definitely lost in loss record 4 of 321
+==19913==    at 0x4C2EE0F: realloc (vg_replace_malloc.c:785)
+==19913==    by 0x8E61883: __gmp_default_reallocate (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x8E632CB: __gmpf_get_str (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x114672: main (main.cpp:324)
+==19913== 
+==19913== 16 bytes in 1 blocks are possibly lost in loss record 98 of 321
+==19913==    at 0x4C2EC05: calloc (vg_replace_malloc.c:711)
+==19913==    by 0x1981E590: g_malloc0 (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.5306.0)
+==19913==    by 0x195A810E: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x195AD310: g_type_register_fundamental (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x1958B2AE: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x19585187: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x400EF09: call_init.part.0 (dl-init.c:72)
+==19913==    by 0x400F015: call_init (dl-init.c:118)
+==19913==    by 0x400F015: _dl_init (dl-init.c:119)
+==19913==    by 0x40010C9: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+==19913== 
+==19913== 16 bytes in 1 blocks are possibly lost in loss record 99 of 321
+==19913==    at 0x4C2CB1F: malloc (vg_replace_malloc.c:298)
+==19913==    by 0x4C2EE9F: realloc (vg_replace_malloc.c:785)
+==19913==    by 0x1981E5EF: g_realloc (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.5306.0)
+==19913==    by 0x195A7FE8: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x195AD310: g_type_register_fundamental (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x1958B2AE: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x19585187: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x400EF09: call_init.part.0 (dl-init.c:72)
+==19913==    by 0x400F015: call_init (dl-init.c:118)
+==19913==    by 0x400F015: _dl_init (dl-init.c:119)
+==19913==    by 0x40010C9: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+==19913== 
+==19913== 16 bytes in 1 blocks are possibly lost in loss record 100 of 321
+==19913==    at 0x4C2EC05: calloc (vg_replace_malloc.c:711)
+==19913==    by 0x1981E590: g_malloc0 (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.5306.0)
+==19913==    by 0x195A810E: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x195AD310: g_type_register_fundamental (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x1958B311: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x19585187: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x400EF09: call_init.part.0 (dl-init.c:72)
+==19913==    by 0x400F015: call_init (dl-init.c:118)
+==19913==    by 0x400F015: _dl_init (dl-init.c:119)
+==19913==    by 0x40010C9: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+==19913== 
+==19913== 16 bytes in 1 blocks are possibly lost in loss record 101 of 321
+==19913==    at 0x4C2CB1F: malloc (vg_replace_malloc.c:298)
+==19913==    by 0x4C2EE9F: realloc (vg_replace_malloc.c:785)
+==19913==    by 0x1981E5EF: g_realloc (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.5306.0)
+==19913==    by 0x195A7FE8: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x195AD310: g_type_register_fundamental (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x1958B311: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x19585187: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x400EF09: call_init.part.0 (dl-init.c:72)
+==19913==    by 0x400F015: call_init (dl-init.c:118)
+==19913==    by 0x400F015: _dl_init (dl-init.c:119)
+==19913==    by 0x40010C9: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+==19913== 
+==19913== 16 bytes in 1 blocks are possibly lost in loss record 102 of 321
+==19913==    at 0x4C2EC05: calloc (vg_replace_malloc.c:711)
+==19913==    by 0x1981E590: g_malloc0 (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.5306.0)
+==19913==    by 0x195A810E: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x195AD310: g_type_register_fundamental (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x1959509B: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x19585191: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x400EF09: call_init.part.0 (dl-init.c:72)
+==19913==    by 0x400F015: call_init (dl-init.c:118)
+==19913==    by 0x400F015: _dl_init (dl-init.c:119)
+==19913==    by 0x40010C9: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+==19913== 
+==19913== 16 bytes in 1 blocks are possibly lost in loss record 103 of 321
+==19913==    at 0x4C2CB1F: malloc (vg_replace_malloc.c:298)
+==19913==    by 0x4C2EE9F: realloc (vg_replace_malloc.c:785)
+==19913==    by 0x1981E5EF: g_realloc (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.5306.0)
+==19913==    by 0x195A7FE8: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x195AD310: g_type_register_fundamental (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x1959509B: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x19585191: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x400EF09: call_init.part.0 (dl-init.c:72)
+==19913==    by 0x400F015: call_init (dl-init.c:118)
+==19913==    by 0x400F015: _dl_init (dl-init.c:119)
+==19913==    by 0x40010C9: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+==19913== 
+==19913== 16 bytes in 1 blocks are possibly lost in loss record 104 of 321
+==19913==    at 0x4C2EC05: calloc (vg_replace_malloc.c:711)
+==19913==    by 0x1981E590: g_malloc0 (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.5306.0)
+==19913==    by 0x195A810E: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x195AD310: g_type_register_fundamental (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x1958FC1B: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x19585196: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x400EF09: call_init.part.0 (dl-init.c:72)
+==19913==    by 0x400F015: call_init (dl-init.c:118)
+==19913==    by 0x400F015: _dl_init (dl-init.c:119)
+==19913==    by 0x40010C9: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+==19913== 
+==19913== 16 bytes in 1 blocks are possibly lost in loss record 105 of 321
+==19913==    at 0x4C2CB1F: malloc (vg_replace_malloc.c:298)
+==19913==    by 0x4C2EE9F: realloc (vg_replace_malloc.c:785)
+==19913==    by 0x1981E5EF: g_realloc (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.5306.0)
+==19913==    by 0x195A7FE8: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x195AD310: g_type_register_fundamental (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x1958FC1B: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x19585196: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x400EF09: call_init.part.0 (dl-init.c:72)
+==19913==    by 0x400F015: call_init (dl-init.c:118)
+==19913==    by 0x400F015: _dl_init (dl-init.c:119)
+==19913==    by 0x40010C9: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+==19913== 
+==19913== 24 bytes in 1 blocks are definitely lost in loss record 106 of 321
+==19913==    at 0x4C2CBEF: malloc (vg_replace_malloc.c:299)
+==19913==    by 0x8E61848: __gmp_default_allocate (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x8E621DA: __gmpf_init2 (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x1217B2: Mandelbrot::Mandelbrot(__mpf_struct*, __mpf_struct*, __mpf_struct*, __mpf_struct*, int, int, int, int, int, Mpmc*, char*) (mandelbrot.cpp:8)
+==19913==    by 0x12537A: Mandelbrot::dichotomie(int, int) (mandelbrot.cpp:1106)
+==19913==    by 0x114B93: main (main.cpp:384)
+==19913== 
+==19913== 24 bytes in 1 blocks are definitely lost in loss record 107 of 321
+==19913==    at 0x4C2CBEF: malloc (vg_replace_malloc.c:299)
+==19913==    by 0x8E61848: __gmp_default_allocate (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x8E621DA: __gmpf_init2 (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x1217D0: Mandelbrot::Mandelbrot(__mpf_struct*, __mpf_struct*, __mpf_struct*, __mpf_struct*, int, int, int, int, int, Mpmc*, char*) (mandelbrot.cpp:9)
+==19913==    by 0x12537A: Mandelbrot::dichotomie(int, int) (mandelbrot.cpp:1106)
+==19913==    by 0x114B93: main (main.cpp:384)
+==19913== 
+==19913== 24 bytes in 1 blocks are definitely lost in loss record 108 of 321
+==19913==    at 0x4C2CBEF: malloc (vg_replace_malloc.c:299)
+==19913==    by 0x8E61848: __gmp_default_allocate (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x8E621DA: __gmpf_init2 (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x1217EB: Mandelbrot::Mandelbrot(__mpf_struct*, __mpf_struct*, __mpf_struct*, __mpf_struct*, int, int, int, int, int, Mpmc*, char*) (mandelbrot.cpp:10)
+==19913==    by 0x12537A: Mandelbrot::dichotomie(int, int) (mandelbrot.cpp:1106)
+==19913==    by 0x114B93: main (main.cpp:384)
+==19913== 
+==19913== 24 bytes in 1 blocks are definitely lost in loss record 109 of 321
+==19913==    at 0x4C2CBEF: malloc (vg_replace_malloc.c:299)
+==19913==    by 0x8E61848: __gmp_default_allocate (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x8E621DA: __gmpf_init2 (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x121807: Mandelbrot::Mandelbrot(__mpf_struct*, __mpf_struct*, __mpf_struct*, __mpf_struct*, int, int, int, int, int, Mpmc*, char*) (mandelbrot.cpp:11)
+==19913==    by 0x12537A: Mandelbrot::dichotomie(int, int) (mandelbrot.cpp:1106)
+==19913==    by 0x114B93: main (main.cpp:384)
+==19913== 
+==19913== 24 bytes in 1 blocks are definitely lost in loss record 110 of 321
+==19913==    at 0x4C2CBEF: malloc (vg_replace_malloc.c:299)
+==19913==    by 0x8E61848: __gmp_default_allocate (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x8E621DA: __gmpf_init2 (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x1217B2: Mandelbrot::Mandelbrot(__mpf_struct*, __mpf_struct*, __mpf_struct*, __mpf_struct*, int, int, int, int, int, Mpmc*, char*) (mandelbrot.cpp:8)
+==19913==    by 0x125401: Mandelbrot::dichotomie(int, int) (mandelbrot.cpp:1110)
+==19913==    by 0x114B93: main (main.cpp:384)
+==19913== 
+==19913== 24 bytes in 1 blocks are definitely lost in loss record 111 of 321
+==19913==    at 0x4C2CBEF: malloc (vg_replace_malloc.c:299)
+==19913==    by 0x8E61848: __gmp_default_allocate (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x8E621DA: __gmpf_init2 (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x1217D0: Mandelbrot::Mandelbrot(__mpf_struct*, __mpf_struct*, __mpf_struct*, __mpf_struct*, int, int, int, int, int, Mpmc*, char*) (mandelbrot.cpp:9)
+==19913==    by 0x125401: Mandelbrot::dichotomie(int, int) (mandelbrot.cpp:1110)
+==19913==    by 0x114B93: main (main.cpp:384)
+==19913== 
+==19913== 24 bytes in 1 blocks are definitely lost in loss record 112 of 321
+==19913==    at 0x4C2CBEF: malloc (vg_replace_malloc.c:299)
+==19913==    by 0x8E61848: __gmp_default_allocate (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x8E621DA: __gmpf_init2 (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x1217EB: Mandelbrot::Mandelbrot(__mpf_struct*, __mpf_struct*, __mpf_struct*, __mpf_struct*, int, int, int, int, int, Mpmc*, char*) (mandelbrot.cpp:10)
+==19913==    by 0x125401: Mandelbrot::dichotomie(int, int) (mandelbrot.cpp:1110)
+==19913==    by 0x114B93: main (main.cpp:384)
+==19913== 
+==19913== 24 bytes in 1 blocks are definitely lost in loss record 113 of 321
+==19913==    at 0x4C2CBEF: malloc (vg_replace_malloc.c:299)
+==19913==    by 0x8E61848: __gmp_default_allocate (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x8E621DA: __gmpf_init2 (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x121807: Mandelbrot::Mandelbrot(__mpf_struct*, __mpf_struct*, __mpf_struct*, __mpf_struct*, int, int, int, int, int, Mpmc*, char*) (mandelbrot.cpp:11)
+==19913==    by 0x125401: Mandelbrot::dichotomie(int, int) (mandelbrot.cpp:1110)
+==19913==    by 0x114B93: main (main.cpp:384)
+==19913== 
+==19913== 32 bytes in 1 blocks are definitely lost in loss record 137 of 321
+==19913==    at 0x4C2CBEF: malloc (vg_replace_malloc.c:299)
+==19913==    by 0x8E61848: __gmp_default_allocate (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x8E621DA: __gmpf_init2 (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x1218D3: Mandelbrot::Mandelbrot(__mpf_struct*, __mpf_struct*, __mpf_struct*, __mpf_struct*, int, int, int, int, int, Mpmc*, char*) (mandelbrot.cpp:13)
+==19913==    by 0x12537A: Mandelbrot::dichotomie(int, int) (mandelbrot.cpp:1106)
+==19913==    by 0x114B93: main (main.cpp:384)
+==19913== 
+==19913== 32 bytes in 1 blocks are definitely lost in loss record 138 of 321
+==19913==    at 0x4C2CBEF: malloc (vg_replace_malloc.c:299)
+==19913==    by 0x8E61848: __gmp_default_allocate (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x8E621DA: __gmpf_init2 (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x121991: Mandelbrot::Mandelbrot(__mpf_struct*, __mpf_struct*, __mpf_struct*, __mpf_struct*, int, int, int, int, int, Mpmc*, char*) (mandelbrot.cpp:14)
+==19913==    by 0x12537A: Mandelbrot::dichotomie(int, int) (mandelbrot.cpp:1106)
+==19913==    by 0x114B93: main (main.cpp:384)
+==19913== 
+==19913== 32 bytes in 1 blocks are definitely lost in loss record 139 of 321
+==19913==    at 0x4C2CBEF: malloc (vg_replace_malloc.c:299)
+==19913==    by 0x8E61848: __gmp_default_allocate (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x8E621DA: __gmpf_init2 (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x1218D3: Mandelbrot::Mandelbrot(__mpf_struct*, __mpf_struct*, __mpf_struct*, __mpf_struct*, int, int, int, int, int, Mpmc*, char*) (mandelbrot.cpp:13)
+==19913==    by 0x125401: Mandelbrot::dichotomie(int, int) (mandelbrot.cpp:1110)
+==19913==    by 0x114B93: main (main.cpp:384)
+==19913== 
+==19913== 32 bytes in 1 blocks are definitely lost in loss record 140 of 321
+==19913==    at 0x4C2CBEF: malloc (vg_replace_malloc.c:299)
+==19913==    by 0x8E61848: __gmp_default_allocate (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x8E621DA: __gmpf_init2 (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x121991: Mandelbrot::Mandelbrot(__mpf_struct*, __mpf_struct*, __mpf_struct*, __mpf_struct*, int, int, int, int, int, Mpmc*, char*) (mandelbrot.cpp:14)
+==19913==    by 0x125401: Mandelbrot::dichotomie(int, int) (mandelbrot.cpp:1110)
+==19913==    by 0x114B93: main (main.cpp:384)
+==19913== 
+==19913== 96 bytes in 1 blocks are possibly lost in loss record 267 of 321
+==19913==    at 0x4C2EC05: calloc (vg_replace_malloc.c:711)
+==19913==    by 0x1981E590: g_malloc0 (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.5306.0)
+==19913==    by 0x195A76D1: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x195A786A: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x195850AA: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x400EF09: call_init.part.0 (dl-init.c:72)
+==19913==    by 0x400F015: call_init (dl-init.c:118)
+==19913==    by 0x400F015: _dl_init (dl-init.c:119)
+==19913==    by 0x40010C9: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+==19913== 
+==19913== 96 bytes in 1 blocks are possibly lost in loss record 268 of 321
+==19913==    at 0x4C2EC05: calloc (vg_replace_malloc.c:711)
+==19913==    by 0x1981E590: g_malloc0 (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.5306.0)
+==19913==    by 0x195A76D1: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x195A786A: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x195AD302: g_type_register_fundamental (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x1958B2AE: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x19585187: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x400EF09: call_init.part.0 (dl-init.c:72)
+==19913==    by 0x400F015: call_init (dl-init.c:118)
+==19913==    by 0x400F015: _dl_init (dl-init.c:119)
+==19913==    by 0x40010C9: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+==19913== 
+==19913== 96 bytes in 1 blocks are possibly lost in loss record 269 of 321
+==19913==    at 0x4C2EC05: calloc (vg_replace_malloc.c:711)
+==19913==    by 0x1981E590: g_malloc0 (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.5306.0)
+==19913==    by 0x195A76D1: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x195A786A: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x195AD302: g_type_register_fundamental (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x1958B311: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x19585187: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x400EF09: call_init.part.0 (dl-init.c:72)
+==19913==    by 0x400F015: call_init (dl-init.c:118)
+==19913==    by 0x400F015: _dl_init (dl-init.c:119)
+==19913==    by 0x40010C9: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+==19913== 
+==19913== 96 bytes in 1 blocks are possibly lost in loss record 270 of 321
+==19913==    at 0x4C2EC05: calloc (vg_replace_malloc.c:711)
+==19913==    by 0x1981E590: g_malloc0 (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.5306.0)
+==19913==    by 0x195A76D1: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x195A786A: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x195AD302: g_type_register_fundamental (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x1959509B: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x19585191: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x400EF09: call_init.part.0 (dl-init.c:72)
+==19913==    by 0x400F015: call_init (dl-init.c:118)
+==19913==    by 0x400F015: _dl_init (dl-init.c:119)
+==19913==    by 0x40010C9: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+==19913== 
+==19913== 96 bytes in 1 blocks are possibly lost in loss record 271 of 321
+==19913==    at 0x4C2EC05: calloc (vg_replace_malloc.c:711)
+==19913==    by 0x1981E590: g_malloc0 (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.5306.0)
+==19913==    by 0x195A76D1: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x195A786A: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x195AD302: g_type_register_fundamental (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x1958FC1B: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x19585196: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x400EF09: call_init.part.0 (dl-init.c:72)
+==19913==    by 0x400F015: call_init (dl-init.c:118)
+==19913==    by 0x400F015: _dl_init (dl-init.c:119)
+==19913==    by 0x40010C9: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+==19913== 
+==19913== 132 bytes in 1 blocks are possibly lost in loss record 275 of 321
+==19913==    at 0x4C2EC05: calloc (vg_replace_malloc.c:711)
+==19913==    by 0x1981E590: g_malloc0 (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.5306.0)
+==19913==    by 0x195A86FF: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x195AD360: g_type_register_fundamental (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x1958B2AE: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x19585187: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x400EF09: call_init.part.0 (dl-init.c:72)
+==19913==    by 0x400F015: call_init (dl-init.c:118)
+==19913==    by 0x400F015: _dl_init (dl-init.c:119)
+==19913==    by 0x40010C9: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+==19913== 
+==19913== 132 bytes in 1 blocks are possibly lost in loss record 276 of 321
+==19913==    at 0x4C2EC05: calloc (vg_replace_malloc.c:711)
+==19913==    by 0x1981E590: g_malloc0 (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.5306.0)
+==19913==    by 0x195A86FF: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x195AD360: g_type_register_fundamental (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x1958B311: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x19585187: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x400EF09: call_init.part.0 (dl-init.c:72)
+==19913==    by 0x400F015: call_init (dl-init.c:118)
+==19913==    by 0x400F015: _dl_init (dl-init.c:119)
+==19913==    by 0x40010C9: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+==19913== 
+==19913== 148 bytes in 1 blocks are possibly lost in loss record 277 of 321
+==19913==    at 0x4C2EC05: calloc (vg_replace_malloc.c:711)
+==19913==    by 0x1981E590: g_malloc0 (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.5306.0)
+==19913==    by 0x195A8518: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x195AD360: g_type_register_fundamental (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x1959509B: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x19585191: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x400EF09: call_init.part.0 (dl-init.c:72)
+==19913==    by 0x400F015: call_init (dl-init.c:118)
+==19913==    by 0x400F015: _dl_init (dl-init.c:119)
+==19913==    by 0x40010C9: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+==19913== 
+==19913== 148 bytes in 1 blocks are possibly lost in loss record 278 of 321
+==19913==    at 0x4C2EC05: calloc (vg_replace_malloc.c:711)
+==19913==    by 0x1981E590: g_malloc0 (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.5306.0)
+==19913==    by 0x195A8518: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x195AD360: g_type_register_fundamental (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x1958FC1B: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x19585196: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x400EF09: call_init.part.0 (dl-init.c:72)
+==19913==    by 0x400F015: call_init (dl-init.c:118)
+==19913==    by 0x400F015: _dl_init (dl-init.c:119)
+==19913==    by 0x40010C9: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+==19913== 
+==19913== 184 bytes in 1 blocks are possibly lost in loss record 280 of 321
+==19913==    at 0x4C2EE0F: realloc (vg_replace_malloc.c:785)
+==19913==    by 0x1981E5EF: g_realloc (in /lib/x86_64-linux-gnu/libglib-2.0.so.0.5306.0)
+==19913==    by 0x195A7650: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x195AD871: g_type_register_static (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x19596D3B: g_param_type_register_static (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x19598F5A: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x1958519B: ??? (in /usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.5306.0)
+==19913==    by 0x400EF09: call_init.part.0 (dl-init.c:72)
+==19913==    by 0x400F015: call_init (dl-init.c:118)
+==19913==    by 0x400F015: _dl_init (dl-init.c:119)
+==19913==    by 0x40010C9: ??? (in /lib/x86_64-linux-gnu/ld-2.27.so)
+==19913== 
+==19913== 512 bytes in 1 blocks are possibly lost in loss record 291 of 321
+==19913==    at 0x4C2EC05: calloc (vg_replace_malloc.c:711)
+==19913==    by 0x40111E1: allocate_dtv (dl-tls.c:286)
+==19913==    by 0x4011B6D: _dl_allocate_tls (dl-tls.c:530)
+==19913==    by 0x8C3F079: allocate_stack (allocatestack.c:627)
+==19913==    by 0x8C3F079: pthread_create@@GLIBC_2.2.5 (pthread_create.c:644)
+==19913==    by 0xCB4BC19: ??? (in /usr/lib/x86_64-linux-gnu/libtbb.so.2)
+==19913==    by 0xCB4BD28: ??? (in /usr/lib/x86_64-linux-gnu/libtbb.so.2)
+==19913==    by 0xCB4BFB8: ??? (in /usr/lib/x86_64-linux-gnu/libtbb.so.2)
+==19913==    by 0x8C3E5A9: start_thread (pthread_create.c:463)
+==19913==    by 0xC461CBE: clone (clone.S:95)
+==19913== 
+==19913== 1,024 bytes in 2 blocks are possibly lost in loss record 292 of 321
+==19913==    at 0x4C2EC05: calloc (vg_replace_malloc.c:711)
+==19913==    by 0x40111E1: allocate_dtv (dl-tls.c:286)
+==19913==    by 0x4011B6D: _dl_allocate_tls (dl-tls.c:530)
+==19913==    by 0x8C3F079: allocate_stack (allocatestack.c:627)
+==19913==    by 0x8C3F079: pthread_create@@GLIBC_2.2.5 (pthread_create.c:644)
+==19913==    by 0xCB4BC19: ??? (in /usr/lib/x86_64-linux-gnu/libtbb.so.2)
+==19913==    by 0xCB54884: ??? (in /usr/lib/x86_64-linux-gnu/libtbb.so.2)
+==19913==    by 0xB77ED71: ??? (in /usr/lib/x86_64-linux-gnu/libopencv_core.so.3.2.0)
+==19913==    by 0xCB58395: ??? (in /usr/lib/x86_64-linux-gnu/libtbb.so.2)
+==19913==    by 0xCB54FDF: ??? (in /usr/lib/x86_64-linux-gnu/libtbb.so.2)
+==19913==    by 0xB7800AF: cv::parallel_for_(cv::Range const&, cv::ParallelLoopBody const&, double) (in /usr/lib/x86_64-linux-gnu/libopencv_core.so.3.2.0)
+==19913==    by 0xB0FA326: cv::Canny(cv::_InputArray const&, cv::_OutputArray const&, double, double, int, bool) (in /usr/lib/x86_64-linux-gnu/libopencv_imgproc.so.3.2.0)
+==19913==    by 0x122BA8: Mandelbrot::escapeSpeedCalcThread4() (mandelbrot.cpp:462)
+==19913== 
+==19913== 5,392 (96 direct, 5,296 indirect) bytes in 1 blocks are definitely lost in loss record 308 of 321
+==19913==    at 0x4C2D25F: operator new(unsigned long) (vg_replace_malloc.c:334)
+==19913==    by 0x121B82: Mandelbrot::Mandelbrot(__mpf_struct*, __mpf_struct*, __mpf_struct*, __mpf_struct*, int, int, int, int, int, Mpmc*, char*) (mandelbrot.cpp:38)
+==19913==    by 0x12537A: Mandelbrot::dichotomie(int, int) (mandelbrot.cpp:1106)
+==19913==    by 0x114B93: main (main.cpp:384)
+==19913== 
+==19913== 5,392 (96 direct, 5,296 indirect) bytes in 1 blocks are definitely lost in loss record 309 of 321
+==19913==    at 0x4C2D25F: operator new(unsigned long) (vg_replace_malloc.c:334)
+==19913==    by 0x121B82: Mandelbrot::Mandelbrot(__mpf_struct*, __mpf_struct*, __mpf_struct*, __mpf_struct*, int, int, int, int, int, Mpmc*, char*) (mandelbrot.cpp:38)
+==19913==    by 0x125401: Mandelbrot::dichotomie(int, int) (mandelbrot.cpp:1110)
+==19913==    by 0x114B93: main (main.cpp:384)
+==19913== 
+==19913== 15,760 (96 direct, 15,664 indirect) bytes in 1 blocks are definitely lost in loss record 313 of 321
+==19913==    at 0x4C2D25F: operator new(unsigned long) (vg_replace_malloc.c:334)
+==19913==    by 0x121AF0: Mandelbrot::Mandelbrot(__mpf_struct*, __mpf_struct*, __mpf_struct*, __mpf_struct*, int, int, int, int, int, Mpmc*, char*) (mandelbrot.cpp:37)
+==19913==    by 0x12537A: Mandelbrot::dichotomie(int, int) (mandelbrot.cpp:1106)
+==19913==    by 0x114B93: main (main.cpp:384)
+==19913== 
+==19913== 15,760 (96 direct, 15,664 indirect) bytes in 1 blocks are definitely lost in loss record 314 of 321
+==19913==    at 0x4C2D25F: operator new(unsigned long) (vg_replace_malloc.c:334)
+==19913==    by 0x121AF0: Mandelbrot::Mandelbrot(__mpf_struct*, __mpf_struct*, __mpf_struct*, __mpf_struct*, int, int, int, int, int, Mpmc*, char*) (mandelbrot.cpp:37)
+==19913==    by 0x125401: Mandelbrot::dichotomie(int, int) (mandelbrot.cpp:1110)
+==19913==    by 0x114B93: main (main.cpp:384)
+==19913== 
+==19913== 62,208 bytes in 2,592 blocks are definitely lost in loss record 316 of 321
+==19913==    at 0x4C2CBEF: malloc (vg_replace_malloc.c:299)
+==19913==    by 0x8E61848: __gmp_default_allocate (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x8E6218F: __gmpf_init (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x8E62234: __gmpf_inits (in /usr/local/lib/libgmp.so.10.3.2)
+==19913==    by 0x12200A: Mandelbrot::threadCalc4(void*) (mandelbrot.cpp:519)
+==19913==    by 0x129A54: pop (mpmc.cpp:68)
+==19913==    by 0x129A54: mainThread(void*) (mpmc.cpp:113)
+==19913==    by 0xBAFC86E: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.24)
+==19913==    by 0x8C3E5A9: start_thread (pthread_create.c:463)
+==19913==    by 0xC461CBE: clone (clone.S:95)
+==19913== 
+==19913== 331,984 (96 direct, 331,888 indirect) bytes in 1 blocks are definitely lost in loss record 320 of 321
+==19913==    at 0x4C2D25F: operator new(unsigned long) (vg_replace_malloc.c:334)
+==19913==    by 0x121A57: Mandelbrot::Mandelbrot(__mpf_struct*, __mpf_struct*, __mpf_struct*, __mpf_struct*, int, int, int, int, int, Mpmc*, char*) (mandelbrot.cpp:36)
+==19913==    by 0x12537A: Mandelbrot::dichotomie(int, int) (mandelbrot.cpp:1106)
+==19913==    by 0x114B93: main (main.cpp:384)
+==19913== 
+==19913== 331,984 (96 direct, 331,888 indirect) bytes in 1 blocks are definitely lost in loss record 321 of 321
+==19913==    at 0x4C2D25F: operator new(unsigned long) (vg_replace_malloc.c:334)
+==19913==    by 0x121A57: Mandelbrot::Mandelbrot(__mpf_struct*, __mpf_struct*, __mpf_struct*, __mpf_struct*, int, int, int, int, int, Mpmc*, char*) (mandelbrot.cpp:36)
+==19913==    by 0x125401: Mandelbrot::dichotomie(int, int) (mandelbrot.cpp:1110)
+==19913==    by 0x114B93: main (main.cpp:384)
+==19913== 
+==19913== LEAK SUMMARY:
+==19913==    definitely lost: 63,107 bytes in 2,611 blocks
+==19913==    indirectly lost: 705,696 bytes in 12 blocks
+==19913==      possibly lost: 2,888 bytes in 21 blocks
+==19913==    still reachable: 156,208 bytes in 953 blocks
+==19913==                       of which reachable via heuristic:
+==19913==                         newarray           : 3,096 bytes in 19 blocks
+==19913==         suppressed: 0 bytes in 0 blocks
+==19913== Reachable blocks (those to which a pointer was found) are not shown.
+==19913== To see them, rerun with: --leak-check=full --show-leak-kinds=all
+==19913== 
+==19913== For counts of detected and suppressed errors, rerun with: -v
+==19913== ERROR SUMMARY: 41 errors from 41 contexts (suppressed: 0 from 0)

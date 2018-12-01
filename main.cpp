@@ -328,6 +328,7 @@ int main(int argc, char** argv)
 			tmpx[0] = '-';
 			tmpx[1] = '0';
 		}
+		
 		char_y = mpf_get_str( NULL, &e2, 10, 1000, y);
 		if(char_y[0] == '-')
 		{
@@ -335,6 +336,7 @@ int main(int argc, char** argv)
 			tmpy[0] = '-';
 			tmpy[1] = '0';
 		}
+		
 		char_width = mpf_get_str( NULL, &e3, 10, 1000, w);
 		char_height = mpf_get_str( NULL, &e4, 10, 1000, h);
 
@@ -352,6 +354,10 @@ int main(int argc, char** argv)
 			
 		//delete char_x;
 		//delete char_y;
+		free(char_x);
+		free(char_y);
+		free(char_width);
+		free(char_height);
 
 		if (vm2.count("config"))
 		{

@@ -636,8 +636,8 @@ void Mandelbrot::threadCalcVideo(void* arg)
 	}
 
 
-	mpf_t xy, mod, xsqr, ysqr, tmp;
-	mpf_inits( xy, mod, tmp, xsqr, ysqr, NULL);
+	mpf_t xy, mod, xsqr, ysqr;
+	mpf_inits( xy, mod, xsqr, ysqr, NULL);
 
 	int iterCurrent = 1, Xindex, Yindex;
 
@@ -645,27 +645,27 @@ void Mandelbrot::threadCalcVideo(void* arg)
 	{
 		for (int i = 0; i < this->im_width; i++)
 		{
-			int sE = this->sEMat->at<char>(/*j*/args->ligne, i);
+			int sE = this->surEchantillonage;
 
 			for(int m = 0; m < sE; m++)
 			{
 				for(int n = 0; n < sE; n++)
 				{
-					Xindex = i*this->surEchantillonage+m;
-					Yindex = args->ligne*this->surEchantillonage+n;
+					Xindex = i*this->surEchantillonage + m;
+					Yindex = args->ligne*this->surEchantillonage + n;
 
 					if(this->divMat->at<int>( Yindex, Xindex) == iterCurrent)
 					{
-						mpf_mul(xsqr, iter[Xindex][Yindex][0], iter[Xindex][Yindex][0]); //xn²
-						mpf_mul(ysqr, iter[Xindex][Yindex][1], iter[Xindex][Yindex][1]); //yn²
-						mpf_mul(xy, iter[Xindex][Yindex][0], iter[Xindex][Yindex][1]); //xn*yn
+						mpf_mul(xsqr, iter[Xindex][n][0], iter[Xindex][n][0]); //xn²
+						mpf_mul(ysqr, iter[Xindex][n][1], iter[Xindex][n][1]); //yn²
+						mpf_mul(xy, iter[Xindex][n][0], iter[Xindex][n][1]); //xn*yn
 
 
-						mpf_sub(iter[Xindex][Yindex][0], xsqr, ysqr); //  xnp1 = xsqr - ysqr = xn² - yn²
-						mpf_add(iter[Xindex][Yindex][0], iter[Xindex][Yindex][0], args->x[Xindex]); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+						mpf_sub(iter[Xindex][n][0], xsqr, ysqr); //  xnp1 = xsqr - ysqr = xn² - yn²
+						mpf_add(iter[Xindex][n][0], iter[Xindex][n][0], args->x[Xindex]); //  xnp1 = xnp1 + xc = xn² - yn² + xc
 
-						mpf_mul_ui(iter[Xindex][Yindex][1], xy, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
-						mpf_add(iter[Xindex][Yindex][1], iter[Xindex][Yindex][1], args->y[Yindex]); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+						mpf_mul_ui(iter[Xindex][n][1], xy, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
+						mpf_add(iter[Xindex][n][1], iter[Xindex][n][1], args->y[Yindex]); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
 
 						//  mod = xnp1² + ynp1²
 						mpf_add(mod, xsqr, ysqr); //  mod = xsqr + ysqr = xn² + yn²
@@ -678,14 +678,18 @@ void Mandelbrot::threadCalcVideo(void* arg)
 				}
 			}
 		}
+		//cout << (*(this->divMat))(Range(args->ligne, args->ligne+1), Range::all()) << endl;
+		//cout << (*(this->img))(Range(args->ligne, args->ligne+1), Range::all()) << endl;
 
 		partialDraw( args->ligne, args->ligne + 1, iterCurrent);
-		frameSave( (*(this->divMat))(Range(args->ligne, args->ligne+1), Range::all()), this->rep, k, args->ligne);
+		frameSave( (*(this->img))(Range(args->ligne, args->ligne+1), Range::all()), this->rep, k, args->ligne);
+
+		iterCurrent++;
 	}
 
 	for(int i = 0; i < this->im_width*this->surEchantillonage; i++)
 	{
-		for(int j = 0; j < this->im_height*this->surEchantillonage; j++)
+		for(int j = 0; j < this->surEchantillonage; j++)
 		{
 			mpf_clear(iter[i][j][0]);
 			mpf_clear(iter[i][j][1]);
@@ -696,7 +700,8 @@ void Mandelbrot::threadCalcVideo(void* arg)
 	}
 	delete [] iter;
 
-	mpf_clears( xy, mod, tmp, xsqr, ysqr, NULL);
+
+	mpf_clears( xy, mod, xsqr, ysqr, NULL);
 	this->tasks.fetch_sub(1);
 }
 
@@ -1514,9 +1519,6 @@ void Mandelbrot::video2()
 	*(this->divMat) = 1;
 
 
-
-
-
 	threadDraw *args = new threadDraw[this->im_height];
 	work wo;
 	wo.f = CallThreadCalcVideo;
@@ -1542,6 +1544,44 @@ void Mandelbrot::video2()
 			>> RECONSTITUTION DES FRAMES
 			>> CREATION DE LA VIDEO
 	*/
+
+	stringstream videoName("");
+	videoName << "mkdir -p ../video/" << this->rep;
+	system(videoName.str().c_str());
+
+	videoName.str("");
+
+	videoName << "../video/" << this->rep << "/test.avi";
+	cout  << videoName.str().c_str() << endl;
+
+	stringstream framePart("");
+
+	Size S = Size( this->img->cols, this->img->rows);
+	VideoWriter outputVideo;
+
+	int ex = outputVideo.fourcc('H','2','6','4');
+
+	outputVideo.open(videoName.str().c_str(), ex, 20, S, true);
+	
+	if (!outputVideo.isOpened())
+	{
+		cout  << "Could not open the output video for write. " << endl;
+	}
+	else
+	{
+		for(int i = 1; i < this->iterations; i++)
+		{
+			for(int j = 0; j < this->im_height; j++)
+			{
+				framePart.str("");
+				framePart << "../video/" << rep << "/frames/" << i << "/" << j << ".png";
+
+				Mat src = imread( framePart.str().c_str(), IMREAD_COLOR );
+				src.copyTo((*(this->img))(cv::Rect(0,j,this->im_width, 1)));
+			}
+			outputVideo << (*(this->img));
+		}
+	}
 
 
 	for(int i = 0; i < this->im_width*this->surEchantillonage; ++i)

@@ -32,7 +32,7 @@ int matSave(Mat* mat, char* rep)
 }
 
 int frameSave(Mat mat, char* rep, int num, int ligne)
-{	
+{
 	vector<int> compression_params;
     compression_params.push_back( IMWRITE_PNG_COMPRESSION);
     compression_params.push_back(9);
@@ -45,8 +45,7 @@ int frameSave(Mat mat, char* rep, int num, int ligne)
 	nom_img.str("");
 	nom_img << "../video/" << rep << "/frames/" << num << "/" << ligne << ".png";
 
-    //cout << nom_img.str() << endl;
-
+	//cout << nom_img.str() << endl;
 	try
     {
         imwrite(nom_img.str().c_str(), mat, compression_params);

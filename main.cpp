@@ -13,7 +13,7 @@ int main(int argc, char** argv)
 	//10^-618
 
 	//C'EST ICI QUE TU CHANGES LES PARAMETRES POUR CHANGER LE RESULTAT FINAL BONHOMME !
-	int im_w = 1920, im_h = 1080, surech = 4, iteration = 400, enough = 1, color = RAINBOW;
+	int im_w = 1920, im_h = 1080, surech = 4, iteration = 50, enough = 1, color = RAINBOW;
 	int nbt = thread::hardware_concurrency();
 	bool verbose = false, video = false;
 	

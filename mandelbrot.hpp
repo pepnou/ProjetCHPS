@@ -61,7 +61,7 @@ class Mandelbrot
 		void threadCalc2_2(int deb, int fin, mpf_t* x, mpf_t* y);
 		void threadCalc3(int deb, int fin, mpf_t* x, mpf_t* y);
 		void threadCalc4(void* arg);
-		// void partialDraw();
+		void partialDraw(int deb, int fin);
 		//friend void CallThreadCalc(void* arg);
 		//friend void CallThreadCalcVideo(void* arg);
 

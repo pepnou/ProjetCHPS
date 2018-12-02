@@ -619,13 +619,30 @@ void Mandelbrot::threadCalcVideo(void* arg)
 	
 	threadDraw* args = (threadDraw*)arg;
 
-	mpf_t xn, yn, xnp1, ynp1, mod, xsqr, ysqr, tmp;
-	mpf_inits( xn, yn, xnp1, ynp1, mod, tmp, xsqr, ysqr, NULL);
-
 	// cout<<"Calcul ligne : "<<args->ligne<<endl;
 
-	/*for(int j = deb; j < fin; j++)
-	{*/
+	mpf_t ***iter = new mpf_t**[this->im_width*this->surEchantillonage];
+
+	for(int i = 0; i < this->im_width*this->surEchantillonage; i++)
+	{
+		iter[i] = new mpf_t*[this->surEchantillonage];
+		for(int j = 0; j < this->surEchantillonage; j++)
+		{
+			iter[i][j] = new mpf_t[2];
+
+			mpf_init2(iter[i][j][0], mpf_get_prec(this->pos_x));
+			mpf_init2(iter[i][j][1], mpf_get_prec(this->pos_y));
+		}
+	}
+
+
+	mpf_t xy, mod, xsqr, ysqr, tmp;
+	mpf_inits( xy, mod, tmp, xsqr, ysqr, NULL);
+
+	int iterCurrent = 1, Xindex, Yindex;
+
+	for (int k = 1; k < this->iterations; k++)
+	{
 		for (int i = 0; i < this->im_width; i++)
 		{
 			int sE = this->sEMat->at<char>(/*j*/args->ligne, i);
@@ -634,96 +651,112 @@ void Mandelbrot::threadCalcVideo(void* arg)
 			{
 				for(int n = 0; n < sE; n++)
 				{
-					if((sE != 1 && this->divMat->at<int>(/*j*/args->ligne*this->surEchantillonage+n ,i*this->surEchantillonage+m) == -1) || sE == 1)
+					Xindex = i*this->surEchantillonage+m;
+					Yindex = args->ligne*this->surEchantillonage+n;
+
+					if(this->divMat->at<int>( Yindex, Xindex) == iterCurrent)
 					{
-						mpf_set_ui(xn,0);
-						mpf_set_ui(yn,0);
-						mpf_set_ui(xsqr,0);
-						mpf_set_ui(ysqr,0);
+						mpf_mul(xsqr, iter[Xindex][Yindex][0], iter[Xindex][Yindex][0]); //xn²
+						mpf_mul(ysqr, iter[Xindex][Yindex][1], iter[Xindex][Yindex][1]); //yn²
+						mpf_mul(xy, iter[Xindex][Yindex][0], iter[Xindex][Yindex][1]); //xn*yn
 
-						for (int k = 1; k < this->iterations; k++)
-						{
-							//  xnp1 = xn² - yn² + xc
-							mpf_sub(xnp1, xsqr, ysqr); //  xnp1 = xsqr - ysqr = xn² - yn²
-							//mpf_add(xnp1, xnp1, xc); //  xnp1 = xnp1 + xc = xn² - yn² + xc
-							mpf_add(xnp1, xnp1, args->x[i*this->surEchantillonage+m]); //  xnp1 = xnp1 + xc = xn² - yn² + xc
 
-							//  ynp1 = 2*xn*yn + yc
-							mpf_mul(ynp1, xn, yn); //  ynp1 = xn * yn
-							mpf_mul_ui(ynp1, ynp1, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
-							//mpf_add(ynp1, ynp1, yc); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
-							mpf_add(ynp1, ynp1, args->y[/*j*/args->ligne*this->surEchantillonage+n]); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+						mpf_sub(iter[Xindex][Yindex][0], xsqr, ysqr); //  xnp1 = xsqr - ysqr = xn² - yn²
+						mpf_add(iter[Xindex][Yindex][0], iter[Xindex][Yindex][0], args->x[Xindex]); //  xnp1 = xnp1 + xc = xn² - yn² + xc
 
-							//  xn = xnp1
-							//  yn = ynp1
-							mpf_set( xn, xnp1); //  xn = xnp1
-							mpf_set( yn, ynp1); //  yn = ynp1
-							
-							//xsqr = xn²
-							mpf_mul(xsqr, xn, xn);
+						mpf_mul_ui(iter[Xindex][Yindex][1], xy, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
+						mpf_add(iter[Xindex][Yindex][1], iter[Xindex][Yindex][1], args->y[Yindex]); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
 
-							//ysqr = yn²
-							mpf_mul(ysqr, yn, yn);
+						//  mod = xnp1² + ynp1²
+						mpf_add(mod, xsqr, ysqr); //  mod = xsqr + ysqr = xn² + yn²
 
-							//  mod = xnp1² + ynp1²
-							mpf_add(mod, xsqr, ysqr); //  mod = xsqr + ysqr = xn² + yn²
-
-							if(mpf_cmp_ui(mod, 4) > 0)
-							{
-								this->divMat->at<int>(/*j*/args->ligne*this->surEchantillonage+n, i*this->surEchantillonage+m) = k;
-								break;
-							} else if(k == this->iterations -1)
-								{
-									this->divMat->at<int>(/*j*/args->ligne*this->surEchantillonage+n, i*this->surEchantillonage+m) = this->iterations;
-								}
-						}
+						if(mpf_cmp_ui(mod, 4) > 0)
+							this->divMat->at<int>(Yindex, Xindex) = iterCurrent;
+						else
+							this->divMat->at<int>(Yindex, Xindex) = iterCurrent + 1;
 					}
 				}
 			}
 		}
-	//}
-	//dbgout<<"-"<<endl;
-	mpf_clears( xn, yn, xnp1, ynp1, mod, tmp, xsqr, ysqr, NULL);
+
+		partialDraw( args->ligne, args->ligne + 1);
+		frameSave( (*(this->divMat))(Range(args->ligne, args->ligne), Range::all()), this->rep, k, args->ligne);
+	}
+
+	for(int i = 0; i < this->im_width*this->surEchantillonage; i++)
+	{
+		for(int j = 0; j < this->im_height*this->surEchantillonage; j++)
+		{
+			mpf_clear(iter[i][j][0]);
+			mpf_clear(iter[i][j][1]);
+			
+			delete [] iter[i][j];
+		}
+		delete [] iter[i];
+	}
+	delete [] iter;
+
+	mpf_clears( xy, mod, tmp, xsqr, ysqr, NULL);
 	this->tasks.fetch_sub(1);
-	//cout<<"Calcul ligne : "<<args->ligne<<endl;
-	//dbgout<<this->tasks.fetch_sub(1)<<endl;
 }
 
-/*void Mandelbrot::partialDraw()
+void Mandelbrot::partialDraw(int deb, int fin)
 {
-	int divSpeed;
+	int moy, nbr_div, nbr_ndiv, divSpeed;
 
 	for(int i = 0; i < this->im_width; ++i)
 	{
-		for (int j = 0; j < this->im_height; ++j)
+		for (int j = deb; j < fin; ++j)
 		{
-			divSpeed = divMat->at<int>( j*this->surEchantillonage, i*this->surEchantillonage);
+			moy = 0, nbr_div = 0, nbr_ndiv = 0;
+			for(int k = 0; k < this->surEchantillonage; ++k)
+			{
+				for(int l = 0; l < this->surEchantillonage; ++l)
+				{
+					divSpeed = divMat->at<int>( j*this->surEchantillonage + l, i*this->surEchantillonage + k);
+
+					if(divSpeed != -1)
+					{
+						if(divSpeed == this->iterations)
+							nbr_ndiv++;
+						else
+						{
+							moy += divSpeed;
+							nbr_div++;
+						}
+					}
+				}
+			}
+
 			Vec3b bgr;
+
+			if(nbr_div)
+				moy /= nbr_div;
+			else 
+				moy = this->iterations;
+
 			switch(this->color)
 			{
 				case 1:
 				{
-					if(divSpeed == this->iterations)
-						coloration(bgr, divSpeed, this->iterations, 0, 1);
-					else
-						coloration(bgr, divSpeed, this->iterations, 1, 0);
+					coloration(bgr, moy, this->iterations, nbr_div, nbr_ndiv);
 					break;
 				}
 				case 2:
 				{
-					coloration2(bgr, divSpeed, this->iterations);
+					coloration2(bgr, moy, this->iterations);
 					break;
 				}
 				case 3:
 				{
-					coloration3(bgr, divSpeed, this->iterations);
+					coloration3(bgr, moy, this->iterations);
 					break;
 				}
 			}
 			this->img->at<Vec3b>( j, i) = bgr;
 		}
 	}
-}*/
+}
 
 /*void Mandelbrot::threadCalc2_2(int deb, int fin, mpf_t* x, mpf_t* y)
 {
@@ -1478,7 +1511,7 @@ void Mandelbrot::video2()
 
 	mpf_clears( tmp1, tmp2, NULL);
 	
-
+	*(this->divMat) = 1;
 
 
 
@@ -1504,7 +1537,11 @@ void Mandelbrot::video2()
 		this_thread::yield();
 	
 	
-
+	/*
+		TRUC A COMPLETER :
+			>> RECONSTITUTION DES FRAMES
+			>> CREATION DE LA VIDEO
+	*/
 
 
 	for(int i = 0; i < this->im_width*this->surEchantillonage; ++i)

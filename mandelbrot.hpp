@@ -62,7 +62,13 @@ class Mandelbrot
 		void threadCalc3(int deb, int fin, mpf_t* x, mpf_t* y);
 		void threadCalc4(void* arg);
 		// void partialDraw();
-		friend void CallThreadCalc(void* arg);
+		//friend void CallThreadCalc(void* arg);
+		//friend void CallThreadCalcVideo(void* arg);
+
+		void threadCalcVideo(void* arg);
+
+		static void CallThreadCalc(void* arg);
+		static void CallThreadCalcVideo(void* arg);
 		
 	public:
 		Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, int supSample, int iterations, int color, Mpmc* mpmc,  char* rep = nullptr);
@@ -82,8 +88,10 @@ class Mandelbrot
 		void dichotomie(int enough, int prec);
 		bool alea(int enough, int prec);
 		void video();
+		void video2();
 };
 
-void CallThreadCalc(void* arg);
+//void CallThreadCalc(void* arg);
+//void CallThreadCalcVideo(void* arg);
 
 #endif

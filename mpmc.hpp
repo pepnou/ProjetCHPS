@@ -25,6 +25,14 @@ typedef struct
 	Mandelbrot* M;
 }threadDraw;
 
+typedef struct 
+{
+	mpf_t *x;
+	mpf_t *y;
+	int ligne;
+	Mandelbrot* M;
+}threadVideoDraw;
+
 class Mpmc
 {
 	private:

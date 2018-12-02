@@ -13,7 +13,7 @@ int main(int argc, char** argv)
 	//10^-618
 
 	//C'EST ICI QUE TU CHANGES LES PARAMETRES POUR CHANGER LE RESULTAT FINAL BONHOMME !
-	int im_w = 1920, im_h = 1080, surech = 4, iteration = 100, enough = 1, color = RAINBOW;
+	int im_w = 1920, im_h = 1080, surech = 4, iteration = 400, enough = 1, color = RAINBOW;
 	int nbt = thread::hardware_concurrency();
 	bool verbose = false, video = false;
 	
@@ -51,6 +51,7 @@ int main(int argc, char** argv)
 			("enough,E", po::value< int >(), ": the maximum number of dichotomical division before stoping")
 			("super-sampling,S", po::value< int >(), ": the maximum number of points calculated per pixel")
 			("thread,T", po::value< int >(), ": the maximum number of thread, see --help-thread")
+			
 			;
 
 		po::options_description hidden("Hidden options");
@@ -328,7 +329,6 @@ int main(int argc, char** argv)
 			tmpx[0] = '-';
 			tmpx[1] = '0';
 		}
-		
 		char_y = mpf_get_str( NULL, &e2, 10, 1000, y);
 		if(char_y[0] == '-')
 		{
@@ -336,28 +336,20 @@ int main(int argc, char** argv)
 			tmpy[0] = '-';
 			tmpy[1] = '0';
 		}
-		
 		char_width = mpf_get_str( NULL, &e3, 10, 1000, w);
 		char_height = mpf_get_str( NULL, &e4, 10, 1000, h);
 
 		ofstream ofs("Config.cfg",ofstream::trunc);
-		ofs << "im-width=" << im_w << endl
-			<< "im-height=" << im_h << endl
-			<< "Xposition=" << tmpx << char_x << "e" << e1 << endl
+		ofs << "Xposition=" << tmpx << char_x << "e" << e1 << endl
 			<< "Yposition=" << tmpy << char_y << "e" << e2 << endl
+			<< "im-width=" << im_w << endl
+			<< "im-height=" << im_h << endl
 			<< "width=" << "0." << char_width << "e" << e3 << endl
 			<< "height=" << "0." << char_height << "e" << e4 << endl
 			<< "color=" << color << endl
 			<< "enough=" << enough << endl
 			<< "super-sampling=" << surech << endl
 			<< "thread=" << nbt << endl;
-			
-		//delete char_x;
-		//delete char_y;
-		free(char_x);
-		free(char_y);
-		free(char_width);
-		free(char_height);
 
 		if (vm2.count("config"))
 		{
@@ -383,31 +375,44 @@ int main(int argc, char** argv)
 	}
 
 
-	if(!video)
+	/*if(!video)
 	{
 		MyThreads* MT = new MyThreads(nbt);
 		Mpmc* mpmc = MT->getMpmc();
-		Mandelbrot* M = new Mandelbrot( x, y, w, h, im_w, im_h, surech, iteration, color, mpmc);
+		Mandelbrot M( x, y, w, h, im_w, im_h, surech, iteration, color, mpmc);
 
 		uint64_t tick = rdtsc();
-		M->dichotomie( enough, 0);
+		M.dichotomie( enough, 0);
 		//M.alea( enough, 0);
 		if(verbose)cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
 
 		delete MT;
-		delete M;
 	}
 	else
 	{
-		Mandelbrot* M = new Mandelbrot( x, y, w, h, im_w, im_h, surech, iteration, color, nullptr);
+		Mandelbrot M( x, y, w, h, im_w, im_h, surech, iteration, color, nullptr);
 
 		uint64_t tick = rdtsc();
-		M->video();
+		M.video();
 		if(verbose)cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
-		
-		delete M;
-	}
-	
+	}*/
+
+	MyThreads* MT = new MyThreads(nbt);
+	Mpmc* mpmc = MT->getMpmc();
+	Mandelbrot M( x, y, w, h, im_w, im_h, surech, iteration, color, mpmc);
+
+	uint64_t tick = rdtsc();
+
+	if(!video)
+		M.dichotomie( enough, 0);
+		//M.alea( enough, 0);
+	else
+		M.video2();
+
+	if(verbose)cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
+
+
+	delete MT;	
 	mpf_clears( x, y, w, h, NULL);
 	exit(0);
 }

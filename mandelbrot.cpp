@@ -679,8 +679,8 @@ void Mandelbrot::threadCalcVideo(void* arg)
 			}
 		}
 
-		partialDraw( args->ligne, args->ligne + 1);
-		frameSave( (*(this->divMat))(Range(args->ligne, args->ligne), Range::all()), this->rep, k, args->ligne);
+		partialDraw( args->ligne, args->ligne + 1, iterCurrent);
+		frameSave( (*(this->divMat))(Range(args->ligne, args->ligne+1), Range::all()), this->rep, k, args->ligne);
 	}
 
 	for(int i = 0; i < this->im_width*this->surEchantillonage; i++)
@@ -700,7 +700,7 @@ void Mandelbrot::threadCalcVideo(void* arg)
 	this->tasks.fetch_sub(1);
 }
 
-void Mandelbrot::partialDraw(int deb, int fin)
+void Mandelbrot::partialDraw(int deb, int fin, int iter)
 {
 	int moy, nbr_div, nbr_ndiv, divSpeed;
 
@@ -717,7 +717,7 @@ void Mandelbrot::partialDraw(int deb, int fin)
 
 					if(divSpeed != -1)
 					{
-						if(divSpeed == this->iterations)
+						if(divSpeed == iter)
 							nbr_ndiv++;
 						else
 						{
@@ -733,23 +733,23 @@ void Mandelbrot::partialDraw(int deb, int fin)
 			if(nbr_div)
 				moy /= nbr_div;
 			else 
-				moy = this->iterations;
+				moy = iter;
 
 			switch(this->color)
 			{
 				case 1:
 				{
-					coloration(bgr, moy, this->iterations, nbr_div, nbr_ndiv);
+					coloration(bgr, moy, iter, nbr_div, nbr_ndiv);
 					break;
 				}
 				case 2:
 				{
-					coloration2(bgr, moy, this->iterations);
+					coloration2(bgr, moy, iter);
 					break;
 				}
 				case 3:
 				{
-					coloration3(bgr, moy, this->iterations);
+					coloration3(bgr, moy, iter);
 					break;
 				}
 			}

@@ -5,6 +5,8 @@ using namespace std;
 
 namespace po = boost::program_options;
 
+int Mandelbrot::pas = 0;
+
 int main(int argc, char** argv)
 {
 	srand(time(NULL));
@@ -13,7 +15,7 @@ int main(int argc, char** argv)
 	//10^-618
 
 	//C'EST ICI QUE TU CHANGES LES PARAMETRES POUR CHANGER LE RESULTAT FINAL BONHOMME !
-	int im_w = 1920, im_h = 1080, surech = 4, iteration = 200, enough = 1, color = RAINBOW;
+	int im_w = 1920, im_h = 1080, surech = 4, iteration = 50, enough = 1, color = RAINBOW;
 	int nbt = thread::hardware_concurrency();
 	bool verbose = false, video = false;
 	
@@ -403,7 +405,7 @@ int main(int argc, char** argv)
 
 	uint64_t tick = rdtsc();
 
-	if(!video)
+	/*if(!video)
 		M.dichotomie( enough, 0);
 		//M.alea( enough, 0);
 	else
@@ -412,12 +414,32 @@ int main(int argc, char** argv)
 		M.video2();
 		cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
 
-		/*tick = rdtsc();
+		tick = rdtsc();
 		M.video();
-		cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;*/
+		cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
 	}
 
-	if(verbose)cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
+	if(verbose)cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;*/
+
+
+
+	ofstream file("./perf_f_pas3.txt",ios::out | ios::trunc);
+
+	for(int i = 1; i < 14; i++)
+	{
+		Mandelbrot::pas = i;
+		for(int j = 0; j < 2; j++)
+		{
+			file << i << " ";
+
+		tick = rdtsc();
+		M.video2();
+
+		file << rdtsc() - tick << endl;
+		}
+	}
+
+	file.close();
 
 
 	delete MT;	

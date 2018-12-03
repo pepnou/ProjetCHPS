@@ -89,6 +89,9 @@ class Mandelbrot
 		bool alea(int enough, int prec);
 		void video();
 		void video2();
+
+		//const static int pas = 2;
+		static int pas;
 };
 
 //void CallThreadCalc(void* arg);

@@ -21,17 +21,9 @@ typedef struct
 {
 	mpf_t *x;
 	mpf_t *y;
-	int ligne;
+	int deb, fin;
 	Mandelbrot* M;
 }threadDraw;
-
-typedef struct 
-{
-	mpf_t *x;
-	mpf_t *y;
-	int ligne;
-	Mandelbrot* M;
-}threadVideoDraw;
 
 class Mpmc
 {

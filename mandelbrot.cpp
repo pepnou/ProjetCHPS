@@ -447,15 +447,18 @@ void Mandelbrot::escapeSpeedCalcThread4()
 	threadDraw *args = new threadDraw[this->im_height];
 	work wo;
 	wo.f = CallThreadCalc;
+
+	int nbTasks = (this->im_height % Mandelbrot::pas == 0)?this->im_height / (Mandelbrot::pas):this->im_height / (Mandelbrot::pas) + 1;
 	
-	for(int i = 0; i < this->im_height; i++)
+	for(int i = 0; i < nbTasks; i++)
 	{
 		//cout<<this->tasks.fetch_add(1)<<endl;
 		this->tasks.fetch_add(1);
 		
 		args[i].x = x;
 		args[i].y = y;
-		args[i].ligne = i;
+		args[i].deb = i*this->im_height/nbTasks;
+		args[i].fin = (i + 1)*this->im_height/nbTasks;
 		args[i].M = this;
 		//cout<<"+1"<<endl;
 		
@@ -491,7 +494,7 @@ void Mandelbrot::escapeSpeedCalcThread4()
 
 
 
-	for(int i = 0; i < this->im_height; i++)
+	for(int i = 0; i < nbTasks; i++)
 	{
 		this->tasks.fetch_add(1);
 
@@ -547,17 +550,17 @@ void Mandelbrot::threadCalc4(void* arg)
 
 	// cout<<"Calcul ligne : "<<args->ligne<<endl;
 
-	/*for(int j = deb; j < fin; j++)
-	{*/
+	for(int j = args->deb; j < args->fin; j++)
+	{
 		for (int i = 0; i < this->im_width; i++)
 		{
-			int sE = this->sEMat->at<char>(/*j*/args->ligne, i);
+			int sE = this->sEMat->at<char>( j, i);
 
 			for(int m = 0; m < sE; m++)
 			{
 				for(int n = 0; n < sE; n++)
 				{
-					if((sE != 1 && this->divMat->at<int>(/*j*/args->ligne*this->surEchantillonage+n ,i*this->surEchantillonage+m) == -1) || sE == 1)
+					if((sE != 1 && this->divMat->at<int>(j*this->surEchantillonage+n ,i*this->surEchantillonage+m) == -1) || sE == 1)
 					{
 						mpf_set_ui(xn,0);
 						mpf_set_ui(yn,0);
@@ -575,7 +578,7 @@ void Mandelbrot::threadCalc4(void* arg)
 							mpf_mul(ynp1, xn, yn); //  ynp1 = xn * yn
 							mpf_mul_ui(ynp1, ynp1, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
 							//mpf_add(ynp1, ynp1, yc); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
-							mpf_add(ynp1, ynp1, args->y[/*j*/args->ligne*this->surEchantillonage+n]); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+							mpf_add(ynp1, ynp1, args->y[j*this->surEchantillonage+n]); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
 
 							//  xn = xnp1
 							//  yn = ynp1
@@ -593,18 +596,18 @@ void Mandelbrot::threadCalc4(void* arg)
 
 							if(mpf_cmp_ui(mod, 4) > 0)
 							{
-								this->divMat->at<int>(/*j*/args->ligne*this->surEchantillonage+n, i*this->surEchantillonage+m) = k;
+								this->divMat->at<int>(j*this->surEchantillonage+n, i*this->surEchantillonage+m) = k;
 								break;
 							} else if(k == this->iterations -1)
 								{
-									this->divMat->at<int>(/*j*/args->ligne*this->surEchantillonage+n, i*this->surEchantillonage+m) = this->iterations;
+									this->divMat->at<int>(j*this->surEchantillonage+n, i*this->surEchantillonage+m) = this->iterations;
 								}
 						}
 					}
 				}
 			}
 		}
-	//}
+	}
 	//dbgout<<"-"<<endl;
 	mpf_clears( xn, yn, xnp1, ynp1, mod, tmp, xsqr, ysqr, NULL);
 	this->tasks.fetch_sub(1);
@@ -619,14 +622,15 @@ void Mandelbrot::threadCalcVideo(void* arg)
 	
 	threadDraw* args = (threadDraw*)arg;
 
+
 	// cout<<"Calcul ligne : "<<args->ligne<<endl;
 
 	mpf_t ***iter = new mpf_t**[this->im_width*this->surEchantillonage];
 
 	for(int i = 0; i < this->im_width*this->surEchantillonage; i++)
 	{
-		iter[i] = new mpf_t*[this->surEchantillonage];
-		for(int j = 0; j < this->surEchantillonage; j++)
+		iter[i] = new mpf_t*[(args->fin - args->deb)*this->surEchantillonage];
+		for(int j = 0; j < (args->fin - args->deb)*this->surEchantillonage; j++)
 		{
 			iter[i][j] = new mpf_t[2];
 
@@ -639,41 +643,44 @@ void Mandelbrot::threadCalcVideo(void* arg)
 	mpf_t xy, mod, xsqr, ysqr;
 	mpf_inits( xy, mod, xsqr, ysqr, NULL);
 
-	int iterCurrent = 1, Xindex, Yindex;
+	int iterCurrent = 1, Xindex, Yindex, Yindex2;
 
 	for (int k = 1; k < this->iterations; k++)
 	{
-		for (int i = 0; i < this->im_width; i++)
+		for(int j = args->deb; j < args->fin; j++)
 		{
-			int sE = this->surEchantillonage;
-
-			for(int m = 0; m < sE; m++)
+			for (int i = 0; i < this->im_width; i++)
 			{
-				for(int n = 0; n < sE; n++)
+				int sE = this->surEchantillonage;
+
+				for(int m = 0; m < sE; m++)
 				{
-					Xindex = i*this->surEchantillonage + m;
-					Yindex = args->ligne*this->surEchantillonage + n;
-
-					if(this->divMat->at<int>( Yindex, Xindex) == iterCurrent)
+					for(int n = 0; n < sE; n++)
 					{
-						mpf_mul(xsqr, iter[Xindex][n][0], iter[Xindex][n][0]); //xn²
-						mpf_mul(ysqr, iter[Xindex][n][1], iter[Xindex][n][1]); //yn²
-						mpf_mul(xy, iter[Xindex][n][0], iter[Xindex][n][1]); //xn*yn
+						Xindex = i*this->surEchantillonage + m;
+						Yindex = j*this->surEchantillonage + n;
+						Yindex2 = (j - args->deb) * this->surEchantillonage + n;
 
+						if(this->divMat->at<int>( Yindex, Xindex) == iterCurrent)
+						{
+							mpf_mul(xsqr, iter[Xindex][Yindex2][0], iter[Xindex][Yindex2][0]); //xn²
+							mpf_mul(ysqr, iter[Xindex][Yindex2][1], iter[Xindex][Yindex2][1]); //yn²
+							mpf_mul(xy, iter[Xindex][Yindex2][0], iter[Xindex][Yindex2][1]); //xn*yn
 
-						mpf_sub(iter[Xindex][n][0], xsqr, ysqr); //  xnp1 = xsqr - ysqr = xn² - yn²
-						mpf_add(iter[Xindex][n][0], iter[Xindex][n][0], args->x[Xindex]); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+							mpf_sub(iter[Xindex][Yindex2][0], xsqr, ysqr); //  xnp1 = xsqr - ysqr = xn² - yn²
+							mpf_add(iter[Xindex][Yindex2][0], iter[Xindex][Yindex2][0], args->x[Xindex]); //  xnp1 = xnp1 + xc = xn² - yn² + xc
 
-						mpf_mul_ui(iter[Xindex][n][1], xy, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
-						mpf_add(iter[Xindex][n][1], iter[Xindex][n][1], args->y[Yindex]); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+							mpf_mul_ui(iter[Xindex][Yindex2][1], xy, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
+							mpf_add(iter[Xindex][Yindex2][1], iter[Xindex][Yindex2][1], args->y[Yindex]); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
 
-						//  mod = xnp1² + ynp1²
-						mpf_add(mod, xsqr, ysqr); //  mod = xsqr + ysqr = xn² + yn²
+							//  mod = xnp1² + ynp1²
+							mpf_add(mod, xsqr, ysqr); //  mod = xsqr + ysqr = xn² + yn²
 
-						if(mpf_cmp_ui(mod, 4) > 0)
-							this->divMat->at<int>(Yindex, Xindex) = iterCurrent;
-						else
-							this->divMat->at<int>(Yindex, Xindex) = iterCurrent + 1;
+							if(mpf_cmp_ui(mod, 4) > 0)
+								this->divMat->at<int>(Yindex, Xindex) = iterCurrent;
+							else
+								this->divMat->at<int>(Yindex, Xindex) = iterCurrent + 1;
+						}
 					}
 				}
 			}
@@ -681,8 +688,8 @@ void Mandelbrot::threadCalcVideo(void* arg)
 		//cout << (*(this->divMat))(Range(args->ligne, args->ligne+1), Range::all()) << endl;
 		//cout << (*(this->img))(Range(args->ligne, args->ligne+1), Range::all()) << endl;
 
-		partialDraw( args->ligne, args->ligne + 1, iterCurrent);
-		frameSave( (*(this->img))(Range(args->ligne, args->ligne+1), Range::all()), this->rep, k, args->ligne);
+		partialDraw( args->deb, args->fin, iterCurrent);
+		frameSave( (*(this->img))(Range(args->deb, args->fin), Range::all()), this->rep, k, args->deb);
 
 		iterCurrent++;
 	}
@@ -1524,14 +1531,17 @@ void Mandelbrot::video2()
 	threadDraw *args = new threadDraw[this->im_height];
 	work wo;
 	wo.f = CallThreadCalcVideo;
+
+	int nbTasks = (this->im_height % Mandelbrot::pas == 0)?this->im_height / (Mandelbrot::pas):this->im_height / (Mandelbrot::pas) + 1;
 	
-	for(int i = 0; i < this->im_height; i++)
+	for(int i = 0; i < nbTasks; i++)
 	{
 		this->tasks.fetch_add(1);
 		
 		args[i].x = x;
 		args[i].y = y;
-		args[i].ligne = i;
+		args[i].deb = i*this->im_height/nbTasks;
+		args[i].fin = (i + 1)*this->im_height/nbTasks;
 		args[i].M = this;
 		
 		wo.arg = (void*)&args[i];
@@ -1573,13 +1583,13 @@ void Mandelbrot::video2()
 	{
 		for(int i = 1; i < this->iterations; i++)
 		{
-			for(int j = 0; j < this->im_height; j++)
+			for(int j = 0; j < nbTasks; j++)
 			{
 				framePart.str("");
-				framePart << "../video/" << rep << "/frames/" << i << "/" << j << ".png";
-
+				framePart << "../video/" << rep << "/frames/" << i << "/" << j*this->im_height/nbTasks << ".png";
+				
 				Mat src = imread( framePart.str().c_str(), IMREAD_COLOR );
-				src.copyTo((*(this->img))(cv::Rect(0,j,this->im_width, 1)));
+				src.copyTo((*(this->img))(cv::Rect(0,j*this->im_height/nbTasks,this->im_width, (j+1)*this->im_height/nbTasks - j*this->im_height/nbTasks)));
 			}
 			outputVideo << (*(this->img));
 		}

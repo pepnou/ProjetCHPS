@@ -2,6 +2,7 @@
 
 using namespace cv;
 using namespace std;
+#define dbg std::cout<<"line : "<<__LINE__<<", function : "<<__FUNCTION__<<"\n";
 
 int matSave(Mat* mat, char* rep)
 {

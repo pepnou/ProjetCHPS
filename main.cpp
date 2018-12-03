@@ -10,10 +10,11 @@ int main(int argc, char** argv)
 	//mpf_set_default_prec(MAX_PREC);
 	//10^-618
 
-	//C'EST ICI QUE TU CHANGES LES PARAMETRES POUR CHANGER LE RESULTAT FINAL BONHOMME !
-	int im_w = 1920, im_h = 1080, surech = 4, iteration = 100, enough = 1, color = RAINBOW;
+	//PARAMETRES PAR DEFAULT, TOUCHE PAS, VA DANS LE FICHIER CONFIG.CFG
+	int im_w = 1920, im_h = 1080, surech = 4, iteration = 100, enough = 1, color = RAINBOW, nbr = 2;
 	int nbt = thread::hardware_concurrency();
 	bool verbose = false, video = false;
+	vector<int> divs;
 	
 	mpf_t x, y, w, h;
 
@@ -49,6 +50,7 @@ int main(int argc, char** argv)
 			("enough,E", po::value< int >(), ": the maximum number of dichotomical division before stoping")
 			("super-sampling,S", po::value< int >(), ": the maximum number of points calculated per pixel")
 			("thread,T", po::value< int >(), ": the maximum number of thread, see --help-thread")
+			("division,D", po::value< vector<int> >()->multitoken(), ": ")
 			;
 
 		po::options_description hidden("Hidden options");
@@ -73,6 +75,11 @@ int main(int argc, char** argv)
 		ifstream ifs("Config.cfg");
 		store(parse_config_file(ifs, config_file_options), vm);
 		notify(vm);
+
+		if(vm.count("division"))
+		{
+			//divs = vm["division"].as<vector<int>>();
+		}
 
 		if (vm.count("Xposition"))
 		{
@@ -278,6 +285,11 @@ int main(int argc, char** argv)
 			verbose = true;
 		}
 
+		if(vm2.count("division"))
+		{
+			divs = vm2["division"].as<vector<int>>();
+		}
+
 
 		if (vm2.count("help-color"))
 		{
@@ -370,10 +382,7 @@ int main(int argc, char** argv)
 		mpf_set_prec_raw( y, mpf_get_prec(h));
 		mpf_set_prec( y, mpf_get_prec(h));
 	}
-
-
-
-	int divs[] = {2};
+	
 
 	if(!video)
 	{
@@ -382,7 +391,8 @@ int main(int argc, char** argv)
 		Mandelbrot M( x, y, w, h, im_w, im_h, surech, iteration, color, mpmc);
 
 		uint64_t tick = rdtsc();
-		M.dichotomie2( enough, 1, divs);
+		//M.dichotomie( enough, 0);
+		M.dichotomie2(enough, divs.size(), divs, 0);
 		if(verbose)cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
 
 		delete MT;

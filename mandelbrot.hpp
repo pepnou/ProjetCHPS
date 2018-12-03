@@ -82,7 +82,7 @@ class Mandelbrot
 		bool IsGood_2(bool* filtre);
 		//int DeepEnough(auto enough);
 		void dichotomie(int enough, int prec);
-		void dichotomie2(int enough, int n_div, int* divs);
+		void dichotomie2(int enough, int n_div, std::vector<int>& divs, int prec);
 		void video();
 
 };

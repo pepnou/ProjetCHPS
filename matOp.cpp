@@ -11,7 +11,6 @@ int matSave(Mat* mat, char* rep)
     compression_params.push_back( IMWRITE_PNG_COMPRESSION);
     compression_params.push_back(9);
 	
-<<<<<<< HEAD
 	stringstream nom_img("");
 	nom_img << "mkdir -p ../img/" << rep << "/";
 	
@@ -19,12 +18,7 @@ int matSave(Mat* mat, char* rep)
 	
 	nom_img.str("");
 	nom_img << "../img/" << rep << "/mandel" << num++ << ".png";
-=======
-	char nom_img[128];
 
-	sprintf( nom_img, "mkdir -p ../img/%s", rep);
-	system(nom_img);
->>>>>>> ANTOINE
 
     cout << nom_img.str() << endl;
 

@@ -1413,8 +1413,10 @@ void Mandelbrot::video()
 
 		int iterCurrent = 1;
 
+		cout << this->iterations << endl;
+
 		//do
-		for(int k = 0; k < 1000; k++)
+		for(int k = 0; k < this->iterations; k++)
 		{
 			cout<< "iteration : " << k <<endl;
 
@@ -1446,9 +1448,9 @@ void Mandelbrot::video()
 				}
 			}
 
-			this->iterations = iterCurrent;
+			//this->iterations = iterCurrent;
 
-			draw();
+			partialDraw(0, this->im_height, iterCurrent);
 			//save();
 
 			outputVideo << *(this->img);

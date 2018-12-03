@@ -13,7 +13,7 @@ int main(int argc, char** argv)
 	//10^-618
 
 	//C'EST ICI QUE TU CHANGES LES PARAMETRES POUR CHANGER LE RESULTAT FINAL BONHOMME !
-	int im_w = 1920, im_h = 1080, surech = 4, iteration = 50, enough = 1, color = RAINBOW;
+	int im_w = 1920, im_h = 1080, surech = 4, iteration = 200, enough = 1, color = RAINBOW;
 	int nbt = thread::hardware_concurrency();
 	bool verbose = false, video = false;
 	
@@ -407,7 +407,15 @@ int main(int argc, char** argv)
 		M.dichotomie( enough, 0);
 		//M.alea( enough, 0);
 	else
+	{
+		tick = rdtsc();
 		M.video2();
+		cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
+
+		/*tick = rdtsc();
+		M.video();
+		cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;*/
+	}
 
 	if(verbose)cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
 

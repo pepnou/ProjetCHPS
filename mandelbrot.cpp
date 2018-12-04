@@ -628,7 +628,7 @@ bool Mandelbrot::IsGood_2(bool* filtre){
 		int x0 = this->im_height/2;
 		int sigma_x = x0/2;
 		int sigma_y = y0/2;
-
+	
 		/*cout<<*detected_edges<<endl<<endl;
 
 		for (int i = 0; i < im_height; i++)
@@ -840,10 +840,10 @@ where U is unsigned integer type, S is signed integer type, and F is float type.
 
 */
 
-void Mandelbrot::random_img(int enough)
+bool Mandelbrot::random_img (int enough)
 {
 
-	gmp_randstate_t state;
+  gmp_randstate_t state;
   gmp_randinit_mt(state);
 	
 	printf("test0\n");
@@ -871,12 +871,11 @@ void Mandelbrot::random_img(int enough)
 			this->save();
 
 		//this->worthsaving();
-			
-		this->IterUp();
-
-
-		if(--enough ) // this->DeepEnough(enough)
-		{
+		int max_test = 100;
+		int enoughcompte=enough;
+		mylabel:
+		//if(/*--max_test*/--enough ) // this->DeepEnough(enough)
+		//{
 			this->IterUp();
 
 			printf("good:%d\n",enough);
@@ -884,45 +883,63 @@ void Mandelbrot::random_img(int enough)
 			
 			mpf_inits(nx1, ny1, nh, nw, temp, NULL);
 			
-			// newx = x - x/2 & y + y/2
-			mpf_div_ui(nw, this->width, 4);		//calcul nouveaux x pour reiterer
-			mpf_div_ui(nh, this->height, 4);		//calcul nouveaux y
+
+			/* newx = x - x/2 & y + y/2
+			mpf_div_ui(temp, this->width, 2);		//calcul nouveaux x pour reiterer
+			mpf_sub(nx1, this->pos_x, temp);
+	
+			
+			mpf_div_ui(temp, this->height, 2);		//calcul nouveaux y
+			mpf_add(ny1, this->pos_y, temp);*/
+			
+
+			// newh = h/2, neuh=w/2
+			mpf_div_ui(nw, this->width, 2);		//calcul nouveaux W 
+			mpf_div_ui(nh, this->height, 2);		//calcul nouveaux H
+
+
+			
+			
+
+
 
 			gmp_printf(" --- nw, nh = %.5Ff, %.5Ff \n",nw,nh);
 
 			printf("apres set\n");
-			int max_test = 1;
-			Mandelbrot* M1;
+			//int max_test = 100;
+			Mandelbrot* M2;
 			do{
 				printf("test -1\n");
-				//if (enough==4)	mpz_urandomm (TEMP, state, NW);
-
-				if (enough==4)  mpf_urandomb (nx1, state, 64);
 				
-//				mpf_set_z(nx1,TEMP);		//random nw
+
+				if (max_test != 0/*enough==4*/)  mpf_urandomb (nx1, state, 64);
+				
+			//mpf_set_z(nx1,temp);		//random nw
 //				if (enough==4) mpz_urandomm (TEMP, state, NH);
-				if (enough == 4) mpf_urandomb (ny1, state, 64);
+				if (max_test !=0  /*enough == 4*/) mpf_urandomb (ny1, state, 64);
 
 				gmp_printf(" --- nx1, ny1 = %.5Ff, %.5Ff \n",nx1,ny1);
 //			mpf_set_z(ny1,TEMP);		//random nh
 
 				//M1 = new Mandelbrot(nx1, ny1, nw, nh, im_width, im_height, surEchantillonage, iterations*2);
-				M1 = new Mandelbrot(nx1, ny1, nw, nh, im_width, im_height, surEchantillonage, iterations, this->color, this->rep);	
+				M2 = new Mandelbrot(nx1, ny1, nw, nh, im_width, im_height, surEchantillonage, iterations, this->color, this->rep);	
 		
 				printf("test1\n");
-			//en haut a gauche
-			
+	
+				--max_test;
 
-			 } while( ( !M1->IsGood_2(&filtre) ) && (--max_test) );
-
-			if (!max_test) return;
-
-
-			M1->random_img(enough);
+			 } while( ( !M2->IsGood_2(&filtre) ) && (max_test > 0));
+			 enoughcompte--;
+			 M2->save();
+			 M2->random_img (enough);
 			
 			mpf_clears(nx1, ny1, nh, nw, temp, NULL);
-			delete M1;
-		}
+			delete M2;
+			if (enoughcompte>0) goto mylabel;
+
+            
+			
+		//}
 
 	}
 	else{

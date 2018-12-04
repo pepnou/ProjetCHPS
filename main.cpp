@@ -29,7 +29,7 @@ int main(int argc, char** argv)
 	
 	mpf_t x, y, w, h;
 
-	int im_w = 47, im_h = 28, surech = 4, iteration = 100, enough = 5, color = 1;
+	int im_w = 190, im_h = 108, surech = 4, iteration = 100, enough = 50, color = 1,max_test = 1000;
 
 	//coordonnée de debut de zoom et taille de la zone de zoomage
 	mpf_init_set_d( x, -0.5);
@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 	//mpf_clears( x, y, w, h, NULL);	
 	//exit(0);
 	
-	M.random_img(enough);
+	M.random_img (enough);
 
 	//M.dichotomie(enough);
 

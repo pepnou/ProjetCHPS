@@ -5,7 +5,7 @@ using namespace std;
 
 namespace po = boost::program_options;
 
-int Mandelbrot::pas = 0;
+int Mandelbrot::pas = 10;
 
 int main(int argc, char** argv)
 {
@@ -405,16 +405,16 @@ int main(int argc, char** argv)
 		M.video2();
 		cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
 
-		tick = rdtsc();
+		/*tick = rdtsc();
 		M.video();
-		cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
+		cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;*/
 	}
 
 	if(verbose)cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
 
 
 
-	ofstream file("./perf_f_pas3.txt",ios::out | ios::trunc);
+	/*ofstream file("./perf_f_pas3.txt",ios::out | ios::trunc);
 
 	for(int i = 1; i < 14; i++)
 	{
@@ -430,7 +430,7 @@ int main(int argc, char** argv)
 		}
 	}
 
-	file.close();
+	file.close();*/
 
 
 	delete MT;	

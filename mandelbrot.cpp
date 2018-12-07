@@ -442,8 +442,6 @@ void Mandelbrot::escapeSpeedCalcThread4()
 
 
 
-
-
 	*(this->sEMat) = 1;
 	*(this->divMat) = -1;
 

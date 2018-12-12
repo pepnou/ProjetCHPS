@@ -21,7 +21,8 @@ typedef struct
 {
 	mpf_t *x;
 	mpf_t *y;
-	int deb, fin;
+	int debH, finH;
+	int debW, finW;
 	Mandelbrot* M;
 }threadDraw;
 

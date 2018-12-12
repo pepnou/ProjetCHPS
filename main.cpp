@@ -5,10 +5,16 @@ using namespace std;
 
 namespace po = boost::program_options;
 
-int Mandelbrot::pas = 10;
+int Mandelbrot::pasH =10;
+int Mandelbrot::pasW =10;
 
 int main(int argc, char** argv)
 {
+	//for (int i = 0; i < 10; i++)
+	//{
+		
+	
+	
 	srand(time(NULL));
 
 	//mpf_set_default_prec(MAX_PREC);
@@ -171,7 +177,11 @@ int main(int argc, char** argv)
 
 		if (vm.count("thread"))
 		{
-			surech = vm["thread"].as<int>();
+			//surech = vm["thread"].as<int>();
+			if(vm["thread"].as<int>() == -1 || vm["thread"].as<int>()>thread::hardware_concurrency())
+				nbt = thread::hardware_concurrency();
+			else
+				nbt = vm["thread"].as<int>();
 		}
 
 
@@ -435,5 +445,7 @@ int main(int argc, char** argv)
 
 	delete MT;	
 	mpf_clears( x, y, w, h, NULL);
+
 	exit(0);
+//}
 }

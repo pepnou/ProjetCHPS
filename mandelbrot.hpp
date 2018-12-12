@@ -93,7 +93,9 @@ class Mandelbrot
 		void video2();
 
 		//const static int pas = 2;
-		static int pas;
+		static int pasH;
+		static int pasW;
+		static int pasv;
 
 };
 

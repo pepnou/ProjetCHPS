@@ -14,7 +14,10 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, i
 	divMat(new Mat(im_h*supSample, im_w*supSample, CV_32SC1)) ,
 	img(new Mat(im_h, im_w, CV_8UC3)) ,
 	sEMat(new Mat(im_h, im_w, CV_8UC1))
-{
+{	
+	
+	
+	
 	mpf_init2(this->pos_x, mpf_get_prec(x));
 	mpf_init2(this->pos_y, mpf_get_prec(y));
 
@@ -44,7 +47,11 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, i
 	//  atomic_h = height / (im_height * surEchantillonage)
 	mpf_div_ui(atomic_w, this->width, this->im_width*this->surEchantillonage);
 	mpf_div_ui(atomic_h, this->height, this->im_height*this->surEchantillonage);
+	
+	
 
+	
+	
 	if(rep == nullptr)
 	{
 		time_t now = time(0);
@@ -71,6 +78,7 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int im_w, int im_h, i
 	{
 		this->rep = rep;
 	}
+	
 }
 
 Mandelbrot::~Mandelbrot()
@@ -87,6 +95,7 @@ Mandelbrot::~Mandelbrot()
 		this->img = nullptr;
 		this->sEMat = nullptr;
 	}
+
 }
 
 void Mandelbrot::del_mem()
@@ -394,10 +403,13 @@ void Mandelbrot::threadCalc3(int deb, int fin, mpf_t* x, mpf_t* y)
 		}
 	}
 	mpf_clears( xn, yn, xnp1, ynp1, mod, tmp, xsqr, ysqr, NULL);
+	
 }
 
 void Mandelbrot::escapeSpeedCalcThread4()
 {
+	uint64_t ti=rdtsc();
+	
 	mpf_t tmp1, tmp2;
 	mpf_t *x, *y;
 	x = new mpf_t[this->im_width*this->surEchantillonage];
@@ -436,22 +448,56 @@ void Mandelbrot::escapeSpeedCalcThread4()
 	}
 
 	mpf_clears( tmp1, tmp2, NULL);
-
-
-
+//**************************************************************************************
+	uint64_t tf1 =rdtsc();
+	std::cout<<"la construction des valeurs de x[i] et y[i]= "<<tf1-ti<<std::endl;
+//*************************************************************************************
 
 
 
 	*(this->sEMat) = 1;
 	*(this->divMat) = -1;
 
-	threadDraw *args = new threadDraw[this->im_height];
+	threadDraw *args = new threadDraw[this->im_height*this->im_width];
 	work wo;
 	wo.f = CallThreadCalc;
 
-	int nbTasks = (this->im_height % Mandelbrot::pas == 0)?this->im_height / (Mandelbrot::pas):this->im_height / (Mandelbrot::pas) + 1;
+	//int nbTasks = (this->im_height % Mandelbrot::pas == 0)?this->im_height / (Mandelbrot::pas):this->im_height / (Mandelbrot::pas) + 1;
+
+	int nbTasksH = (this->im_height % Mandelbrot::pasH == 0)?this->im_height / (Mandelbrot::pasH):this->im_height / (Mandelbrot::pasH) + 1;
+
+	int nbTasksW = (this->im_width % Mandelbrot::pasW == 0)?this->im_width / (Mandelbrot::pasW):this->im_width / (Mandelbrot::pasW) + 1;
 	
-	for(int i = 0; i < nbTasks; i++)
+	int nbTasks=nbTasksH*nbTasksW;
+
+
+	for(int i = 0; i < nbTasksH; i++)
+	{
+		for(int j = 0; j < nbTasksW; j++)
+		{
+			//cout<<this->tasks.fetch_add(1)<<endl;
+			this->tasks.fetch_add(1);
+			
+			args[i*nbTasksW+j].x = x;
+			args[i*nbTasksW+j].y = y;
+			args[i*nbTasksW+j].debH = i*this->im_height/nbTasksH;
+			args[i*nbTasksW+j].finH = (i + 1)*this->im_height/nbTasksH;
+
+			args[i*nbTasksW+j].debW = j*this->im_width/nbTasksW;
+			args[i*nbTasksW+j].finW = (j + 1)*this->im_width/nbTasksW;
+
+			args[i*nbTasksW+j].M = this;
+			//cout<<"+1"<<endl;
+			
+			wo.arg = (void*)&args[i*nbTasksW+j];
+			this->mpmc->push(wo);
+		}
+	}
+
+
+
+
+	/*for(int i = 0; i < nbTasks; i++)
 	{
 		//cout<<this->tasks.fetch_add(1)<<endl;
 		this->tasks.fetch_add(1);
@@ -465,7 +511,13 @@ void Mandelbrot::escapeSpeedCalcThread4()
 		
 		wo.arg = (void*)&args[i];
 		this->mpmc->push(wo);
-	}
+	}*/
+	
+//*************************************************************	
+	uint64_t tf2 =rdtsc();
+	std::cout<<"1er passage  des args a mpmc= "<<tf2-tf1<<std::endl;
+//******************************************************	
+	
 	//dbg
 	while(this->tasks.load() != 0)
 		this_thread::yield();
@@ -481,7 +533,10 @@ void Mandelbrot::escapeSpeedCalcThread4()
 	int lowThreshold = 10;
 	int ratio = 3;
 	int kernel_size = 3;
-
+//*******************************************************	
+	uint64_t tf3 =rdtsc();
+	std::cout<<"aprés le prmier draw= "<<tf3-tf2<<std::endl;
+//********************************************************************
 	cvtColor( *(this->img), *(this->sEMat), CV_BGR2GRAY );
 	blur( *(this->sEMat), *(this->sEMat), Size(3,3) );
 	Canny( *(this->sEMat), *(this->sEMat), lowThreshold, lowThreshold*ratio, kernel_size);
@@ -490,7 +545,10 @@ void Mandelbrot::escapeSpeedCalcThread4()
 
 	*(this->sEMat) = *(this->sEMat)*this->surEchantillonage/255;
 
-
+//*******************************************************	
+	uint64_t tf4 =rdtsc();
+	std::cout<<"aprés les fcts d opencv= "<<tf4-tf3<<std::endl;
+//********************************************************************
 
 
 
@@ -508,7 +566,10 @@ void Mandelbrot::escapeSpeedCalcThread4()
 	//dbg
 
 
-
+//*******************************************************	
+	uint64_t tf5 =rdtsc();
+	std::cout<<"aprés le deuxieme load a mpmc= "<<tf5-tf4<<std::endl;
+//********************************************************************
 
 
 	
@@ -524,6 +585,13 @@ void Mandelbrot::escapeSpeedCalcThread4()
 	delete [] x;
 	delete [] y;
 	delete [] args;
+	
+	
+	uint64_t tf =rdtsc();
+	std::cout<<"supression de tout= "<<tf-tf5<<std::endl;
+	std::cout<<"temps totale de la méthodes= "<<tf-ti<<std::endl;
+	
+	
 }
 
 void Mandelbrot::CallThreadCalc(void* arg)
@@ -551,9 +619,9 @@ void Mandelbrot::threadCalc4(void* arg)
 
 	// cout<<"Calcul ligne : "<<args->ligne<<endl;
 
-	for(int j = args->deb; j < args->fin; j++)
+	for(int j = args->debH; j < args->finH; j++)
 	{
-		for (int i = 0; i < this->im_width; i++)
+		for (int i = args->debW; i < args->finW; i++)
 		{
 			int sE = this->sEMat->at<char>( j, i);
 
@@ -617,6 +685,8 @@ void Mandelbrot::threadCalc4(void* arg)
 	//out<<this->tasks.fetch_sub(1)<<endl;
 }
 
+
+
 void Mandelbrot::threadCalcVideo(void* arg)
 {
 	//stringstream tmp2(""); tmp2 << "dbg_" << this_thread::get_id();
@@ -631,8 +701,8 @@ void Mandelbrot::threadCalcVideo(void* arg)
 
 	for(int i = 0; i < this->im_width*this->surEchantillonage; i++)
 	{
-		iter[i] = new mpf_t*[(args->fin - args->deb)*this->surEchantillonage];
-		for(int j = 0; j < (args->fin - args->deb)*this->surEchantillonage; j++)
+		iter[i] = new mpf_t*[(args->finH - args->debH)*this->surEchantillonage];
+		for(int j = 0; j < (args->finH - args->debH)*this->surEchantillonage; j++)
 		{
 			iter[i][j] = new mpf_t[2];
 
@@ -649,7 +719,7 @@ void Mandelbrot::threadCalcVideo(void* arg)
 
 	for (int k = 1; k < this->iterations; k++)
 	{
-		for(int j = args->deb; j < args->fin; j++)
+		for(int j = args->debH; j < args->finH; j++)
 		{
 			for (int i = 0; i < this->im_width; i++)
 			{
@@ -661,7 +731,7 @@ void Mandelbrot::threadCalcVideo(void* arg)
 					{
 						Xindex = i*this->surEchantillonage + m;
 						Yindex = j*this->surEchantillonage + n;
-						Yindex2 = (j - args->deb) * this->surEchantillonage + n;
+						Yindex2 = (j - args->debH) * this->surEchantillonage + n;
 
 						if(this->divMat->at<int>( Yindex, Xindex) == iterCurrent)
 						{
@@ -690,8 +760,8 @@ void Mandelbrot::threadCalcVideo(void* arg)
 		//cout << (*(this->divMat))(Range(args->ligne, args->ligne+1), Range::all()) << endl;
 		//cout << (*(this->img))(Range(args->ligne, args->ligne+1), Range::all()) << endl;
 
-		partialDraw( args->deb, args->fin, iterCurrent);
-		frameSave( (*(this->img))(Range(args->deb, args->fin), Range::all()), this->rep, k, args->deb);
+		partialDraw( args->debH, args->finH, iterCurrent);
+		frameSave( (*(this->img))(Range(args->debH, args->finH), Range::all()), this->rep, k, args->debH);
 
 		iterCurrent++;
 	}
@@ -1709,12 +1779,41 @@ void Mandelbrot::video2()
 	*(this->divMat) = 1;
 
 
-	threadDraw *args = new threadDraw[this->im_height];
+	threadDraw *args = new threadDraw[this->im_height*this->im_width];
 	work wo;
 	wo.f = CallThreadCalcVideo;
 
-	int nbTasks = (this->im_height % Mandelbrot::pas == 0)?this->im_height / (Mandelbrot::pas):this->im_height / (Mandelbrot::pas) + 1;
-	
+	int nbTasksH = (this->im_height % Mandelbrot::pasH == 0)?this->im_height / (Mandelbrot::pasH):this->im_height / (Mandelbrot::pasH) + 1;
+	int nbTasksW = (this->im_width % Mandelbrot::pasW == 0)?this->im_width / (Mandelbrot::pasW):this->im_width / (Mandelbrot::pasW) + 1;
+
+	int nbTasks=nbTasksH*nbTasksW;
+
+
+	for(int i = 0; i < nbTasksH; i++)
+	{
+		for(int j = 0; j < nbTasksW; j++)
+		{
+			//cout<<this->tasks.fetch_add(1)<<endl;
+			this->tasks.fetch_add(1);
+			
+			args[i*nbTasksW+j].x = x;
+			args[i*nbTasksW+j].y = y;
+			args[i*nbTasksW+j].debH = i*this->im_height/nbTasksH;
+			args[i*nbTasksW+j].finH = (i + 1)*this->im_height/nbTasksH;
+
+			args[i*nbTasksW+j].debW = j*this->im_width/nbTasksW;
+			args[i*nbTasksW+j].finW = (j + 1)*this->im_width/nbTasksW;
+
+			args[i*nbTasksW+j].M = this;
+			//cout<<"+1"<<endl;
+			
+			wo.arg = (void*)&args[i*nbTasksW+j];
+			this->mpmc->push(wo);
+		}
+	}
+
+
+	/*
 	for(int i = 0; i < nbTasks; i++)
 	{
 		this->tasks.fetch_add(1);
@@ -1727,7 +1826,9 @@ void Mandelbrot::video2()
 		
 		wo.arg = (void*)&args[i];
 		this->mpmc->push(wo);
-	}
+	}*/
+
+
 	while(this->tasks.load() != 0)
 		this_thread::yield();
 	
@@ -1764,14 +1865,27 @@ void Mandelbrot::video2()
 	{
 		for(int i = 1; i < this->iterations; i++)
 		{
-			for(int j = 0; j < nbTasks; j++)
+			for(int j = 0; j < nbTasksH; j++)
+			{
+				for (int k = 0; k < nbTasksW; k++)
+				{
+					/* code */
+					framePart.str("");
+				framePart << "../video/" << rep << "/frames/" << i*nbTasksW+k << "/" << (j*this->im_height/nbTasksH)*nbTasksW+(k*this->im_width/nbTasksW) << ".png";
+				
+				Mat src = imread( framePart.str().c_str(), IMREAD_COLOR );
+				src.copyTo((*(this->img))(cv::Rect(k*this->im_width/nbTasksW,j*this->im_height/nbTasksH,(k+1)*this->im_width/nbTasksW - k*this->im_width/nbTasksW, (j+1)*this->im_height/nbTasks - j*this->im_height/nbTasks)));
+				}
+				
+			}
+			/*for(int j = 0; j < nbTasks; j++)
 			{
 				framePart.str("");
 				framePart << "../video/" << rep << "/frames/" << i << "/" << j*this->im_height/nbTasks << ".png";
 				
 				Mat src = imread( framePart.str().c_str(), IMREAD_COLOR );
 				src.copyTo((*(this->img))(cv::Rect(0,j*this->im_height/nbTasks,this->im_width, (j+1)*this->im_height/nbTasks - j*this->im_height/nbTasks)));
-			}
+			}*/
 			outputVideo << (*(this->img));
 		}
 	}

@@ -5,8 +5,9 @@ using namespace std;
 
 namespace po = boost::program_options;
 
-int Mandelbrot::pasH =10;
-int Mandelbrot::pasW =10;
+int Mandelbrot::pasH =1;
+int Mandelbrot::pasW =50;
+int Mandelbrot::pas =Mandelbrot::pasW;
 
 int main(int argc, char** argv)
 {

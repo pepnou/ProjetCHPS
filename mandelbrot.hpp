@@ -95,7 +95,7 @@ class Mandelbrot
 		//const static int pas = 2;
 		static int pasH;
 		static int pasW;
-		static int pasv;
+		static int pas;
 
 };
 

@@ -23,6 +23,7 @@ typedef struct
 	mpf_t *y;
 	int debH, finH;
 	int debW, finW;
+	int deb, fin;
 	Mandelbrot* M;
 }threadDraw;
 

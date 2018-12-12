@@ -701,8 +701,8 @@ void Mandelbrot::threadCalcVideo(void* arg)
 
 	for(int i = 0; i < this->im_width*this->surEchantillonage; i++)
 	{
-		iter[i] = new mpf_t*[(args->finH - args->debH)*this->surEchantillonage];
-		for(int j = 0; j < (args->finH - args->debH)*this->surEchantillonage; j++)
+		iter[i] = new mpf_t*[(args->fin - args->deb)*this->surEchantillonage];
+		for(int j = 0; j < (args->fin - args->deb)*this->surEchantillonage; j++)
 		{
 			iter[i][j] = new mpf_t[2];
 
@@ -719,7 +719,7 @@ void Mandelbrot::threadCalcVideo(void* arg)
 
 	for (int k = 1; k < this->iterations; k++)
 	{
-		for(int j = args->debH; j < args->finH; j++)
+		for(int j = args->deb; j < args->fin; j++)
 		{
 			for (int i = 0; i < this->im_width; i++)
 			{
@@ -731,7 +731,7 @@ void Mandelbrot::threadCalcVideo(void* arg)
 					{
 						Xindex = i*this->surEchantillonage + m;
 						Yindex = j*this->surEchantillonage + n;
-						Yindex2 = (j - args->debH) * this->surEchantillonage + n;
+						Yindex2 = (j - args->deb) * this->surEchantillonage + n;
 
 						if(this->divMat->at<int>( Yindex, Xindex) == iterCurrent)
 						{
@@ -760,8 +760,8 @@ void Mandelbrot::threadCalcVideo(void* arg)
 		//cout << (*(this->divMat))(Range(args->ligne, args->ligne+1), Range::all()) << endl;
 		//cout << (*(this->img))(Range(args->ligne, args->ligne+1), Range::all()) << endl;
 
-		partialDraw( args->debH, args->finH, iterCurrent);
-		frameSave( (*(this->img))(Range(args->debH, args->finH), Range::all()), this->rep, k, args->debH);
+		partialDraw( args->deb, args->fin, iterCurrent);
+		frameSave( (*(this->img))(Range(args->deb, args->fin), Range::all()), this->rep, k, args->deb);
 
 		iterCurrent++;
 	}
@@ -1783,13 +1783,15 @@ void Mandelbrot::video2()
 	work wo;
 	wo.f = CallThreadCalcVideo;
 
-	int nbTasksH = (this->im_height % Mandelbrot::pasH == 0)?this->im_height / (Mandelbrot::pasH):this->im_height / (Mandelbrot::pasH) + 1;
+	/*int nbTasksH = (this->im_height % Mandelbrot::pasH == 0)?this->im_height / (Mandelbrot::pasH):this->im_height / (Mandelbrot::pasH) + 1;
 	int nbTasksW = (this->im_width % Mandelbrot::pasW == 0)?this->im_width / (Mandelbrot::pasW):this->im_width / (Mandelbrot::pasW) + 1;
+	*/
+	int nbTasks = (this->im_height % Mandelbrot::pas == 0)?this->im_height / (Mandelbrot::pas):this->im_height / (Mandelbrot::pas) + 1;
 
-	int nbTasks=nbTasksH*nbTasksW;
+	//int nbTasks=nbTasksH*nbTasksW;
 
 
-	for(int i = 0; i < nbTasksH; i++)
+	/*for(int i = 0; i < nbTasksH; i++)
 	{
 		for(int j = 0; j < nbTasksW; j++)
 		{
@@ -1810,10 +1812,10 @@ void Mandelbrot::video2()
 			wo.arg = (void*)&args[i*nbTasksW+j];
 			this->mpmc->push(wo);
 		}
-	}
+	}*/
 
 
-	/*
+	
 	for(int i = 0; i < nbTasks; i++)
 	{
 		this->tasks.fetch_add(1);
@@ -1826,7 +1828,7 @@ void Mandelbrot::video2()
 		
 		wo.arg = (void*)&args[i];
 		this->mpmc->push(wo);
-	}*/
+	}
 
 
 	while(this->tasks.load() != 0)
@@ -1865,17 +1867,21 @@ void Mandelbrot::video2()
 	{
 		for(int i = 1; i < this->iterations; i++)
 		{
-			for(int j = 0; j < nbTasksH; j++)
+			for(int j = 0; j < nbTasks; j++)
 			{
-				for (int k = 0; k < nbTasksW; k++)
-				{
+				//for (int k = 0; k < nbTasksW; k++)
+				//{
 					/* code */
 					framePart.str("");
-				framePart << "../video/" << rep << "/frames/" << i*nbTasksW+k << "/" << (j*this->im_height/nbTasksH)*nbTasksW+(k*this->im_width/nbTasksW) << ".png";
-				
+				//framePart << "../video/" << rep << "/frames/" << i*nbTasksW+k << "/" << (j*this->im_height/nbTasksH)*nbTasksW+(k*this->im_width/nbTasksW) << ".png";
+				framePart << "../video/" << rep << "/frames/" << i << "/" << j*this->im_height/nbTasks << ".png";
+
 				Mat src = imread( framePart.str().c_str(), IMREAD_COLOR );
-				src.copyTo((*(this->img))(cv::Rect(k*this->im_width/nbTasksW,j*this->im_height/nbTasksH,(k+1)*this->im_width/nbTasksW - k*this->im_width/nbTasksW, (j+1)*this->im_height/nbTasks - j*this->im_height/nbTasks)));
-				}
+				//src.copyTo((*(this->img))(cv::Rect(k*this->im_width/nbTasksW,j*this->im_height/nbTasksH,(k+1)*this->im_width/nbTasksW - k*this->im_width/nbTasksW, (j+1)*this->im_height/nbTasks - j*this->im_height/nbTasks)));
+				src.copyTo((*(this->img))(cv::Rect(0,j*this->im_height/nbTasks,this->im_width, (j+1)*this->im_height/nbTasks - j*this->im_height/nbTasks)));
+
+				
+				//}
 				
 			}
 			/*for(int j = 0; j < nbTasks; j++)

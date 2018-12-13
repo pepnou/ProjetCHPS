@@ -632,6 +632,7 @@ void Mandelbrot::threadCalcVideo(void* arg)
 	for(int i = 0; i < this->im_width*this->surEchantillonage; i++)
 	{
 		iter[i] = new mpf_t*[(args->fin - args->deb)*this->surEchantillonage];
+		
 		for(int j = 0; j < (args->fin - args->deb)*this->surEchantillonage; j++)
 		{
 			iter[i][j] = new mpf_t[2];
@@ -692,13 +693,15 @@ void Mandelbrot::threadCalcVideo(void* arg)
 
 		partialDraw( args->deb, args->fin, iterCurrent);
 		frameSave( (*(this->img))(Range(args->deb, args->fin), Range::all()), this->rep, k, args->deb);
+		
+		
 
 		iterCurrent++;
 	}
 
 	for(int i = 0; i < this->im_width*this->surEchantillonage; i++)
 	{
-		for(int j = 0; j < this->surEchantillonage; j++)
+		for(int j = 0; j < (args->fin - args->deb)*this->surEchantillonage; j++)
 		{
 			mpf_clear(iter[i][j][0]);
 			mpf_clear(iter[i][j][1]);
@@ -1831,7 +1834,6 @@ void testConcatImg()
         fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
     }
 }
-
 
 
 /*

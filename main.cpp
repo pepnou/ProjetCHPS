@@ -1,4 +1,4 @@
-#include "main.hpp"
+ #include "main.hpp"
 
 using namespace cv;
 using namespace std;
@@ -400,13 +400,37 @@ int main(int argc, char** argv)
 
 	uint64_t tick = rdtsc();
 
+	srand(time(NULL));
+
+    gmp_randstate_t state;
+	gmp_randinit_mt(state);
+
+	gmp_randseed_ui(state, rand());
+
 	if(!video)
+<<<<<<< Updated upstream
 	{
 		M.random_img (enough);
 		//M.dichotomie2(enough, divs.size(), divs, 0);
 		//M.dichotomie( enough, 0);
 		//M.alea( enough, 0);
 	}
+=======
+		{
+			srand(time(NULL));
+
+		    gmp_randstate_t state;
+			gmp_randinit_mt(state);
+
+			gmp_randseed_ui(state, rand());
+			cout<<divs.size()<<endl;
+		//M.dichotomie2(enough, divs.size(), divs, 0);
+		//M.dichotomie( enough, 0);
+		//M.alea( enough, 0);
+		M.random_img (enough);
+
+		}
+>>>>>>> Stashed changes
 	else
 	{
 		tick = rdtsc();

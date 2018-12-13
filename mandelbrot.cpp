@@ -1836,7 +1836,6 @@ void testConcatImg()
 }
 
 
-
 /*
 Any primitive type from the list can be defined by an identifier in the form CV_<bit-depth>{U|S|F}C(<number_of_channels>)
 where U is unsigned integer type, S is signed integer type, and F is float type.

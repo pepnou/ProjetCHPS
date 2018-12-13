@@ -15,7 +15,7 @@ int main(int argc, char** argv)
 	//10^-618
 
 	//PARAMETRES PAR DEFAULT, TOUCHE PAS, VA DANS LE FICHIER CONFIG.CFG, batard
-	int im_w = 1920, im_h = 1080, surech = 4, iteration = 200, enough = 1, color = RAINBOW;
+	int im_w = 1920, im_h = 1080, surech = 4, iteration = 1000, enough = 1, color = RAINBOW;
 
 	int nbt = thread::hardware_concurrency();
 	bool verbose = false, video = false;
@@ -400,7 +400,7 @@ int main(int argc, char** argv)
 
 	uint64_t tick = rdtsc();
 
-	if(!video);
+	if(!video)
 		M.dichotomie2(enough, divs.size(), divs, 0);
 		//M.dichotomie( enough, 0);
 		//M.alea( enough, 0);
@@ -437,16 +437,14 @@ int main(int argc, char** argv)
 
 	file.close();*/
 
-	dbg
 	delete MT;
-	dbg
 
 	mpf_set_prec_raw( x, mpf_get_default_prec());
 	mpf_set_prec_raw( y, mpf_get_default_prec());
 	mpf_set_prec_raw( w, mpf_get_default_prec());
 	mpf_set_prec_raw( h, mpf_get_default_prec());
-	dbg
+
 	mpf_clears( x, y, w, h, NULL);
-	dbg
+
 	exit(0);
 }

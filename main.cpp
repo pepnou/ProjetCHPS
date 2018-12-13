@@ -15,11 +15,12 @@ int main(int argc, char** argv)
 	//10^-618
 
 	//PARAMETRES PAR DEFAULT, TOUCHE PAS, VA DANS LE FICHIER CONFIG.CFG, batard
-	int im_w = 1920, im_h = 1080, surech = 4, iteration = 100, enough = 1, color = RAINBOW;
+	int im_w = 1920, im_h = 1080, surech = 4, iteration = 1000, enough = 1, color = RAINBOW;
 
 	int nbt = thread::hardware_concurrency();
 	bool verbose = false, video = false;
 	vector<int> divs;
+	divs.push_back(2);
 	
 	mpf_t x, y, w, h;
 
@@ -148,7 +149,7 @@ int main(int argc, char** argv)
 			prec = (prec < 64)?64:prec;
 			//prec = (prec > MAX_PREC)?MAX_PREC:prec;
 
-			mpf_set_prec_raw( w, prec);
+			mpf_set_prec_raw( h, prec);
 			mpf_set_prec( h, prec);
 
 			mpf_set_str( h, vm["height"].as<string>().c_str(), 10);
@@ -171,7 +172,10 @@ int main(int argc, char** argv)
 
 		if (vm.count("thread"))
 		{
-			surech = vm["thread"].as<int>();
+			if(vm["thread"].as<int>() == -1 || vm["thread"].as<int>()>thread::hardware_concurrency())
+				nbt = thread::hardware_concurrency();
+			else
+				nbt = vm["thread"].as<int>();
 		}
 
 
@@ -256,7 +260,7 @@ int main(int argc, char** argv)
 			prec = (prec < 64)?64:prec;
 			//prec = (prec > MAX_PREC)?MAX_PREC:prec;
 
-			mpf_set_prec_raw( w, prec);
+			mpf_set_prec_raw( h, prec);
 			mpf_set_prec( h, prec);
 
 			mpf_set_str( h, vm2["height"].as<string>().c_str(), 10);

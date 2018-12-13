@@ -1,5 +1,9 @@
-Nom des png avec les coordonnée de l'image
+animation avec changement d iteration
 
-"color = 1" a changer en "color = rainbow" ou "color = jaune_bleu" ...
+recherche alea
 
-little interface pour lancer, stopper, generer, progres
+gradient nassim (MAIS FAIS LE !!!)
+
+perf en fonction de la taille des bloc et des operations par bloc
+
+RAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPPPPPPPPPPPPPPPOOOOOOOOOOOOOOOORTTTTTTTTTTTTTTTTT

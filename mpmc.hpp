@@ -3,6 +3,11 @@
 
 #include <cstddef>
 #include <atomic>
+#include <iostream>
+#include <thread>
+
+#include "mandelbrot.hpp"
+class Mandelbrot;
 
 #define offset_t size_t
 
@@ -12,19 +17,49 @@ typedef struct
 	void (*f)(void*);
 }work;
 
+typedef struct 
+{
+	mpf_t *x;
+	mpf_t *y;
+	int deb, fin;
+	Mandelbrot* M;
+}threadDraw;
+
 class Mpmc
 {
 	private:
 		size_t size;
 		work* buf;
-		offset_t last_write = 0, write_ok = 0;
-		offset_t last_read = 0, read_ok = 0;
+		std::atomic<offset_t> last_write;
+		std::atomic<offset_t> write_ok;
+		std::atomic<offset_t> last_read;
+		std::atomic<offset_t> read_ok;
 
 	public:
 		Mpmc(size_t size);
 		~Mpmc();
 		void push(work arg);
-		void pop(work* arg);
+		bool pop(/*work* arg*/);
 };
+
+class MyThreads
+{
+	private:
+		std::thread* threads;
+		int nbT;
+		Mpmc* mpmc;
+
+	public:
+		MyThreads(int nbT);
+		~MyThreads();
+		Mpmc* getMpmc();
+};
+
+void mainThread(void* arg);
+
+/*std::thread* createThread(int nbT, Mpmc* mpmc);
+void joinThread(int nbT, std::thread* threads, Mpmc* mpmc);
+void mainThread(void* arg);
+void terminate(void* arg);*/
 
 #endif

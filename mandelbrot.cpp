@@ -1331,7 +1331,7 @@ void Mandelbrot::dichotomie2(int enough, int n_div, vector<int>& divs, int prec)
 				//cout<<"Welcome back"<<endl;
 				int n_prec = prec + ceil(log(divs.at(i))/log(2));
 				mpf_t temp, delta_x, delta_y;
-				cout<<divs.at(i)<<endl;
+				//cout<<divs.at(i)<<endl;
 
 				mpf_t* tab_x = new mpf_t[divs.at(i)];
 				mpf_t* tab_y = new mpf_t[divs.at(i)];

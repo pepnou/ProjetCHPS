@@ -1,6 +1,7 @@
 #include <boost/program_options.hpp>
 #include <fstream>
 #include <cmath>
+#include <time.h>
 // ou getopt pour celui qui a envie de c en occuper
 #include "mandelbrot.hpp"
 

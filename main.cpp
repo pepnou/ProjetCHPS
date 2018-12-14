@@ -16,6 +16,7 @@ int main(int argc, char** argv)
 
 	//PARAMETRES PAR DEFAULT, TOUCHE PAS, VA DANS LE FICHIER CONFIG.CFG, batard
 	int im_w = 1920, im_h = 1080, surech = 4, iteration = 1000, enough = 1, color = RAINBOW;
+	double zoom = 2.0;
 
 	int nbt = thread::hardware_concurrency();
 	bool verbose = false, video = false;
@@ -408,29 +409,12 @@ int main(int argc, char** argv)
 	gmp_randseed_ui(state, rand());
 
 	if(!video)
-<<<<<<< Updated upstream
 	{
-		M.random_img (enough);
+		M.random_img (enough, zoom, state);
 		//M.dichotomie2(enough, divs.size(), divs, 0);
 		//M.dichotomie( enough, 0);
 		//M.alea( enough, 0);
 	}
-=======
-		{
-			srand(time(NULL));
-
-		    gmp_randstate_t state;
-			gmp_randinit_mt(state);
-
-			gmp_randseed_ui(state, rand());
-			cout<<divs.size()<<endl;
-		//M.dichotomie2(enough, divs.size(), divs, 0);
-		//M.dichotomie( enough, 0);
-		//M.alea( enough, 0);
-		M.random_img (enough);
-
-		}
->>>>>>> Stashed changes
 	else
 	{
 		tick = rdtsc();

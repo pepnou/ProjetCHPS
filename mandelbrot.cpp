@@ -398,7 +398,7 @@ void Mandelbrot::threadCalc3(int deb, int fin, mpf_t* x, mpf_t* y)
 
 void Mandelbrot::escapeSpeedCalcThread4()
 {
-	cout<<this->im_width*this->surEchantillonage<<endl;
+	//cout<<this->im_width*this->surEchantillonage<<endl;
 
 	mpf_t tmp1, tmp2;
 	mpf_t *x, *y;
@@ -1048,7 +1048,7 @@ bool Mandelbrot::IsGood(){
 
 bool Mandelbrot::IsGood_2(bool* filtre)
 {
-
+	*filtre = false;
 	bool continue_y_or_n;
 
 	Mat* src_gray = new Mat(im_height, im_width, CV_8UC3);		//entier non signé 8 bit à 3 dimension
@@ -1072,7 +1072,7 @@ bool Mandelbrot::IsGood_2(bool* filtre)
 	blur( *(src_gray), *(detected_edges), Size(3,3) );
 	matSave( detected_edges, "tout_va_bien_oupaslol");
 	Canny( *(detected_edges), *(detected_edges), lowThreshold, lowThreshold*ratio, kernel_size);
-
+	matSave( detected_edges, "canny");
 	double res = countNonZero(*detected_edges)*1000/(this->im_height*this->im_width);
 
 	//cout<<res<<endl;
@@ -1423,16 +1423,16 @@ void Mandelbrot::dichotomie2(int enough, int n_div, vector<int>& divs, int prec)
 	}
 }
 
-bool Mandelbrot::random_img (int enough, gmp_randstate_t& state)
+bool Mandelbrot::random_img (int enough, double zoom, gmp_randstate_t& state)
 {
 
     
-    printf("test0\n");
+    //printf("test0\n");
     
     this->escapeSpeedCalcThread4();
     this->draw();
     
-    printf("rand_img...\n");
+    //printf("rand_img...\n");
     // initialser la grain pour les nombres pseudo-aleatoires
     srand(time(NULL));
     
@@ -1455,19 +1455,25 @@ bool Mandelbrot::random_img (int enough, gmp_randstate_t& state)
         {
             this->IterUp();
 
-            printf("good:%d\n",enough);
+            //printf("good:%d\n",enough);
             mpf_t nx1,nx,ny, ny1, nh, nw, temp;
             
             mpf_inits(nx,ny,nx1, ny1,nh, nw, temp, NULL);
 
             // newh = h/2, neuh=w/2
-            int fact = 2;
+            int fact = 3;
             mpf_div_ui(nw, this->width, fact);        //calcul nouveaux W 
             mpf_div_ui(nh, this->height, fact);        //calcul nouveaux H
 
             mpf_set(nx,pos_x);
             mpf_set(ny,pos_y);
-             del_mem();
+
+
+
+
+
+
+            del_mem();
 
 
 
@@ -1515,7 +1521,7 @@ bool Mandelbrot::random_img (int enough, gmp_randstate_t& state)
 
                 //M1 = new Mandelbrot(nx1, ny1,nw, nh, im_width, im_height, surEchantillonage, iterations, this->color, this->rep);    
 
-                good = M->random_img(enough, state);
+                good = M->random_img(enough, zoom, state);
                 delete M;
                 //printf("test1\n");
     

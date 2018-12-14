@@ -1068,11 +1068,11 @@ bool Mandelbrot::IsGood_2(bool* filtre)
 	//imshow("test",* src_gray);
 	//waitKey(0);
 
-	matSave( this->img, "tout_va_bien");
+	//matSave( this->img, "tout_va_bien");
 	blur( *(src_gray), *(detected_edges), Size(3,3) );
-	matSave( detected_edges, "tout_va_bien_oupaslol");
+	//matSave( detected_edges, "tout_va_bien_oupaslol");
 	Canny( *(detected_edges), *(detected_edges), lowThreshold, lowThreshold*ratio, kernel_size);
-	matSave( detected_edges, "canny");
+	//matSave( detected_edges, "canny");
 	double res = countNonZero(*detected_edges)*1000/(this->im_height*this->im_width);
 
 	//cout<<res<<endl;
@@ -1453,28 +1453,36 @@ bool Mandelbrot::random_img (int enough, double zoom, gmp_randstate_t& state)
 
         if(/*--max_test*/--enough) // this->DeepEnough(enough)
         {
+        	
             this->IterUp();
 
             //printf("good:%d\n",enough);
-            mpf_t nx1,nx,ny, ny1, nh, nw, temp;
+            mpf_t nx1,nx,ny, ny1, nh, nw, temp/*, wmul, wsub, hmul, hsub*/, zoom_mpf;
             
-            mpf_inits(nx,ny,nx1, ny1,nh, nw, temp, NULL);
-
+            mpf_inits(nx,ny,nx1, ny1,nh, nw, temp/*, wmul, wsub, hmul, hsub*/, zoom_mpf, NULL);
+            
+            mpf_set_d(temp, 0.5);
+            mpf_set_d(zoom_mpf, zoom);
             // newh = h/2, neuh=w/2
-            int fact = 3;
-            mpf_div_ui(nw, this->width, fact);        //calcul nouveaux W 
-            mpf_div_ui(nh, this->height, fact);        //calcul nouveaux H
-
+            mpf_div(nw, this->width, zoom_mpf);        //calcul nouveaux W 
+            mpf_div(nh, this->height, zoom_mpf);        //calcul nouveaux H
+            
             mpf_set(nx,pos_x);
             mpf_set(ny,pos_y);
-
-
-
-
-
-
+            
+            /*mpf_sub(wmul,this->width,nw);
+            mpf_sub(hmul,this->height,nh);
+            
+            mpf_div_ui(temp,this->width,2);
+            mpf_div_ui(wsub,nw,2);
+            mpf_sub(wsub, temp, wsub);
+            
+            mpf_div_ui(temp,this->height,2);
+            mpf_div_ui(hsub,nh,2);
+            mpf_sub(hsub, temp, hsub);*/
+            
             del_mem();
-
+            
 
 
 
@@ -1492,26 +1500,38 @@ bool Mandelbrot::random_img (int enough, double zoom, gmp_randstate_t& state)
                 // générer nx et ny aléatoirement 
                 //if (max_test = 1000 /*enough==4*/)  
                 mpf_urandomb (nx1, state, 128);
+                mpf_sub(nx1, nx1, temp);
+                mpf_mul(nx1,nx1,nw);
+                mpf_add(nx1,nx,nx1);
+
+                /*mpf_mul(nx1,nx1,wmul);
+                mpf_sub(nx1,nx1,wsub);*/
 
                 //nx = nx1+(0,1)*nw/2 -nw/4;
                 //rand (nx1);
-                mpf_mul(nx1,nx1,nw); //nx1*nw
+                /*mpf_mul(nx1,nx1,nw); //nx1*nw
                 //mpf_div_ui(nx1,nx1,2);//w/2
                 mpf_div_ui(temp,nw,2); //(nx1*w)* nw/2
                 mpf_sub(nx1,nx1,temp); //(nx1*w)/2-nw/2
-                mpf_add(nx1,nx1,nx);
-
+                mpf_add(nx1,nx1,nx);*/
                 
                 //if (max_test = 1000/*enough == 4*/) 
                 mpf_urandomb (ny1, state, 128);
+                mpf_sub(ny1, ny1, temp);
+                mpf_mul(ny1,ny1,nh);
+                mpf_add(ny1,ny,ny1);
+
+                /*mpf_mul(ny1,ny1,hmul);
+                mpf_sub(ny1,ny1,hsub);*/
+
                 //ny = ny1+(0,1)*nh/2 -nh/4;
                 
                 //rand (ny1);
-                mpf_mul(ny1,ny1,nh); //nx1*nw
+               /* mpf_mul(ny1,ny1,nh); //nx1*nw
                 //mpf_div_ui(nx1,nx1,2);//w/2
                 mpf_div_ui(temp,nh,2); //(y*h)* w/2
                 mpf_sub(ny1,ny1,temp); //(y*h)/2-nw/2
-                mpf_add(ny1,ny1,ny);
+                mpf_add(ny1,ny1,ny);*/
                 
                 
 
@@ -1520,20 +1540,20 @@ bool Mandelbrot::random_img (int enough, double zoom, gmp_randstate_t& state)
                Mandelbrot* M = new Mandelbrot(nx1, ny1,nw, nh ,im_width, im_height, surEchantillonage, iterations, color, mpmc, rep);
 
                 //M1 = new Mandelbrot(nx1, ny1,nw, nh, im_width, im_height, surEchantillonage, iterations, this->color, this->rep);    
-
+               
                 good = M->random_img(enough, zoom, state);
                 delete M;
                 //printf("test1\n");
     
             } while( (good == false) && (--max_test > 0) );
 
-            if (!max_test) return false;
+            
 
             
             //M1->random_img (enough);
             
-            mpf_clears(nx1, ny1, nh, nw, temp, NULL);
-            
+            mpf_clears(nx1, ny1, nh, nw, temp/*, wmul, wsub, hmul, hsub*/, zoom_mpf, NULL);
+            if (!max_test) return false;
         }
 
         return true;

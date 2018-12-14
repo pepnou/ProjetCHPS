@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 
 	//PARAMETRES PAR DEFAULT, TOUCHE PAS, VA DANS LE FICHIER CONFIG.CFG, batard
 	int im_w = 1920, im_h = 1080, surech = 4, iteration = 1000, enough = 1, color = RAINBOW;
-	double zoom = 2.0;
+	double zoom = 1.5;
 
 	int nbt = thread::hardware_concurrency();
 	bool verbose = false, video = false;

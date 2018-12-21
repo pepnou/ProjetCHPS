@@ -100,7 +100,6 @@ Vec3b HSBtoRGB( int h, float s, float v)
 	double x, r2 = 0.0, g2 = 0.0, b2 = 0.0, c, m, tmp;
 
 	c = v*s;
-	//x = c*(1-abs((h/60)%2 - 1));
 
 	tmp = (float) h/60;
 	while(tmp>2)

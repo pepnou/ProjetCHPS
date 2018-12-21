@@ -20,8 +20,8 @@ using namespace cv;
 
 int main(int argc, char** argv)
 {
-	int nbr_test=10000;
-	uint64_t tick, total;
+	/*int nbr_test=10000;
+	uint64_t tick, total;*/
 	
 	/*
 	int w=1000, h=1000;
@@ -106,7 +106,7 @@ int main(int argc, char** argv)
 	mpf_div_2exp (mpf t rop, const mpf t op1, mp bitcnt t op2)*/
 
 
-	gmp_randstate_t state;
+	/*gmp_randstate_t state;
 	gmp_randinit_default (state);
 	int nbTest = 10000;
 
@@ -147,7 +147,46 @@ int main(int argc, char** argv)
 	mpf_set_prec_raw( b, mpf_get_default_prec());
 	mpf_set_prec_raw( c, mpf_get_default_prec());
 
-	mpf_clears( a, b, c, NULL);
+	mpf_clears( a, b, c, NULL);*/
+
+
+
+	/*stringstream videoName("");
+	videoName << "mkdir -p ../video/alea";
+	system(videoName.str().c_str());
+
+	videoName.str("");
+
+	videoName << "../video/alea/test.avi";
+	cout  << videoName.str().c_str() << endl;
+
+	stringstream frame("");
+
+	Size S = Size( 270, 480);
+	VideoWriter outputVideo;
+
+	int ex = outputVideo.fourcc('H','2','6','4');
+
+	outputVideo.open(videoName.str().c_str(), ex, 2, S, true);
+	
+	if (!outputVideo.isOpened())
+	{
+		cout  << "Could not open the output video for write. " << endl;
+	}
+	else
+	{
+		for(int i = 0; i <= 13; i++)
+		{
+			frame.str("");
+			frame << "../img/Tue_Dec_18_09-13-37_2018/mandel" << i << ".png";
+
+			Mat src = imread( frame.str().c_str(), IMREAD_COLOR );
+			
+			outputVideo << src;
+		}
+	}*/
+
+
 
 	exit(0);
 }

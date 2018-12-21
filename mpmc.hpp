@@ -39,7 +39,7 @@ class Mpmc
 		Mpmc(size_t size);
 		~Mpmc();
 		void push(work arg);
-		bool pop(/*work* arg*/);
+		bool pop();
 };
 
 class MyThreads
@@ -56,10 +56,5 @@ class MyThreads
 };
 
 void mainThread(void* arg);
-
-/*std::thread* createThread(int nbT, Mpmc* mpmc);
-void joinThread(int nbT, std::thread* threads, Mpmc* mpmc);
-void mainThread(void* arg);
-void terminate(void* arg);*/
 
 #endif

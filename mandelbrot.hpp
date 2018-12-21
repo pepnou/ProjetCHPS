@@ -1,20 +1,6 @@
 #ifndef _MANDEL_
 #define _MANDEL_
 
-#define ITERATIONS_PER_THREAD 400000000
-
-// 47x28(1 316) =>  (100it)
-// 120x67(8 040) =>  (100it)
-// 240x135(32 400) =>  (100it)
-// 480x270(129 600) =>  (100it)
-// 1920x1080(2 073 600) =>  (100it)
-
-// 47x28(1 316) => 10 (50it)
-// 120x67(8 040) => 14 (50it)
-// 240x135(32 400) => 9 (50it)
-// 480x270(129 600) => 5 (50it)
-// 1920x1080(2 073 600) => 3 (50it)
-
 #include <iostream>
 #include <iomanip>
 #include <cstdlib>
@@ -32,7 +18,6 @@
 #include <opencv2/imgcodecs.hpp>
 
 #include "color.hpp"
-#include "load.hpp"
 #include "rdtsc.hpp"
 #include "matOp.hpp"
 #include "mpmc.hpp"
@@ -55,15 +40,12 @@ class Mandelbrot
 		Mpmc* mpmc;
 		std::atomic<int> tasks;
 
-		// void* threadCalc(void* arg);
 		void threadCalc(int deb, int fin);
 		void threadCalc2(int deb, int fin, mpf_t* x, mpf_t* y);
 		void threadCalc2_2(int deb, int fin, mpf_t* x, mpf_t* y);
 		void threadCalc3(int deb, int fin, mpf_t* x, mpf_t* y);
 		void threadCalc4(void* arg);
 		void partialDraw(int deb, int fin, int iter);
-		//friend void CallThreadCalc(void* arg);
-		//friend void CallThreadCalcVideo(void* arg);
 
 		void threadCalcVideo(void* arg);
 
@@ -80,9 +62,7 @@ class Mandelbrot
 		void escapeSpeedCalcThread3();
 		void escapeSpeedCalcThread4();
 		void draw();
-		// void draw2();
 		void save();
-		//void animation();
 		bool IsGood();
 		void IterUp();
 		bool IsGood_2(bool* filtre);
@@ -94,12 +74,7 @@ class Mandelbrot
 		void video();
 		void video2();
 
-		//const static int pas = 2;
 		static int pas;
-
 };
-
-//void CallThreadCalc(void* arg);
-//void CallThreadCalcVideo(void* arg);
 
 #endif

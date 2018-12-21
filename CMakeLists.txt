@@ -7,7 +7,7 @@ project (Fractale 	VERSION 1.0
 
 
 
-set (SRC main.cpp mandelbrot.cpp color.cpp load.cpp rdtsc.cpp matOp.cpp mpmc.cpp )
+set (SRC main.cpp mandelbrot.cpp color.cpp rdtsc.cpp matOp.cpp mpmc.cpp )
 set (TEST_SRC perfTest.cpp rdtsc.cpp)
 set (GMP_INCLUDE /usr/local/include/)
 set (THREAD_INCLUDE /usr/include/c++/7.2.0/thread )

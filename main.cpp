@@ -11,12 +11,10 @@ int main(int argc, char** argv)
 {
 	srand(time(NULL));
 
-	//mpf_set_default_prec(MAX_PREC);
-	//10^-618
-
-	//PARAMETRES PAR DEFAULT, TOUCHE PAS, VA DANS LE FICHIER CONFIG.CFG, batard
+	//PARAMETRES PAR DEFAULT, A NE PAS CHANGER
 	int im_w = 1920, im_h = 1080, surech = 4, iteration = 200, enough = 1, color = RAINBOW;
 	double zoom = 1.1;
+
 
 	int nbt = thread::hardware_concurrency();
 	bool verbose = false, video = false;
@@ -30,11 +28,6 @@ int main(int argc, char** argv)
 	mpf_set_d( y, 0.0);
 	mpf_set_d( w, 3);
 	mpf_set_d( h, 2);
-
-	/*mpf_set_str( x, "-0.5", 10);
-	mpf_set_str( y, "0e30", 10);
-	mpf_set_str( w, "3", 10);
-	mpf_set_str( h, "2", 10);*/
 
 	try
 	{
@@ -86,7 +79,7 @@ int main(int argc, char** argv)
 
 		if(vm.count("division"))
 		{
-			//divs = vm["division"].as<vector<int>>();
+			divs = vm["division"].as<vector<int>>();
 		}
 
 		if (vm.count("Xposition"))
@@ -94,9 +87,7 @@ int main(int argc, char** argv)
 			int prec = ceil(vm["Xposition"].as<string>().length()*log(10)/log(2));
 			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
 			prec = (prec < 64)?64:prec;
-			//prec = (prec > MAX_PREC)?MAX_PREC:prec;
 
-			//mpf_set_prec_raw( x, prec);
 			mpf_set_prec( x, prec);
 
 			mpf_set_str( x, vm["Xposition"].as<string>().c_str(), 10);
@@ -107,9 +98,7 @@ int main(int argc, char** argv)
 			int prec = ceil(vm["Yposition"].as<string>().length()*log(10)/log(2));
 			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
 			prec = (prec < 64)?64:prec;
-			//prec = (prec > MAX_PREC)?MAX_PREC:prec;
 
-			//mpf_set_prec_raw( y, prec);
 			mpf_set_prec( y, prec);
 
 			mpf_set_str( y, vm["Yposition"].as<string>().c_str(), 10);
@@ -133,9 +122,7 @@ int main(int argc, char** argv)
 			int prec = ceil(vm["width"].as<string>().length()*log(10)/log(2));
 			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
 			prec = (prec < 64)?64:prec;
-			//prec = (prec > MAX_PREC)?MAX_PREC:prec;
 
-			//mpf_set_prec_raw( w, prec);
 			mpf_set_prec( w, prec);
 
 			mpf_set_str( w, vm["width"].as<string>().c_str(), 10);
@@ -149,9 +136,7 @@ int main(int argc, char** argv)
 			int prec = ceil(vm["height"].as<string>().length()*log(10)/log(2));
 			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
 			prec = (prec < 64)?64:prec;
-			//prec = (prec > MAX_PREC)?MAX_PREC:prec;
 
-			//mpf_set_prec_raw( h, prec);
 			mpf_set_prec( h, prec);
 
 			mpf_set_str( h, vm["height"].as<string>().c_str(), 10);
@@ -205,9 +190,7 @@ int main(int argc, char** argv)
 			int prec = ceil(vm2["Xposition"].as<string>().length()*log(10)/log(2));
 			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
 			prec = (prec < 64)?64:prec;
-			//prec = (prec > MAX_PREC)?MAX_PREC:prec;
 
-			//mpf_set_prec_raw( x, prec);
 			mpf_set_prec( x, prec);
 
 			mpf_set_str( x, vm2["Xposition"].as<string>().c_str(), 10);
@@ -218,9 +201,7 @@ int main(int argc, char** argv)
 			int prec = ceil(vm2["Yposition"].as<string>().length()*log(10)/log(2));
 			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
 			prec = (prec < 64)?64:prec;
-			//prec = (prec > MAX_PREC)?MAX_PREC:prec;
 
-			//mpf_set_prec_raw( y, prec);
 			mpf_set_prec( y, prec);
 
 			mpf_set_str( y, vm2["Yposition"].as<string>().c_str(), 10);
@@ -244,9 +225,7 @@ int main(int argc, char** argv)
 			int prec = ceil(vm2["width"].as<string>().length()*log(10)/log(2));
 			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
 			prec = (prec < 64)?64:prec;
-			//prec = (prec > MAX_PREC)?MAX_PREC:prec;
 
-			//mpf_set_prec_raw( w, prec);
 			mpf_set_prec( w, prec);
 
 			mpf_set_str( w, vm2["width"].as<string>().c_str(), 10);
@@ -260,9 +239,7 @@ int main(int argc, char** argv)
 			int prec = ceil(vm2["height"].as<string>().length()*log(10)/log(2));
 			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
 			prec = (prec < 64)?64:prec;
-			//prec = (prec > MAX_PREC)?MAX_PREC:prec;
 
-			//mpf_set_prec_raw( h, prec);
 			mpf_set_prec( h, prec);
 
 			mpf_set_str( h, vm2["height"].as<string>().c_str(), 10);
@@ -384,13 +361,11 @@ int main(int argc, char** argv)
 
 	if(mpf_get_prec(w) > mpf_get_prec(x))
 	{
-		//mpf_set_prec_raw( x, mpf_get_prec(w));
 		mpf_set_prec( x, mpf_get_prec(w));
 	}
 
 	if(mpf_get_prec(h) > mpf_get_prec(y))
 	{
-		//mpf_set_prec_raw( y, mpf_get_prec(h));
 		mpf_set_prec( y, mpf_get_prec(h));
 	}
 	
@@ -412,41 +387,15 @@ int main(int argc, char** argv)
 	{
 		M.random_img (enough, zoom, state);
 		//M.dichotomie2(enough, divs.size(), divs, 0);
-		//M.dichotomie( enough, 0);
-		//M.alea( enough, 0);
 	}
 	else
 	{
 		tick = rdtsc();
 		M.video2();
 		cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
-
-		/*tick = rdtsc();
-		M.video();
-		cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;*/
 	}
 
 	if(verbose)cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
-
-
-
-	/*ofstream file("./perf_f_pas3.txt",ios::out | ios::trunc);
-
-	for(int i = 1; i < 14; i++)
-	{
-		Mandelbrot::pas = i;
-		for(int j = 0; j < 2; j++)
-		{
-			file << i << " ";
-
-		tick = rdtsc();
-		M.video2();
-
-		file << rdtsc() - tick << endl;
-		}
-	}
-
-	file.close();*/
 
 	delete MT;
 

@@ -17,36 +17,26 @@ Mpmc::~Mpmc()
 
 void Mpmc::push(work arg)
 {
-	//cout<<"id : "<<getpid()<<" push : ro "<<this->read_ok.load()<<" r "<<this->last_read.load()<<" wo "<<this->write_ok.load()<<" w "<<this->last_write.load()<<endl;
 	offset_t current, next;
 	bool loop = true;
 	do {
 		current = this->last_write.load();
 		next = (current + 1) % this->size;
 		
-		//if((this->last_read.load() + 1 - current + this->size) % this->size > 0)
 		if((this->read_ok.load() - current - 1 + this->size) % this->size > 0)
 		{
 			if(this->last_write.compare_exchange_strong( current, next))
 			{
-				//while((this->read_ok.load() - next + this->size) % this->size < 0);
-				/*this->buf[next].arg = arg.arg;
-				this->buf[next].f = arg.f;*/
 				this->buf[next] = arg;
 				while(!this->write_ok.compare_exchange_strong( current, next));
 				loop = false;
 			}
 		}
-		/*else
-		{
-			this_thread::yield();
-		}*/
 	} while(loop);
 }
 
-bool Mpmc::pop(/*work* arg*/)
+bool Mpmc::pop()
 {
-	//cout<<"id : "<<getpid()<<" pop : ro "<<this->read_ok.load()<<" r "<<this->last_read.load()<<" wo "<<this->write_ok.load()<<" w "<<this->last_write.load()<<endl;
 	offset_t current, next;
 	work w;
 	bool loop = true;
@@ -54,12 +44,10 @@ bool Mpmc::pop(/*work* arg*/)
 		current = this->last_read.load();
 		next = (current + 1) % this->size;
 		
-		//if((this->last_write.load() - current + this->size) % this->size > 0)
 		if((this->write_ok.load() - current + this->size) % this->size > 0)
 		{
 			if(this->last_read.compare_exchange_strong( current, next))
 			{
-				//while((this->write_ok.load() - next + this->size) % this->size < 0);
 				if(this->buf[next].f == nullptr)
 					return false;
 
@@ -69,10 +57,6 @@ bool Mpmc::pop(/*work* arg*/)
 				loop = false;
 			}
 		}
-		/*else
-		{
-			this_thread::yield();
-		}*/
 	} while(loop);
 	return true;
 }

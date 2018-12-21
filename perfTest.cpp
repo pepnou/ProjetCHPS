@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <iomanip>
 #include <stdlib.h>
 #include <stdio.h>
@@ -19,8 +20,8 @@ using namespace cv;
 
 int main(int argc, char** argv)
 {
-	int nbr_test=10000;
-	uint64_t tick, total;
+	/*int nbr_test=10000;
+	uint64_t tick, total;*/
 	
 	/*
 	int w=1000, h=1000;
@@ -103,6 +104,88 @@ int main(int argc, char** argv)
 	mpf_abs (mpf t rop, const mpf t op) 
 	mpf_mul_2exp (mpf t rop, const mpf t op1, mp bitcnt t op2) 
 	mpf_div_2exp (mpf t rop, const mpf t op1, mp bitcnt t op2)*/
+
+
+	/*gmp_randstate_t state;
+	gmp_randinit_default (state);
+	int nbTest = 10000;
+
+	mpf_t a,b,c;
+	mpf_inits( a, b, c, NULL);
+
+	ofstream output("gmp_perf_test.txt",ofstream::trunc);
+
+	for(int prec = 64; prec < 4096; prec += 64)
+	{
+		mpf_set_prec_raw( a, mpf_get_default_prec());
+		mpf_set_prec_raw( b, mpf_get_default_prec());
+		mpf_set_prec_raw( c, mpf_get_default_prec());
+
+		mpf_set_prec( a, prec);
+		mpf_set_prec( b, prec);
+		mpf_set_prec( c, prec);
+
+		total = 0;
+		
+		for(int i = 0; i < nbTest; i++)
+		{
+			mpf_urandomb( a, state, prec);
+			mpf_urandomb( b, state, prec);
+
+			tick = rdtsc();
+			mpf_mul(c, a, b);
+			total += rdtsc() - tick;
+			//tick = rdtsc() - tick;
+			//output << prec << " " << tick <<endl;
+		}
+		output << prec << " " << total/nbTest <<endl;
+	}
+
+	output.close();
+
+	mpf_set_prec_raw( a, mpf_get_default_prec());
+	mpf_set_prec_raw( b, mpf_get_default_prec());
+	mpf_set_prec_raw( c, mpf_get_default_prec());
+
+	mpf_clears( a, b, c, NULL);*/
+
+
+
+	/*stringstream videoName("");
+	videoName << "mkdir -p ../video/alea";
+	system(videoName.str().c_str());
+
+	videoName.str("");
+
+	videoName << "../video/alea/test.avi";
+	cout  << videoName.str().c_str() << endl;
+
+	stringstream frame("");
+
+	Size S = Size( 270, 480);
+	VideoWriter outputVideo;
+
+	int ex = outputVideo.fourcc('H','2','6','4');
+
+	outputVideo.open(videoName.str().c_str(), ex, 2, S, true);
+	
+	if (!outputVideo.isOpened())
+	{
+		cout  << "Could not open the output video for write. " << endl;
+	}
+	else
+	{
+		for(int i = 0; i <= 13; i++)
+		{
+			frame.str("");
+			frame << "../img/Tue_Dec_18_09-13-37_2018/mandel" << i << ".png";
+
+			Mat src = imread( frame.str().c_str(), IMREAD_COLOR );
+			
+			outputVideo << src;
+		}
+	}*/
+
 
 
 	exit(0);

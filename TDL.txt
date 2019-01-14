@@ -1,0 +1,14 @@
+nouvelle To Do List
+Semestre 2, bonjour.
+
+- Parallèlisme MPI
+- supprimer distinction entre explo et generation
+- Optimisation seq.
+- Vectorisation (avec GMP ?)
+- Estimateur de distance
+- allouer un thread à un noeud/coeur -> hwloc()
+- Utiliser IsGood sur l'image parent
+- revoir algo exploration et son implementation
+- combiner aléa et dicho
+- fixer nombre max d'itérations
+- fixer/changer IsGood ~

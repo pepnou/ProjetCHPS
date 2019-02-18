@@ -1,4 +1,5 @@
- #include "main.hpp"
+#include "main.hpp"
+#include <mpi.h>
 
 using namespace cv;
 using namespace std;
@@ -7,8 +8,55 @@ namespace po = boost::program_options;
 
 int Mandelbrot::pas = 10;
 
+
+void gestion_liste(int argc, char **argv)
+{
+
+}
+
+void traitement(int argc, char** argv)
+{
+
+}
+
+
 int main(int argc, char** argv)
 {
+    int rank, size; 
+
+    MPI_Init(&argc, &argv);
+    
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    
+    if(rank == 0)
+    {
+        gestion_liste(argc, argv);
+    }
+    else
+    {
+        traitement(argc, argv);
+    }
+
+    printf("%d / %d\n", rank + 1, size);
+
+    MPI_Finalize();
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
 	srand(time(NULL));
 
 	//PARAMETRES PAR DEFAULT, A NE PAS CHANGER
@@ -17,7 +65,7 @@ int main(int argc, char** argv)
 
 
 	int nbt = thread::hardware_concurrency();
-	bool verbose = false, video = false;
+	bool verbose = false;
 	vector<int> divs;
 	divs.push_back(2);
 	
@@ -376,24 +424,16 @@ int main(int argc, char** argv)
 
 	uint64_t tick = rdtsc();
 
-	srand(time(NULL));
+	// srand(time(NULL));
 
-    gmp_randstate_t state;
-	gmp_randinit_mt(state);
+        // gmp_randstate_t state;
+	// gmp_randinit_mt(state);
 
-	gmp_randseed_ui(state, rand());
+	// gmp_randseed_ui(state, rand());
 
-	if(!video)
-	{
-		M.random_img (enough, zoom, state);
-		//M.dichotomie2(enough, divs.size(), divs, 0);
-	}
-	else
-	{
-		tick = rdtsc();
-		M.video2();
-		cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
-	}
+	// M.random_img (enough, zoom, state);
+	M.dichotomie2(enough, divs.size(), divs, 0);
+
 
 	if(verbose)cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
 
@@ -405,6 +445,6 @@ int main(int argc, char** argv)
 	mpf_set_prec_raw( h, mpf_get_default_prec());
 
 	mpf_clears( x, y, w, h, NULL);
-
+*/
 	exit(0);
 }

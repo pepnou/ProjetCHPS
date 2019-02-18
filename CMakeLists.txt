@@ -17,23 +17,36 @@ set (COMPILATION_OPTION "-O3" "-Wall" "-g")
 add_executable(ProjetFractale ${SRC})
 add_executable(perfTest ${TEST_SRC})
 
-find_package (OpenCV)
-if (OpenCV_FOUND)
-  include_directories(${OpenCV_INCLUDE_DIRS})
-  target_link_libraries (ProjetFractale ${OpenCV_LIBRARIES})
-  target_link_libraries (perfTest ${OpenCV_LIBRARIES})
-endif (OpenCV_FOUND)
+
+find_package (OpenCV REQUIRED)
+include_directories(${OpenCV_INCLUDE_DIRS})
+target_link_libraries (ProjetFractale ${OpenCV_LIBRARIES})
+target_link_libraries (perfTest ${OpenCV_LIBRARIES})
+
+
+find_package (MPI REQUIRED)
+include_directories(${MPI_INCLUDE_DIRS})
+target_link_libraries (ProjetFractale ${MPI_LIBRARIES})
+
+if(MPI_COMPILE_FLAGS)
+    set_target_properties(ProjetFractale PROPERTIES COMPILE_FLAGS "$(MPI_COMPILE_FLAGS)")
+endif()
+
+if(MPI_LINK_FLAGS)
+    set_target_properties(ProjetFractale PROPERTIES LINK_FLAGS "$(MPI_LINK_FLAGS)")
+endif()
+
 
 find_package (Boost COMPONENTS program_options REQUIRED)
-if (Boost_FOUND)
-  include_directories(${Boost_INCLUDE_DIRS})
-  target_link_libraries (ProjetFractale ${Boost_LIBRARIES})
-endif (Boost_FOUND)
+include_directories(${Boost_INCLUDE_DIRS})
+target_link_libraries (ProjetFractale ${Boost_LIBRARIES})
+
 
 target_include_directories(ProjetFractale PUBLIC THREAD_INCLUDE GMP_INCLUDE)
 target_include_directories(perfTest PUBLIC THREAD_INCLUDE GMP_INCLUDE)
 target_link_libraries (ProjetFractale pthread gmp)
 target_link_libraries (perfTest pthread gmp)
+
 
 # set_target_properties(ProjetFractale PROPERTIES COMPILE_FLAGS ${COMPILATION_OPTION} )
 target_compile_options(ProjetFractale PUBLIC ${COMPILATION_OPTION})

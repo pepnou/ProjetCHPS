@@ -4,12 +4,11 @@ project (Fractale 	VERSION 1.0
 					LANGUAGES CXX)
 
 
-
-
+set ( CMAKE_CXX_COMPILER /usr/bin/mpicxx )
 
 set (SRC main.cpp mandelbrot.cpp color.cpp rdtsc.cpp matOp.cpp mpmc.cpp )
-set (TEST_SRC perfTest.cpp rdtsc.cpp)
-set (GMP_INCLUDE /usr/local/include/)
+set (TEST_SRC perfTest.cpp rdtsc.cpp )
+set (GMP_INCLUDE /usr/local/include/ )
 set (THREAD_INCLUDE /usr/include/c++/7.2.0/thread )
 set (COMPILATION_OPTION "-O3" "-Wall" "-g")
 
@@ -22,19 +21,6 @@ find_package (OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 target_link_libraries (ProjetFractale ${OpenCV_LIBRARIES})
 target_link_libraries (perfTest ${OpenCV_LIBRARIES})
-
-
-find_package (MPI REQUIRED)
-include_directories(${MPI_INCLUDE_DIRS})
-target_link_libraries (ProjetFractale ${MPI_LIBRARIES})
-
-if(MPI_COMPILE_FLAGS)
-    set_target_properties(ProjetFractale PROPERTIES COMPILE_FLAGS "$(MPI_COMPILE_FLAGS)")
-endif()
-
-if(MPI_LINK_FLAGS)
-    set_target_properties(ProjetFractale PROPERTIES LINK_FLAGS "$(MPI_LINK_FLAGS)")
-endif()
 
 
 find_package (Boost COMPONENTS program_options REQUIRED)

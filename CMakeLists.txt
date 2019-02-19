@@ -3,7 +3,7 @@ project (Fractale 	VERSION 1.0
 					DESCRIPTION "generation of interesting view in the mandelbrot set"
 					LANGUAGES CXX)
 
-
+set ( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 set ( CMAKE_CXX_COMPILER /usr/bin/mpicxx )
 
 set (SRC main.cpp mandelbrot.cpp color.cpp rdtsc.cpp matOp.cpp mpmc.cpp )

@@ -1,5 +1,10 @@
 #include "main.hpp"
 #include <mpi.h>
+#include <queue>
+
+#define SIZE_RQST 0
+#define WORK_SEND 1
+#define WORK_RQST 2
 
 using namespace cv;
 using namespace std;
@@ -8,10 +13,55 @@ namespace po = boost::program_options;
 
 int Mandelbrot::pas = 10;
 
+struct Work
+{
+    char *x, *y, *w, *h;
+    int enough;
+    
+    Work(char* _x, char* _y, char* _w, char* _h): x(_x), y(_y), w(_w), h(_h) {}
+
+    ~Work()
+    {
+        delete x;
+        delete y;
+        delete w;
+        delete h;
+    }
+
+};
 
 void gestion_liste(int argc, char **argv)
 {
+    MPI_Status status;
+    int size;
+    queue<int> *waiting = new queue<int>();
+    queue<struct Work> *work = new queue<struct Work>();
 
+
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    while(1)
+    {
+        MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+        switch(status.MPI_TAG)
+        {
+            case SIZE_RQST:
+            {
+                int tmp = work->size();
+                MPI_Send(&(tmp), 1, MPI_INT, status.MPI_SOURCE, SIZE_RQST, MPI_COMM_WORLD);
+                break;
+            }
+            case WORK_SEND:
+            {
+                
+                break;
+            }
+            case WORK_RQST:
+            {
+                
+            }
+        }
+    }
 }
 
 void traitement(int argc, char** argv)

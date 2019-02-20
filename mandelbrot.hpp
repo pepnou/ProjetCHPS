@@ -53,9 +53,9 @@ class Mandelbrot
                 void dichotomie3(int n_div, std::vector<int>& divs);
 		bool random_img (int enough, double zoom, gmp_randstate_t& state);
 
-		static int pas;
-                static int surEchantillonage;
-                static int im_width, im_height;
+		// static int pas;
+        static int surEchantillonage;
+        static int im_width, im_height;
 		static int color;
 		static char* rep;
 };

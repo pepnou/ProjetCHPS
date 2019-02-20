@@ -35,17 +35,33 @@ char* Mandelbrot::rep;
 
 void handler(int argc, char** argv)
 {
+     MPI_Status status;
+    int size, count;
+    char* buf;
+    std::queue<int> *waiting = new std::queue<int>();
+    std::queue<char*> *work = new std::queue<char*>();
+
+
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+
+
+
+	int default_param[4];
     //PARAMETRES PAR DEFAULT, A NE PAS CHANGER
-    Mandelbrot::im_width = 1920;
-    Mandelbrot::im_height = 1080;
-    Mandelbrot::surEchantillonage = 4;
-    Mandelbrot::color = RAINBOW;
+    	// largeur
+    default_param[0] = 1920;
+    	// hauteur
+    default_param[1] = 1080;
+    	// sur echantillonage
+    default_param[2] = 4;
+    	// couleur
+    default_param[3] = RAINBOW;
+    
+
 
     int enough = 1;
     bool verbose = false;
-    std::vector<int> divs;
-    divs.push_back(2);
-
 
     mpf_t x, y, w, h;
     mpf_inits( x, y, w, h, NULL);
@@ -56,286 +72,271 @@ void handler(int argc, char** argv)
     mpf_set_d( h, 2);
 
     try
-    {
-        boost::program_options::options_description generic("Generic options");
-	generic.add_options()
-	    ("help", ": describe arguments")
-	    ("verbose,v", ": be verbose")
-	    ("config,c", ": only generate config file");
-
-	boost::program_options::options_description config("Configuration");
-	config.add_options()
-	    ("im-width,w", boost::program_options::value< int >(), ": width of the generated images")
-	    ("im-height,h", boost::program_options::value< int >(), ": height of the generated images")
-	    ("Xposition,X", boost::program_options::value< std::string >(), ": abscissa of the center of the current fractal zone in the complex plane, should be between -2 and 2")
-	    ("Yposition,Y", boost::program_options::value< std::string >(), ": ordinate of the center of the current fractal zone in the complex plane, should be between -2 and 2")
-	    ("width,W", boost::program_options::value< std::string >(), ": width of the current fractal zone in the complex plane, see --help-dimension")
-	    ("height,H", boost::program_options::value< std::string >(), ": height of the current fractal zone in the complex plane, see --help-dimension")
-	    ("enough,E", boost::program_options::value< int >(), ": the maximum number of dichotomical division before stoping");
-
-	boost::program_options::options_description hidden("Hidden options");
-	hidden.add_options()
-	    ("help-color", "")
-	    ("help-thread", "")
-	    ("help-dimension", "");
-
-	boost::program_options::options_description cmdline_options;
-	cmdline_options.add(generic).add(config).add(hidden);
-
-	boost::program_options::options_description config_file_options;
-	config_file_options.add(config);
-
-	boost::program_options::options_description visible;
-	visible.add(generic).add(config);
-
-
-	boost::program_options::variables_map vm;
-
-	std::ifstream ifs("Config.cfg");
-	store(parse_config_file(ifs, config_file_options), vm);
-	notify(vm);
-
-	if(vm.count("division"))
 	{
-	    divs = vm["division"].as<std::vector<int>>();
-	}
+		boost::program_options::options_description generic("Generic options");
+		generic.add_options()
+			("help", ": describe arguments")
+			("verbose,v", ": be verbose")
+			("config,c", ": only generate config file");
 
-	if (vm.count("Xposition"))
-	{
-	    int prec = ceil(vm["Xposition"].as<std::string>().length()*log(10)/log(2));
-	    prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
-	    prec = (prec < 64)?64:prec;
+		boost::program_options::options_description config("Configuration");
+		config.add_options()
+			("im-width,w", boost::program_options::value< int >(), ": width of the generated images")
+			("im-height,h", boost::program_options::value< int >(), ": height of the generated images")
+			("Xposition,X", boost::program_options::value< std::string >(), ": abscissa of the center of the current fractal zone in the complex plane, should be between -2 and 2")
+			("Yposition,Y", boost::program_options::value< std::string >(), ": ordinate of the center of the current fractal zone in the complex plane, should be between -2 and 2")
+			("width,W", boost::program_options::value< std::string >(), ": width of the current fractal zone in the complex plane, see --help-dimension")
+			("height,H", boost::program_options::value< std::string >(), ": height of the current fractal zone in the complex plane, see --help-dimension")
+			("color,C", boost::program_options::value< int >(), ": the color algorithm used, see --help-color")
+			("enough,E", boost::program_options::value< int >(), ": the maximum number of dichotomical division before stoping")
+			("super-sampling,S", boost::program_options::value< int >(), ": the maximum number of points calculated per pixel");
 
-	    mpf_set_prec( x, prec);
+		boost::program_options::options_description hidden("Hidden options");
+		hidden.add_options()
+			("help-color", "")
+			("help-thread", "")
+			("help-dimension", "");
 
-	    mpf_set_str( x, vm["Xposition"].as<std::string>().c_str(), 10);
-	}
+		boost::program_options::options_description cmdline_options;
+		cmdline_options.add(generic).add(config).add(hidden);
 
-	if (vm.count("Yposition"))
-	{
-	    int prec = ceil(vm["Yposition"].as<std::string>().length()*log(10)/log(2));
-	    prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
-	    prec = (prec < 64)?64:prec;
+		boost::program_options::options_description config_file_options;
+		config_file_options.add(config);
 
-	    mpf_set_prec( y, prec);
+		boost::program_options::options_description visible;
+		visible.add(generic).add(config);
 
-	    mpf_set_str( y, vm["Yposition"].as<std::string>().c_str(), 10);
-	}
+		boost::program_options::variables_map vm;
+
+		std::ifstream ifs("Config.cfg");
+		store(parse_config_file(ifs, config_file_options), vm);
+		notify(vm);
+
+		if (vm.count("Xposition"))
+		{
+			int prec = ceil(vm["Xposition"].as<std::string>().length()*log(10)/log(2));
+			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
+			prec = (prec < 64)?64:prec;
+			mpf_set_prec( x, prec);
+			mpf_set_str( x, vm["Xposition"].as<std::string>().c_str(), 10);
+		}
+		if (vm.count("Yposition"))
+		{
+			int prec = ceil(vm["Yposition"].as<std::string>().length()*log(10)/log(2));
+			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
+			prec = (prec < 64)?64:prec;
+			mpf_set_prec( y, prec);
+			mpf_set_str( y, vm["Yposition"].as<std::string>().c_str(), 10);
+		}
 		
-	if (vm.count("im-width"))
-	{
-            Mandelbrot::im_width = vm["im-width"].as<int>();
-	}
+		if (vm.count("im-width"))
+		{
+			default_param[0] = vm["im-width"].as<int>();
+		}
 		
-	if (vm.count("im-height"))
-	{
-            Mandelbrot::im_height = vm["im-height"].as<int>();
-	}
-
-	if (vm.count("width"))
-	{
-	    // 2^x > 10^n
-	    // x > log2(10^n) = n*log2(10) = n*ln(10)/ln(2)
-
-	    int prec = ceil(vm["width"].as<std::string>().length()*log(10)/log(2));
-	    prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
-	    prec = (prec < 64)?64:prec;
-
-	    mpf_set_prec( w, prec);
-
-	    mpf_set_str( w, vm["width"].as<std::string>().c_str(), 10);
-	}
+		if (vm.count("im-height"))
+		{
+			default_param[1] = vm["im-height"].as<int>();
+		}
+                if (vm.count("width"))
+                {
+                    // 2^x > 10^n
+                    // x > log2(10^n) = n*log2(10) = n*ln(10)/ln(2)
+                    int prec = ceil(vm["width"].as<std::string>().length()*log(10)/log(2));
+                    prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
+                    prec = (prec < 64)?64:prec;
+                    mpf_set_prec( w, prec);
+                    mpf_set_str( w, vm["width"].as<std::string>().c_str(), 10);
+                }
 		
-	if (vm.count("height"))
-	{
-	    // 2^x > 10^n
-	    // x > log2(10^n) = n*log2(10) = n*ln(10)/ln(2)
-
-	    int prec = ceil(vm["height"].as<std::string>().length()*log(10)/log(2));
-	    prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
-	    prec = (prec < 64)?64:prec;
-
-	    mpf_set_prec( h, prec);
-
-	    mpf_set_str( h, vm["height"].as<std::string>().c_str(), 10);
-	}
+		if (vm.count("height"))
+		{
+			// 2^x > 10^n
+			// x > log2(10^n) = n*log2(10) = n*ln(10)/ln(2)
+			int prec = ceil(vm["height"].as<std::string>().length()*log(10)/log(2));
+			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
+			prec = (prec < 64)?64:prec;
+			mpf_set_prec( h, prec);
+			mpf_set_str( h, vm["height"].as<std::string>().c_str(), 10);
+		}
 		
-	if (vm.count("enough"))
-	{
-	    enough = vm["enough"].as<int>();
-	}
+		if (vm.count("color"))
+		{
+			default_param[3] = vm["color"].as<int>();
+		}
 		
-	boost::program_options::positional_options_description positional;
-
-	boost::program_options::variables_map vm2;
-
-	boost::program_options::store(boost::program_options::command_line_parser(argc, argv)
-	    .options(cmdline_options)
-	    .positional(positional)
-	    .run(),
-	    vm2);
-
-	boost::program_options::notify(vm2);
-
-	if (vm2.count("help"))
-	{
-	    std::cout << visible << "\n";
-	    exit(0);
-	}
-
-	if (vm2.count("Xposition"))
-	{
-	    int prec = ceil(vm2["Xposition"].as<std::string>().length()*log(10)/log(2));
-	    prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
-	    prec = (prec < 64)?64:prec;
-
-	    mpf_set_prec( x, prec);
-
-	    mpf_set_str( x, vm2["Xposition"].as<std::string>().c_str(), 10);
-	}
-
-	if (vm2.count("Yposition"))
-	{
-	    int prec = ceil(vm2["Yposition"].as<std::string>().length()*log(10)/log(2));
-	    prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
-	    prec = (prec < 64)?64:prec;
-
-	    mpf_set_prec( y, prec);
-
-	    mpf_set_str( y, vm2["Yposition"].as<std::string>().c_str(), 10);
-	}
+		if (vm.count("enough"))
+		{
+			enough = vm["enough"].as<int>();
+		}
 		
-	if (vm2.count("width"))
-	{
-	    // 2^x > 10^n
-	    // x > log2(10^n) = n*log2(10) = n*ln(10)/ln(2)
-
-	    int prec = ceil(vm2["width"].as<std::string>().length()*log(10)/log(2));
-	    prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
-	    prec = (prec < 64)?64:prec;
-
-	    mpf_set_prec( w, prec);
-
-	    mpf_set_str( w, vm2["width"].as<std::string>().c_str(), 10);
-	}
+		if (vm.count("super-sampling"))
+		{
+			default_param[2] = vm["super-sampling"].as<int>();
+		}
 		
-	if (vm2.count("height"))
-	{
-	    // 2^x > 10^n
-	    // x > log2(10^n) = n*log2(10) = n*ln(10)/ln(2)
+		boost::program_options::positional_options_description positional;
+		boost::program_options::variables_map vm2;
 
-	    int prec = ceil(vm2["height"].as<std::string>().length()*log(10)/log(2));
-	    prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
-	    prec = (prec < 64)?64:prec;
+		boost::program_options::store(boost::program_options::command_line_parser(argc, argv)
+			.options(cmdline_options)
+			.positional(positional)
+			.run(),
+			vm2);
 
-	    mpf_set_prec( h, prec);
+		boost::program_options::notify(vm2);
 
-	    mpf_set_str( h, vm2["height"].as<std::string>().c_str(), 10);
-	}
+		if (vm2.count("help"))
+		{
+			std::cout << visible << "\n";
+			exit(0);
+		}
+		if (vm2.count("Xposition"))
+		{
+			int prec = ceil(vm2["Xposition"].as<std::string>().length()*log(10)/log(2));
+			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
+			prec = (prec < 64)?64:prec;
+			mpf_set_prec( x, prec);
+			mpf_set_str( x, vm2["Xposition"].as<std::string>().c_str(), 10);
+		}
+		if (vm2.count("Yposition"))
+		{
+			int prec = ceil(vm2["Yposition"].as<std::string>().length()*log(10)/log(2));
+			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
+			prec = (prec < 64)?64:prec;
+			mpf_set_prec( y, prec);
+			mpf_set_str( y, vm2["Yposition"].as<std::string>().c_str(), 10);
+		}
 		
-	if (vm2.count("enough"))
-	{
-	    enough = vm2["enough"].as<int>();
-	}
+		if (vm2.count("im-width"))
+		{
+			default_param[0] = vm2["im-width"].as<int>();
+		}
 		
-	if (vm2.count("verbose"))
+		if (vm2.count("im-height"))
+		{
+			default_param[1] = vm2["im-height"].as<int>();
+		}
+		if (vm2.count("width"))
+		{
+			// 2^x > 10^n
+			// x > log2(10^n) = n*log2(10) = n*ln(10)/ln(2)
+			int prec = ceil(vm2["width"].as<std::string>().length()*log(10)/log(2));
+			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
+			prec = (prec < 64)?64:prec;
+			mpf_set_prec( w, prec);
+			mpf_set_str( w, vm2["width"].as<std::string>().c_str(), 10);
+		}
+		
+		if (vm2.count("height"))
+		{
+			// 2^x > 10^n
+			// x > log2(10^n) = n*log2(10) = n*ln(10)/ln(2)
+			int prec = ceil(vm2["height"].as<std::string>().length()*log(10)/log(2));
+			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
+			prec = (prec < 64)?64:prec;
+			mpf_set_prec( h, prec);
+			mpf_set_str( h, vm2["height"].as<std::string>().c_str(), 10);
+		}
+		
+		if (vm2.count("color"))
+		{
+			default_param[3] = vm2["color"].as<int>();
+		}
+		
+		if (vm2.count("enough"))
+		{
+			enough = vm2["enough"].as<int>();
+		}
+		
+		if (vm2.count("super-sampling"))
+		{
+			default_param[3] = vm2["super-sampling"].as<int>();
+		}
+		if (vm2.count("verbose"))
+		{
+			verbose = true;
+		}
+		if (vm2.count("help-color"))
+		{
+			std::cout<< "This option allows you to choose from the three currently implemented coloring algorithm, it should only take a number between 1 et 3" << std::endl
+				<< "\t1: This algorithm take the escape speed time of a point (or multiple if you are using the super sampling), reduce it between 0 et 360 using a modulo and then use it as hue in the hsb color representation" << std::endl
+				<< "\t2:This algorithm take the escape speed time of a point (or multiple if you are using the super sampling), reduce it between 0 et 360 using a modulo and then cut it in 4 phase to allow to go from blue, to black, to yellow, to white and to blue again" << std::endl
+				<< "\t3: This algorithm take the escape speed time of a point (or multiple if you are using the super sampling), calculate three value using alpha*cos(escape_speed) or alpha*sin(escape_speed) and then use them as red, green and blue components" << std::endl
+				<< std::endl;
+			exit(0);
+		}
+		if (vm2.count("help-thread"))
+		{
+			std::cout<< "This option allows you to choose the maximum number of thread created by the program." << std::endl
+				<< "Note that one more thread is created to explore the fractal and create tasks for the other thread." << std::endl
+				<< "If you want to use all your possible threds, use -1." << std::endl
+				<< "There is no current way to only use one thread." << std::endl
+				<< std::endl;
+			exit(0);
+		}
+		if (vm2.count("help-dimension"))
+		{
+			std::cout<< "This option allows yout to choose the width and the height of the current fractal zone in the complex plane." << std::endl
+				<< "Note that if the ratio of the image is different than the one of the complex plan, generated images will be out of shape." << std::endl
+				<< std::endl;
+			exit(0);
+		}
+
+		mp_exp_t e1, e2, e3, e4;
+		char *char_width, *char_height, *char_x, *char_y;
+		char tmpx[3] = {'0','.','\0'}, tmpy[3] = {'0','.','\0'};
+		char_x = mpf_get_str( NULL, &e1, 10, 1000, x);
+		if(char_x[0] == '-')
+		{
+			char_x[0] = '.';
+			tmpx[0] = '-';
+			tmpx[1] = '0';
+		}
+		char_y = mpf_get_str( NULL, &e2, 10, 1000, y);
+		if(char_y[0] == '-')
+		{
+			char_y[0] = '.';
+			tmpy[0] = '-';
+			tmpy[1] = '0';
+		}
+		char_width = mpf_get_str( NULL, &e3, 10, 1000, w);
+		char_height = mpf_get_str( NULL, &e4, 10, 1000, h);
+		std::ofstream ofs("Config.cfg",std::ofstream::trunc);
+		ofs << "Xposition=" << tmpx << char_x << "e" << e1 << std::endl
+			<< "Yposition=" << tmpy << char_y << "e" << e2 << std::endl
+			<< "im-width=" << default_param[0] << std::endl
+			<< "im-height=" << default_param[1] << std::endl
+			<< "width=" << "0." << char_width << "e" << e3 << std::endl
+			<< "height=" << "0." << char_height << "e" << e4 << std::endl
+			<< "color=" << default_param[3] << std::endl
+			<< "enough=" << enough << std::endl
+			<< "super-sampling=" << default_param[2] << std::endl;
+
+		if (vm2.count("config"))
+		{
+		    for(int i = 0; i < size; i++)
+                        MPI_Send(NULL, 0, MPI_INT, i, END, MPI_COMM_WORLD);
+                    return;
+		}
+	}
+	catch(std::exception& E)
 	{
-	    verbose = true;
+		std::cout << E.what() << std::endl;
 	}
 
-	if (vm2.count("help-color"))
+	if(mpf_get_prec(w) > mpf_get_prec(x))
 	{
-            std::cout<< "This option allows you to choose from the three currently implemented coloring algorithm, it should only take a number between 1 et 3" << std::endl
-	        << "\t1: This algorithm take the escape speed time of a point (or multiple if you are using the super sampling), reduce it between 0 et 360 using a modulo and then use it as hue in the hsb color representation" << std::endl
-		<< "\t2:This algorithm take the escape speed time of a point (or multiple if you are using the super sampling), reduce it between 0 et 360 using a modulo and then cut it in 4 phase to allow to go from blue, to black, to yellow, to white and to blue again" << std::endl
-		<< "\t3: This algorithm take the escape speed time of a point (or multiple if you are using the super sampling), calculate three value using alpha*cos(escape_speed) or alpha*sin(escape_speed) and then use them as red, green and blue components" << std::endl
-		<< std::endl;
-	    exit(0);
+		mpf_set_prec( x, mpf_get_prec(w));
+	}
+	if(mpf_get_prec(h) > mpf_get_prec(y))
+	{
+		mpf_set_prec( y, mpf_get_prec(h));
 	}
 
-	if (vm2.count("help-thread"))
-	{
-            std::cout<< "This option allows you to choose the maximum number of thread created by the program." << std::endl
-		<< "Note that one more thread is created to explore the fractal and create tasks for the other thread." << std::endl
-		<< "If you want to use all your possible threds, use -1." << std::endl
-		<< "There is no current way to only use one thread." << std::endl
-		<< std::endl;
-	    exit(0);
-	}
+    std::cerr << "yolo" << std::endl;
 
-	if (vm2.count("help-dimension"))
-	{
-            std::cout<< "This option allows yout to choose the width and the height of the current fractal zone in the complex plane." << std::endl
-		<< "Note that if the ratio of the image is different than the one of the complex plan, generated images will be out of shape." << std::endl
-		<< std::endl;
-	    exit(0);
-	}
-
-
-	mp_exp_t e1, e2, e3, e4;
-	char *char_width, *char_height, *char_x, *char_y;
-	char tmpx[3] = {'0','.','\0'}, tmpy[3] = {'0','.','\0'};
-
-
-        char_x = mpf_get_str( NULL, &e1, 10, 1000, x);
-	if(char_x[0] == '-')
-	{
-	    char_x[0] = '.';
-	    tmpx[0] = '-';
-	    tmpx[1] = '0';
-	}
-	char_y = mpf_get_str( NULL, &e2, 10, 1000, y);
-	if(char_y[0] == '-')
-	{
-	    char_y[0] = '.';
-	    tmpy[0] = '-';
-	    tmpy[1] = '0';
-	}
-	char_width = mpf_get_str( NULL, &e3, 10, 1000, w);
-	char_height = mpf_get_str( NULL, &e4, 10, 1000, h);
-
-        std::ofstream ofs("Config.cfg",std::ofstream::trunc);
-	ofs << "Xposition=" << tmpx << char_x << "e" << e1 << std::endl
-	    << "Yposition=" << tmpy << char_y << "e" << e2 << std::endl
-	    << "im-width=" << Mandelbrot::im_width << std::endl
-	    << "im-height=" << Mandelbrot::im_height << std::endl
-	    << "width=" << "0." << char_width << "e" << e3 << std::endl
-	    << "height=" << "0." << char_height << "e" << e4 << std::endl
-	    << "color=" << Mandelbrot::color << std::endl
-	    << "enough=" << enough << std::endl
-	    << "super-sampling=" << Mandelbrot::surEchantillonage << std::endl;
-
-	if (vm2.count("config"))
-	{
-	    exit(0);
-	}
-    }
-    catch(std::exception& E)
-    {
-        std::cout << E.what() << std::endl;
-    }
-
-
-    if(mpf_get_prec(w) > mpf_get_prec(x))
-    {
-	mpf_set_prec( x, mpf_get_prec(w));
-    }
-
-    if(mpf_get_prec(h) > mpf_get_prec(y))
-    {
-	mpf_set_prec( y, mpf_get_prec(h));
-    }
-
-
-
-    MPI_Status status;
-    int size, count;
-    char* buf;
-    std::queue<int> *waiting = new std::queue<int>();
-    std::queue<char*> *work = new std::queue<char*>();
-
-
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
+   
     
 
     std::stringstream r;
@@ -345,20 +346,19 @@ void handler(int argc, char** argv)
     
     r << "../Img/" << now->tm_year << "-" << now->tm_mon << "-" << now->tm_mday << "_" << now->tm_hour << ":" << now->tm_min << ":" << now->tm_sec;
 
-    for(int i = 1; i < size; i++)
-        MPI_Send(r.str().c_str(), strlen(r.str().c_str()), MPI_CHAR, i, 0, MPI_COMM_WORLD);
+    std::cout << r.str().c_str() << std::endl;
 
     Mandelbrot::rep = new char[r.str().size() + 1]();
     strcpy(Mandelbrot::rep, r.str().c_str());
 
+    for(int i = 1; i < size; i++)
+        MPI_Send(Mandelbrot::rep, strlen(Mandelbrot::rep), MPI_CHAR, i, 0, MPI_COMM_WORLD);
 
+    MPI_Bcast(default_param, 4, MPI_INT, 0, MPI_COMM_WORLD);
     
-
-
-
-
-
-
+    std::stringstream cmd("");
+    cmd << "mkdir -p " << r.str().c_str();
+    system(cmd.str().c_str());
 
     mp_exp_t e1, e2, e3, e4;
     char *char_width, *char_height, *char_x, *char_y;
@@ -389,7 +389,9 @@ void handler(int argc, char** argv)
     buf = new char[r.str().size()];
     strcpy(buf, r.str().c_str());
     work->push(buf);
+    
 
+    std::cerr << "yolo" << std::endl;
 
     uint64_t tick = rdtsc();
     while(1)
@@ -452,125 +454,30 @@ void worker(int argc, char** argv)
 
     std::vector<int> divs;
     divs.push_back(2);
+    divs.push_back(3);
 
 
-    mpf_t x, y, w, h;
-    mpf_inits( x, y, w, h, NULL);
-
-    mpf_set_d( x, -0.5);
-    mpf_set_d( y, 0.0);
-    mpf_set_d( w, 3);
-    mpf_set_d( h, 2);
-
-    try
-    {
-        boost::program_options::options_description generic("Generic options");
-	generic.add_options()
-	    ("config,c", ": only generate config file");
-	
-        boost::program_options::options_description config("Configuration");
-	config.add_options()
-	    ("im-width,w", boost::program_options::value< int >(), ": width of the generated images")
-	    ("im-height,h", boost::program_options::value< int >(), ": height of the generated images")
-	    ("color,C", boost::program_options::value< int >(), ": the color algorithm used, see --help-color")
-	    ("super-sampling,S", boost::program_options::value< int >(), ": the maximum number of points calculated per pixel")
-	    ("division,D", boost::program_options::value< std::vector<int> >()->multitoken(), ": ");
-
-	
-	boost::program_options::options_description cmdline_options;
-	cmdline_options.add(config).add(generic);
-
-	boost::program_options::options_description config_file_options;
-	config_file_options.add(config);
 
 
-	boost::program_options::variables_map vm;
-
-	std::ifstream ifs("Config.cfg");
-	store(parse_config_file(ifs, config_file_options), vm);
-	notify(vm);
-
-	if(vm.count("division"))
-	{
-	    divs = vm["division"].as<std::vector<int>>();
-	}
-		
-	if (vm.count("im-width"))
-	{
-            Mandelbrot::im_width = vm["im-width"].as<int>();
-	}
-		
-	if (vm.count("im-height"))
-	{
-            Mandelbrot::im_height = vm["im-height"].as<int>();
-	}
-	
-	if (vm.count("color"))
-	{
-            Mandelbrot::color = vm["color"].as<int>();
-	}
-		
-	if (vm.count("super-sampling"))
-	{
-            Mandelbrot::surEchantillonage = vm["super-sampling"].as<int>();
-	}
-
-	boost::program_options::positional_options_description positional;
-
-	boost::program_options::variables_map vm2;
-
-	boost::program_options::store(boost::program_options::command_line_parser(argc, argv)
-	    .options(cmdline_options)
-	    .positional(positional)
-	    .run(),
-	    vm2);
-
-	boost::program_options::notify(vm2);
-
-	if (vm2.count("im-width"))
-	{
-            Mandelbrot::im_width = vm2["im-width"].as<int>();
-	}
-		
-	if (vm2.count("im-height"))
-	{
-            Mandelbrot::im_height = vm2["im-height"].as<int>();
-	}
-
-	if (vm2.count("color"))
-	{
-            Mandelbrot::color = vm2["color"].as<int>();
-	}
-		
-	if (vm2.count("super-sampling"))
-	{
-            Mandelbrot::surEchantillonage = vm2["super-sampling"].as<int>();
-	}
-
-	if(vm2.count("division"))
-	{
-	    divs = vm2["division"].as<std::vector<int>>();
-	}
-
-	if (vm2.count("config"))
-	{
-	    exit(0);
-	}
-    }
-    catch(std::exception& E)
-    {
-        std::cout << E.what() << std::endl;
-    }
-
-
+    
     MPI_Status status;
     int count;
     char* buf;
 
-    MPI_Probe(0, 0, MPI_COMM_WORLD, &status);
+    MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+    if(status.MPI_TAG == END)
+        return;
     MPI_Get_count(&status, MPI_CHAR, &count);
     Mandelbrot::rep = new char[count]();
     MPI_Recv(Mandelbrot::rep, count, MPI_CHAR, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+    int default_param[4];
+    MPI_Bcast(default_param, 4, MPI_INT, 0, MPI_COMM_WORLD);
+    Mandelbrot::im_width = default_param[0];
+	Mandelbrot::im_height = default_param[1];
+	Mandelbrot::surEchantillonage = default_param[2];
+	Mandelbrot::color = default_param[3];    
+
 
     while(1)
     {

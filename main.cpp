@@ -9,17 +9,20 @@ using namespace std;
 namespace po = boost::program_options;
 
 int Mandelbrot::pas = 10;
-
+int Mandelbrot::surEchantillonage;
+int Mandelbrot::im_width;
+int Mandelbrot::im_height;
+int Mandelbrot::color;
+char* Mandelbrot::rep;
 
 
 int main(int argc, char** argv)
 {
-    int rank, size; 
+    int rank; 
 
     MPI_Init(&argc, &argv);
     
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
 
     
     if(rank == 0)

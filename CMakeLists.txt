@@ -6,7 +6,7 @@ project (Fractale 	VERSION 1.0
 set ( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 set ( CMAKE_CXX_COMPILER /usr/bin/mpicxx )
 
-set (SRC main.cpp mandelbrot.cpp color.cpp rdtsc.cpp matOp.cpp mpmc.cpp workHandler.cpp )
+set (SRC main.cpp mandelbrot.cpp color.cpp rdtsc.cpp matOp.cpp workHandler.cpp )
 set (TEST_SRC perfTest.cpp rdtsc.cpp )
 set (GMP_INCLUDE /usr/local/include/ )
 set (THREAD_INCLUDE /usr/include/c++/7.2.0/thread )

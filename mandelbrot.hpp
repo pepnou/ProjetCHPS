@@ -20,9 +20,7 @@
 #include "color.hpp"
 #include "rdtsc.hpp"
 #include "matOp.hpp"
-// #include "mpmc.hpp"
 
-class Mpmc;
 
 class Mandelbrot
 {
@@ -33,10 +31,7 @@ class Mandelbrot
 		int iterations, enough;
                 double ThresholdCont, ThresholdSave;
 
-		static int surEchantillonage;
-                static int im_width, im_height;
-		static int color;
-		static char* rep;
+		
                 
                 cv::Mat *divMat, *img, *sEMat;
                 
@@ -59,6 +54,10 @@ class Mandelbrot
 		bool random_img (int enough, double zoom, gmp_randstate_t& state);
 
 		static int pas;
+                static int surEchantillonage;
+                static int im_width, im_height;
+		static int color;
+		static char* rep;
 };
 
 #endif

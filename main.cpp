@@ -18,43 +18,17 @@ char* Mandelbrot::rep;
 
 int main(int argc, char** argv)
 {
-    int rank; 
-
-    MPI_Init(&argc, &argv);
-    
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-    
-    if(rank == 0)
-    {
-        handler(argc, argv);
-    }
-    else
-    {
-        worker(argc, argv);
-    }
-
-
-    MPI_Finalize();
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-
 
 	srand(time(NULL));
 
 	//PARAMETRES PAR DEFAULT, A NE PAS CHANGER
-	int im_w = 1920, im_h = 1080, surech = 4, iteration = 200, enough = 1, color = RAINBOW;
+        Mandelbrot::im_width = 1920;
+        Mandelbrot::im_height = 1080;
+        Mandelbrot::surEchantillonage = 4;
+        Mandelbrot::color = RAINBOW;
+    
+        
+	int enough = 1;
 	double zoom = 1.1;
 
 
@@ -412,11 +386,9 @@ int main(int argc, char** argv)
 	}
 	
 
-	MyThreads* MT = new MyThreads(nbt);
-	Mpmc* mpmc = MT->getMpmc();
-	Mandelbrot M( x, y, w, h, im_w, im_h, surech, iteration, color, mpmc);
+	Mandelbrot M( x, y, w, h, enough);
 
-	uint64_t tick = rdtsc();
+	
 
 	// srand(time(NULL));
 
@@ -426,12 +398,34 @@ int main(int argc, char** argv)
 	// gmp_randseed_ui(state, rand());
 
 	// M.random_img (enough, zoom, state);
-	M.dichotomie2(enough, divs.size(), divs, 0);
+	M.dichotomie3( divs.size(), divs, 0);
+        
 
 
-	if(verbose)cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
+        int rank; 
 
-	delete MT;
+        MPI_Init(&argc, &argv);
+    
+        MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    
+        if(rank == 0)
+        {
+            uint64_t tick = rdtsc();
+            handler(argc, argv);
+            if(verbose)cout <<"Time spend in cycle : "<< rdtsc() - tick << endl;
+        }
+        else
+        {
+            worker(argc, argv);
+        }
+
+
+        MPI_Finalize();
+
+
+
+	
 
 	mpf_set_prec_raw( x, mpf_get_default_prec());
 	mpf_set_prec_raw( y, mpf_get_default_prec());
@@ -439,6 +433,8 @@ int main(int argc, char** argv)
 	mpf_set_prec_raw( h, mpf_get_default_prec());
 
 	mpf_clears( x, y, w, h, NULL);
-*/
-	exit(0);
+
+
+        
+    exit(0);
 }

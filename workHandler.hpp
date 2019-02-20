@@ -1,18 +1,11 @@
+#ifndef __WH__
+#define __WH__
+
 #include <queue>
 
-typedef struct
-{
-    char *x, *y, *width, *height;
-} Work;
 
-class WorkHandler
-{
-    private:
-        int size;
-        std::queue<int> waiting;
+void handler(int argc, char** argv);
+void worker(int argc, char** argv);
 
-    
-    public:
-        WorkHandler();
-        ~WorkHandler();
-};
+
+#endif

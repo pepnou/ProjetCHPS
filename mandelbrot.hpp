@@ -50,7 +50,7 @@ class Mandelbrot
 		void IterUp();
 		bool IsGood_2(bool* filtre);
 		
-                void dichotomie3(int n_div, std::vector<int>& divs, int prec);
+                void dichotomie3(int n_div, std::vector<int>& divs);
 		bool random_img (int enough, double zoom, gmp_randstate_t& state);
 
 		static int pas;

@@ -492,8 +492,10 @@ void Mandelbrot::IterUp(){
 	
 }
 
-void Mandelbrot::dichotomie3(int n_div, vector<int>& divs, int prec)
+void Mandelbrot::dichotomie3(int n_div, vector<int>& divs)
 {
+    int prec = mpf_get_prec(pos_x);
+
     escapeSpeedCalcSeq();
     draw();
 
@@ -587,7 +589,7 @@ void Mandelbrot::dichotomie3(int n_div, vector<int>& divs, int prec)
 			    Mandelbrot* M = new Mandelbrot(tab_x[x], tab_y[y], delta_x, delta_y , enough - 1);
                             //en bas a gauche
 						
-			    M->dichotomie3(n_div, divs, n_prec);
+			    M->dichotomie3(n_div, divs);
 						
 			    delete M;
 						

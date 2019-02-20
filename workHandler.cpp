@@ -327,8 +327,6 @@ void handler(int argc, char** argv)
     }
 
 
-    
-
 
     MPI_Status status;
     int size, count;
@@ -352,6 +350,46 @@ void handler(int argc, char** argv)
 
     Mandelbrot::rep = new char[r.str().size() + 1]();
     strcpy(Mandelbrot::rep, r.str().c_str());
+
+
+    
+
+
+
+
+
+
+
+    mp_exp_t e1, e2, e3, e4;
+    char *char_width, *char_height, *char_x, *char_y;
+    char tmpx[3] = {'0','.','\0'}, tmpy[3] = {'0','.','\0'};
+
+
+    char_x = mpf_get_str( NULL, &e1, 10, 1000, x);
+    if(char_x[0] == '-')
+    {
+        char_x[0] = '.';
+	tmpx[0] = '-';
+	tmpx[1] = '0';
+    }
+    char_y = mpf_get_str( NULL, &e2, 10, 1000, y);
+    if(char_y[0] == '-')
+    {
+	char_y[0] = '.';
+	tmpy[0] = '-';
+	tmpy[1] = '0';
+    }
+
+    char_width = mpf_get_str( NULL, &e3, 10, 1000, w);
+    char_height = mpf_get_str( NULL, &e4, 10, 1000, h);
+    
+    r.str("");
+    r << enough << ":" << tmpx << char_x << "e" << e1 << ":" << tmpy << char_y << "e" << e2 << ":" << "0." << char_width << "e" << e3 << ":" << "0." << char_height << "e" << e4;
+    
+    buf = new char[r.str().size()];
+    strcpy(buf, r.str().c_str());
+    work->push(buf);
+
 
     uint64_t tick = rdtsc();
     while(1)
@@ -529,6 +567,11 @@ void worker(int argc, char** argv)
     int count;
     char* buf;
 
+    MPI_Probe(0, 0, MPI_COMM_WORLD, &status);
+    MPI_Get_count(&status, MPI_CHAR, &count);
+    Mandelbrot::rep = new char[count]();
+    MPI_Recv(Mandelbrot::rep, count, MPI_CHAR, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
     while(1)
     {
         MPI_Send(NULL, 0, MPI_INT, 0, WORK_RQST, MPI_COMM_WORLD);
@@ -539,7 +582,7 @@ void worker(int argc, char** argv)
             MPI_Get_count(&status, MPI_CHAR, &count);
             buf = new char[count]();
             
-            MPI_Recv(buf, count, MPI_CHAR, 0, WORK_SEND, MPI_COMM_WORLD, &status);
+            MPI_Recv(buf, count, MPI_CHAR, 0, WORK_SEND, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
             Mandelbrot* m = new Mandelbrot(buf);
             m->dichotomie3(divs.size(), divs);

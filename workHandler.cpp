@@ -5,7 +5,7 @@
 #include <boost/program_options.hpp>
 #include <fstream>
 #include <cmath>
-#include <time.h>
+#include <ctime>
 #include <vector>
 
 #include "mandelbrot.hpp"
@@ -327,7 +327,7 @@ void handler(int argc, char** argv)
     }
 
 
-    // TODO initialiser rep
+    
 
 
     MPI_Status status;
@@ -338,6 +338,20 @@ void handler(int argc, char** argv)
 
 
     MPI_Comm_size(MPI_COMM_WORLD, &size);
+    
+
+    std::stringstream r;
+    r.str("");
+    std::time_t t = std::time(0);
+    std::tm* now = std::localtime(&t);
+    
+    r << "../Img/" << now->tm_year << "-" << now->tm_mon << "-" << now->tm_mday << "_" << now->tm_hour << ":" << now->tm_min << ":" << now->tm_sec;
+
+    for(int i = 1; i < size; i++)
+        MPI_Send(r.str().c_str(), strlen(r.str().c_str()), MPI_CHAR, i, 0, MPI_COMM_WORLD);
+
+    Mandelbrot::rep = new char[r.str().size() + 1]();
+    strcpy(Mandelbrot::rep, r.str().c_str());
 
     uint64_t tick = rdtsc();
     while(1)

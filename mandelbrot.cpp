@@ -36,6 +36,9 @@ Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int enough)
 }
 
 Mandelbrot::Mandelbrot(char* buf)
+    :divMat(new Mat(im_height*surEchantillonage, im_width*surEchantillonage, CV_32SC1)) ,
+    img(new Mat(im_height, im_width, CV_8UC3)) ,
+    sEMat(new Mat(im_height, im_width, CV_8UC1))
 {
     int prec;
     char* tmp;

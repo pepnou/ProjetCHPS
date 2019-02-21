@@ -12,10 +12,12 @@
 #include <gmp.h>
 #include <string>
 
+/*
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgcodecs.hpp>
+*/
 
 #include "color.hpp"
 #include "rdtsc.hpp"
@@ -34,7 +36,9 @@ class Mandelbrot
 		int surEchantillonage;
 		double ThresholdCont, ThresholdSave;
 		int color;
-		cv::Mat *divMat, *img, *sEMat;
+		cv::Mat *divMat;
+		cv::Mat *img;
+		cv::Mat *sEMat;		
 		char* rep;
 
 		Mpmc* mpmc;

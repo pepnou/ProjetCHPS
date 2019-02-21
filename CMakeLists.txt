@@ -1,10 +1,9 @@
-cmake_minimum_required (VERSION 3.9.0)
+cmake_minimum_required (VERSION 3.7.2)
 project (Fractale 	VERSION 1.0
-					DESCRIPTION "generation of interesting view in the mandelbrot set"
 					LANGUAGES CXX)
 
 
-set ( CMAKE_CXX_COMPILER /usr/bin/mpicxx )
+set ( CMAKE_CXX_COMPILER mpicxx )
 
 set (SRC main.cpp mandelbrot.cpp color.cpp rdtsc.cpp matOp.cpp mpmc.cpp )
 set (TEST_SRC perfTest.cpp rdtsc.cpp )
@@ -17,15 +16,15 @@ add_executable(ProjetFractale ${SRC})
 add_executable(perfTest ${TEST_SRC})
 
 
-find_package (OpenCV REQUIRED)
-include_directories(${OpenCV_INCLUDE_DIRS})
-target_link_libraries (ProjetFractale ${OpenCV_LIBRARIES})
-target_link_libraries (perfTest ${OpenCV_LIBRARIES})
+#find_package (OpenCV REQUIRED)
+#include_directories(${OpenCV_INCLUDE_DIRS})
+#target_link_libraries (ProjetFractale ${OpenCV_LIBRARIES})
+#target_link_libraries (perfTest ${OpenCV_LIBRARIES})
 
 
-find_package (Boost COMPONENTS program_options REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
-target_link_libraries (ProjetFractale ${Boost_LIBRARIES})
+#find_package (Boost COMPONENTS program_options REQUIRED)
+#include_directories(${Boost_INCLUDE_DIRS})
+#target_link_libraries (ProjetFractale ${Boost_LIBRARIES})
 
 
 target_include_directories(ProjetFractale PUBLIC THREAD_INCLUDE GMP_INCLUDE)

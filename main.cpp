@@ -1,10 +1,10 @@
 #include "main.hpp"
 #include <mpi.h>
 
-using namespace cv;
+//using namespace cv;
 using namespace std;
 
-namespace po = boost::program_options;
+//namespace po = boost::program_options;
 
 int Mandelbrot::pas = 10;
 

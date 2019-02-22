@@ -12,36 +12,29 @@
 #include <gmp.h>
 #include <string>
 
-/*
-#include <opencv2/core.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgcodecs.hpp>
-*/
-
-#include "color.hpp"
 #include "rdtsc.hpp"
-#include "matOp.hpp"
 #include "mpmc.hpp"
+#include "libppm/ppm.hpp"
 
 class Mpmc;
 
 class Mandelbrot
 {
 	private:
+		int surEchantillonage;
+		int im_width, im_height, iterations;
+		int color;
+		Mpmc* mpmc;
+		Matrice *divMat;
+		Image *img;
+		Matrice *sEMat;
 		mpf_t pos_x, pos_y;
 		mpf_t width,height;
 		mpf_t atomic_w, atomic_h;
-		int im_width, im_height, iterations;
-		int surEchantillonage;
 		double ThresholdCont, ThresholdSave;
-		int color;
-		cv::Mat *divMat;
-		cv::Mat *img;
-		cv::Mat *sEMat;		
+				
 		char* rep;
 
-		Mpmc* mpmc;
 		std::atomic<int> tasks;
 
 		void threadCalc(int deb, int fin);

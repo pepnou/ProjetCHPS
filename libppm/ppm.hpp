@@ -33,10 +33,11 @@ class Matrice
 		int width, height;
 	public:
 		Matrice(int32_t width, int32_t height);
+		Matrice(Image image);
 		~Matrice();
 		int get_width();
 		int get_height();
-		void blurer();
+		void blurer(int b);
 		void edger_detectorer();
 		void edger_detectorer_laplacianer_gaussinerer();
 		void edger_detectorer_laplacianer();
@@ -45,6 +46,9 @@ class Matrice
 		void gaussilter();
 		int * get_co(int x, int y);
 		void set_val();
+		void filterer_2D();
+		Matrice operator=(Matrice matrice);
+		Matrice operator=(int32_t i);
 };
 
 #define dbg std::cout<<"line : "<<__LINE__<<", function : "<<__FUNCTION__<<"\n";

@@ -1,6 +1,6 @@
 #include "ppm.hpp"
 
-//CLASSE DES IMAGES, TOUT CA TOU CA :)
+//CLASSE DES IMAGES, TOUT CA TOUT CA :)
 
 Image::Image(int w, int h):
 	width(w),
@@ -118,9 +118,9 @@ pixel_t* Image::get_le_pixel(int x, int y)
 
 
 
-//CLASSE DES MATRICES, TOUT CA TOU CA :)
+//CLASSE DES MATRICES, TOUT CA TOUT CA :)
 
-Matrice::Matrice(int32_t w, int32_t h):
+Matrice::Matrice(int w, int h):
 	width(w),
 	height(h),
 	mat(new int32_t[w*h])
@@ -149,6 +149,7 @@ Matrice::~Matrice()
 
 Matrice Matrice::operator=(Matrice droite)
 {
+	//assert();
 	this.height = droite.height;
 	this.width = droite.width;
 	for (int i = 0; i < dorite.height; i++)
@@ -156,6 +157,17 @@ Matrice Matrice::operator=(Matrice droite)
 		for (int j = 0; j < droite.width; j++)
 		{
 			this.mat[y*this->width + x] = droite.mat[y*this->width + x];
+		}
+	}
+}
+
+Matrice Matrice::operator=(int32_t i)
+{
+	for (int i = 0; i < this->height; i++)
+	{
+		for (int j = 0; j < this->width; j++)
+		{
+			this.mat[y*this->width + x] = i;
 		}
 	}
 }
@@ -298,4 +310,39 @@ void Matrice::edger_detectorer()
 {
 	double** convoluer = {{-1, -1, -1}, {-1, 8, -1}, {-1, -1, -1}};
 	this->convolutionner(convoluer, 3, 3);
+}
+
+void Matrice::filterer_2D()
+{
+	int32_t* convolutionned = new int32_t [this->width*this->height];
+	int32_t convolutionned_value = NULL;
+	bool trouve = FALSE;
+
+	for (int i = 0; i < this->width; i++)
+	{
+		for (int j = 0; j < this->height; j++)
+		{
+			convolutionned_value = 0;
+
+			for (int i_ = i - 3; i_ < 7; i_++)
+			{
+				for (int j_ = j - 3; j_ < 7; j_++)
+				{
+					if(get_co(i_, j_) != 0)
+					{
+						trouve = TRUE;
+						break;
+					}
+				}
+				if(trouve)
+					break;
+			}
+			if(trouve)
+				this_>mat[j*this->width + i] = 1;
+			else
+				this_>mat[j*this->width + i] = 0;
+		}
+	}
+	delete [] this->mat; 
+	this->mat = convolutionned;
 }

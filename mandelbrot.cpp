@@ -1,4 +1,5 @@
 #include "mandelbrot.hpp"
+#include "workHandler.hpp"
 #include <string.h>
 
 using namespace cv;
@@ -535,89 +536,191 @@ void Mandelbrot::dichotomie3(int n_div, vector<int>& divs)
 	    //delete l'image ou on est
 	    del_mem();
 
-	    for(int i = 0; i < n_div; i++)
-	    {
-		int n_prec = prec + ceil(log(divs.at(i))/log(2));
-		mpf_t temp, delta_x, delta_y;
 
-		mpf_t* tab_x = new mpf_t[divs.at(i)];
-		mpf_t* tab_y = new mpf_t[divs.at(i)];
+    
+            if(needWork())
+            {
+                bool first = true;
+                Mandelbrot *M = nullptr;
 
-		if(mpf_get_prec(old_pos_x)>=mpf_get_prec(old_pos_y))
-		    mpf_init2(temp, mpf_get_prec(old_pos_x) + n_prec/64);
-		else
-		    mpf_init2(temp, mpf_get_prec(old_pos_y) + n_prec/64);
+                for(int i = 0; i < n_div; i++)
+                {
+                    int n_prec = prec + ceil(log(divs.at(i))/log(2));
+                    mpf_t temp, delta_x, delta_y;
 
-		mpf_init2(delta_x, mpf_get_prec(old_width));
-		mpf_init2(delta_y, mpf_get_prec(old_height));
+                    mpf_t* tab_x = new mpf_t[divs.at(i)];
+                    mpf_t* tab_y = new mpf_t[divs.at(i)];
 
-		//initialise chacun des elements du tableau avant de pouvoir s'en servir
-		for (int init = 0; init < divs.at(i); init++)
-		{
-			mpf_init2(tab_x[init], mpf_get_prec(old_pos_x) + n_prec/64);
-			mpf_init2(tab_y[init], mpf_get_prec(old_pos_y) + n_prec/64);
-		}
+                    if(mpf_get_prec(old_pos_x)>=mpf_get_prec(old_pos_y))
+                        mpf_init2(temp, mpf_get_prec(old_pos_x) + n_prec/64);
+                    else
+                        mpf_init2(temp, mpf_get_prec(old_pos_y) + n_prec/64);
 
-		n_prec %= 64;
+                    mpf_init2(delta_x, mpf_get_prec(old_width));
+                    mpf_init2(delta_y, mpf_get_prec(old_height));
+
+                    //initialise chacun des elements du tableau avant de pouvoir s'en servir
+                    for (int init = 0; init < divs.at(i); init++)
+                    {
+                            mpf_init2(tab_x[init], mpf_get_prec(old_pos_x) + n_prec/64);
+                            mpf_init2(tab_y[init], mpf_get_prec(old_pos_y) + n_prec/64);
+                    }
+
+                    n_prec %= 64;
 
 
-		//calcul de delta_x, la distance entre de nouveaux points en x
-		mpf_div_ui(delta_x, old_width, divs.at(i));
-		//calcul de delta_y, la distance entre de nouveaux points en y
-		mpf_div_ui(delta_y, old_height, divs.at(i));
+                    //calcul de delta_x, la distance entre de nouveaux points en x
+                    mpf_div_ui(delta_x, old_width, divs.at(i));
+                    //calcul de delta_y, la distance entre de nouveaux points en y
+                    mpf_div_ui(delta_y, old_height, divs.at(i));
 
 
-		//tab_x[0] = pos_x - width/2 + width/2*divs.at(i)
-		mpf_div_ui(temp, old_width, 2*divs.at(i));
-		mpf_add(tab_x[0], old_pos_x, temp);
-		mpf_div_ui(temp, old_width, 2);
-		mpf_sub(tab_x[0], tab_x[0], temp);
+                    //tab_x[0] = pos_x - width/2 + width/2*divs.at(i)
+                    mpf_div_ui(temp, old_width, 2*divs.at(i));
+                    mpf_add(tab_x[0], old_pos_x, temp);
+                    mpf_div_ui(temp, old_width, 2);
+                    mpf_sub(tab_x[0], tab_x[0], temp);
 
-		//tab_y[0] = pos_y - height/2 + height/2*divs.at(i)
-		mpf_div_ui(temp, old_height, 2*divs.at(i));
-		mpf_add(tab_y[0], old_pos_y, temp);
-		mpf_div_ui(temp, old_height, 2);
-		mpf_sub(tab_y[0], tab_y[0], temp);
+                    //tab_y[0] = pos_y - height/2 + height/2*divs.at(i)
+                    mpf_div_ui(temp, old_height, 2*divs.at(i));
+                    mpf_add(tab_y[0], old_pos_y, temp);
+                    mpf_div_ui(temp, old_height, 2);
+                    mpf_sub(tab_y[0], tab_y[0], temp);
 
-		for (int c = 1; c < divs.at(i); c++)
-		{
-		    //tab_x[c] = tab_x[0] + c*delta_x
-		    mpf_mul_ui(temp, delta_x, c);
-		    mpf_add(tab_x[c], tab_x[0], temp);
+                    for (int c = 1; c < divs.at(i); c++)
+                    {
+                        //tab_x[c] = tab_x[0] + c*delta_x
+                        mpf_mul_ui(temp, delta_x, c);
+                        mpf_add(tab_x[c], tab_x[0], temp);
 
-		    //tab_y[c] = tab_y[0] + c*delta_y
-		    mpf_mul_ui(temp, delta_y, c);
-		    mpf_add(tab_y[c], tab_y[0], temp);
-		}
+                        //tab_y[c] = tab_y[0] + c*delta_y
+                        mpf_mul_ui(temp, delta_y, c);
+                        mpf_add(tab_y[c], tab_y[0], temp);
+                    }
 
-		for (int x = 0; x < divs.at(i); x++)
-	        {
-		    for (int y = 0; y < divs.at(i); y++)
-		    {
-			if(mpf_cmp_ui(tab_y[y], 0) < 0)
-			{
-			    Mandelbrot* M = new Mandelbrot(tab_x[x], tab_y[y], delta_x, delta_y , enough - 1);
-                            //en bas a gauche
-						
-			    M->dichotomie3(n_div, divs);
-						
-			    delete M;
-						
-			}
-		    }
-		}
+                    for (int x = 0; x < divs.at(i); x++)
+                    {
+                        for (int y = 0; y < divs.at(i); y++)
+                        {
+                            if(mpf_cmp_ui(tab_y[y], 0) < 0)
+                            {
+                                if(first)
+                                {
+                                    M = new Mandelbrot(tab_x[x], tab_y[y], delta_x, delta_y , enough - 1);
+                                    first = false;
+                                }
+                                
+                                char* buf = create_work(enough - 1, tab_x[x], tab_y[y], delta_x, delta_y);
+                                sendWork(buf);
+                                free(buf);
+                            }
+                        }
+                    }
 
-		//delete chacun des element du tableau avant pour pouvoir virer le tableau
-		for (int del = 0; del < divs.at(i); del++)
-		{
-		    mpf_clear(tab_x[del]);
-		    mpf_clear(tab_y[del]);
-		}
+                    //delete chacun des element du tableau avant pour pouvoir virer le tableau
+                    for (int del = 0; del < divs.at(i); del++)
+                    {
+                        mpf_clear(tab_x[del]);
+                        mpf_clear(tab_y[del]);
+                    }
 
-		delete [] tab_x;
-		delete [] tab_y;
-		mpf_clears(temp, delta_x, delta_y, NULL);
-	    }
+                    delete [] tab_x;
+                    delete [] tab_y;
+                    mpf_clears(temp, delta_x, delta_y, NULL);
+                }
+                
+                if(M != nullptr)
+                {
+                    M->dichotomie3(n_div, divs);
+                    delete M;
+                }
+            }
+            else
+            {
+                for(int i = 0; i < n_div; i++)
+                {
+                    int n_prec = prec + ceil(log(divs.at(i))/log(2));
+                    mpf_t temp, delta_x, delta_y;
+
+                    mpf_t* tab_x = new mpf_t[divs.at(i)];
+                    mpf_t* tab_y = new mpf_t[divs.at(i)];
+
+                    if(mpf_get_prec(old_pos_x)>=mpf_get_prec(old_pos_y))
+                        mpf_init2(temp, mpf_get_prec(old_pos_x) + n_prec/64);
+                    else
+                        mpf_init2(temp, mpf_get_prec(old_pos_y) + n_prec/64);
+
+                    mpf_init2(delta_x, mpf_get_prec(old_width));
+                    mpf_init2(delta_y, mpf_get_prec(old_height));
+
+                    //initialise chacun des elements du tableau avant de pouvoir s'en servir
+                    for (int init = 0; init < divs.at(i); init++)
+                    {
+                            mpf_init2(tab_x[init], mpf_get_prec(old_pos_x) + n_prec/64);
+                            mpf_init2(tab_y[init], mpf_get_prec(old_pos_y) + n_prec/64);
+                    }
+
+                    n_prec %= 64;
+
+
+                    //calcul de delta_x, la distance entre de nouveaux points en x
+                    mpf_div_ui(delta_x, old_width, divs.at(i));
+                    //calcul de delta_y, la distance entre de nouveaux points en y
+                    mpf_div_ui(delta_y, old_height, divs.at(i));
+
+
+                    //tab_x[0] = pos_x - width/2 + width/2*divs.at(i)
+                    mpf_div_ui(temp, old_width, 2*divs.at(i));
+                    mpf_add(tab_x[0], old_pos_x, temp);
+                    mpf_div_ui(temp, old_width, 2);
+                    mpf_sub(tab_x[0], tab_x[0], temp);
+
+                    //tab_y[0] = pos_y - height/2 + height/2*divs.at(i)
+                    mpf_div_ui(temp, old_height, 2*divs.at(i));
+                    mpf_add(tab_y[0], old_pos_y, temp);
+                    mpf_div_ui(temp, old_height, 2);
+                    mpf_sub(tab_y[0], tab_y[0], temp);
+
+                    for (int c = 1; c < divs.at(i); c++)
+                    {
+                        //tab_x[c] = tab_x[0] + c*delta_x
+                        mpf_mul_ui(temp, delta_x, c);
+                        mpf_add(tab_x[c], tab_x[0], temp);
+
+                        //tab_y[c] = tab_y[0] + c*delta_y
+                        mpf_mul_ui(temp, delta_y, c);
+                        mpf_add(tab_y[c], tab_y[0], temp);
+                    }
+
+                    for (int x = 0; x < divs.at(i); x++)
+                    {
+                        for (int y = 0; y < divs.at(i); y++)
+                        {
+                            if(mpf_cmp_ui(tab_y[y], 0) < 0)
+                            {
+                                Mandelbrot* M = new Mandelbrot(tab_x[x], tab_y[y], delta_x, delta_y , enough - 1);
+                                //en bas a gauche
+                                                    
+                                M->dichotomie3(n_div, divs);
+                                                    
+                                delete M;
+                                                    
+                            }
+                        }
+                    }
+
+                    //delete chacun des element du tableau avant pour pouvoir virer le tableau
+                    for (int del = 0; del < divs.at(i); del++)
+                    {
+                        mpf_clear(tab_x[del]);
+                        mpf_clear(tab_y[del]);
+                    }
+
+                    delete [] tab_x;
+                    delete [] tab_y;
+                    mpf_clears(temp, delta_x, delta_y, NULL);
+                }
+            }
         }
     }
 }

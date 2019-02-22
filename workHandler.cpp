@@ -327,11 +327,11 @@ void handler(int argc, char** argv)
 
 	if(mpf_get_prec(w) > mpf_get_prec(x))
 	{
-		mpf_set_prec( x, mpf_get_prec(w));
+	    mpf_set_prec( x, mpf_get_prec(w));
 	}
 	if(mpf_get_prec(h) > mpf_get_prec(y))
 	{
-		mpf_set_prec( y, mpf_get_prec(h));
+	    mpf_set_prec( y, mpf_get_prec(h));
 	}
 
     std::cerr << "yolo" << std::endl;
@@ -344,7 +344,7 @@ void handler(int argc, char** argv)
     std::time_t t = std::time(0);
     std::tm* now = std::localtime(&t);
     
-    r << "../Img/" << now->tm_year << "-" << now->tm_mon << "-" << now->tm_mday << "_" << now->tm_hour << ":" << now->tm_min << ":" << now->tm_sec;
+    r << "../Img/" << now->tm_year + 1900 << "-" << now->tm_mon + 1 << "-" << now->tm_mday << "_" << now->tm_hour << ":" << now->tm_min << ":" << now->tm_sec;
 
     std::cout << r.str().c_str() << std::endl;
 
@@ -360,36 +360,8 @@ void handler(int argc, char** argv)
     cmd << "mkdir -p " << r.str().c_str();
     system(cmd.str().c_str());
 
-    mp_exp_t e1, e2, e3, e4;
-    char *char_width, *char_height, *char_x, *char_y;
-    char tmpx[3] = {'0','.','\0'}, tmpy[3] = {'0','.','\0'};
-
-
-    char_x = mpf_get_str( NULL, &e1, 10, 1000, x);
-    if(char_x[0] == '-')
-    {
-        char_x[0] = '.';
-	tmpx[0] = '-';
-	tmpx[1] = '0';
-    }
-    char_y = mpf_get_str( NULL, &e2, 10, 1000, y);
-    if(char_y[0] == '-')
-    {
-	char_y[0] = '.';
-	tmpy[0] = '-';
-	tmpy[1] = '0';
-    }
-
-    char_width = mpf_get_str( NULL, &e3, 10, 1000, w);
-    char_height = mpf_get_str( NULL, &e4, 10, 1000, h);
-    
-    r.str("");
-    r << enough << ":" << tmpx << char_x << "e" << e1 << ":" << tmpy << char_y << "e" << e2 << ":" << "0." << char_width << "e" << e3 << ":" << "0." << char_height << "e" << e4;
-    
-    buf = new char[r.str().size()];
-    strcpy(buf, r.str().c_str());
+    buf = create_work(enough, x, y, w, h);
     work->push(buf);
-    
 
     std::cerr << "yolo" << std::endl;
 
@@ -493,11 +465,76 @@ void worker(int argc, char** argv)
             MPI_Recv(buf, count, MPI_CHAR, 0, WORK_SEND, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
             Mandelbrot* m = new Mandelbrot(buf);
+
+            delete [] buf;
+
             m->dichotomie3(divs.size(), divs);
+
+            delete m;
         }
         else if(status.MPI_TAG == END)
         {
             break;
         }
     }
+}
+
+
+
+
+char* create_work(int enough, mpf_t x, mpf_t y, mpf_t w, mpf_t h)
+{
+    std::stringstream r("");
+    
+    mp_exp_t e1, e2, e3, e4;
+    char *char_width, *char_height, *char_x, *char_y;
+    char tmpx[3] = {'0','.','\0'}, tmpy[3] = {'0','.','\0'};
+
+
+    char_x = mpf_get_str( NULL, &e1, 10, 1000, x);
+    if(char_x[0] == '-')
+    {
+        char_x[0] = '.';
+	tmpx[0] = '-';
+	tmpx[1] = '0';
+    }
+    char_y = mpf_get_str( NULL, &e2, 10, 1000, y);
+    if(char_y[0] == '-')
+    {
+	char_y[0] = '.';
+	tmpy[0] = '-';
+	tmpy[1] = '0';
+    }
+
+    char_width = mpf_get_str( NULL, &e3, 10, 1000, w);
+    char_height = mpf_get_str( NULL, &e4, 10, 1000, h);
+    
+    r.str("");
+    r << enough << ":" << tmpx << char_x << "e" << e1 << ":" << tmpy << char_y << "e" << e2 << ":" << "0." << char_width << "e" << e3 << ":" << "0." << char_height << "e" << e4;
+
+    char* res = new char[r.str().size() + 1]();
+    strcpy(res, r.str().c_str());
+    res[r.str().size()] = '\0';
+
+    return res;
+}
+
+bool needWork()
+{
+    MPI_Send(NULL, 0, MPI_INT, 0, SIZE_RQST, MPI_COMM_WORLD);
+    int queue_size, size;
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    MPI_Recv(&queue_size, 1, MPI_INT, 0, SIZE_RQST, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+    if(queue_size < size)
+        return true;
+    else
+        return false;
+}
+
+
+
+void sendWork(char* buf)
+{
+    MPI_Send(buf, strlen(buf), MPI_CHAR, 0, WORK_SEND, MPI_COMM_WORLD);
 }

@@ -22,6 +22,7 @@
 #define WORK_SEND 1
 #define WORK_RQST 2
 #define END 3
+#define REP_SEND 4
 
 
 
@@ -315,7 +316,7 @@ void handler(int argc, char** argv)
 
 		if (vm2.count("config"))
 		{
-		    for(int i = 0; i < size; i++)
+		    for(int i = 1; i < size; i++)
                         MPI_Send(NULL, 0, MPI_INT, i, END, MPI_COMM_WORLD);
                     return;
 		}
@@ -334,7 +335,6 @@ void handler(int argc, char** argv)
 	    mpf_set_prec( y, mpf_get_prec(h));
 	}
 
-    std::cerr << "yolo" << std::endl;
 
    
     
@@ -346,13 +346,15 @@ void handler(int argc, char** argv)
     
     r << "../Img/" << now->tm_year + 1900 << "-" << now->tm_mon + 1 << "-" << now->tm_mday << "_" << now->tm_hour << ":" << now->tm_min << ":" << now->tm_sec;
 
-    std::cout << r.str().c_str() << std::endl;
 
     Mandelbrot::rep = new char[r.str().size()]();
     strcpy(Mandelbrot::rep, r.str().c_str());
 
     for(int i = 1; i < size; i++)
-        MPI_Send(Mandelbrot::rep, strlen(Mandelbrot::rep), MPI_CHAR, i, 0, MPI_COMM_WORLD);
+    {
+        MPI_Send(Mandelbrot::rep, strlen(Mandelbrot::rep), MPI_CHAR, i, REP_SEND, MPI_COMM_WORLD);
+        std::cerr << "msg " << i << " " << REP_SEND << std::endl;
+    }
 
     MPI_Bcast(default_param, 4, MPI_INT, 0, MPI_COMM_WORLD);
     
@@ -363,27 +365,32 @@ void handler(int argc, char** argv)
     buf = create_work(enough, x, y, w, h);
     work->push(buf);
 
-    std::cerr << "yolo" << std::endl;
 
     uint64_t tick = rdtsc();
     while(1)
     {
         MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+        std::cerr << "recv " << status.MPI_SOURCE << " " << status.MPI_TAG << std::endl;
 
         if (status.MPI_TAG == SIZE_RQST)
         {
+            std::cerr << "size send" << std::endl;
             int tmp = (int)work->size();
             MPI_Send(&(tmp), 1, MPI_INT, status.MPI_SOURCE, SIZE_RQST, MPI_COMM_WORLD);
+            std::cerr << "msg " << status.MPI_SOURCE << " " << SIZE_RQST << std::endl;
         } 
         else if (status.MPI_TAG == WORK_SEND) 
         {
+            std::cerr << "work received" << std::endl;
             MPI_Get_count(&status, MPI_CHAR, &count);
             buf = new char[count]();
-            //TODO meh ... tout sauf efficace .... a changer ...
+            // TODO meh ... tout sauf efficace .... a changer ...
             
             if(waiting->size() > 0)
             {
+
                 MPI_Send(buf, count, MPI_CHAR, waiting->front(), WORK_SEND, MPI_COMM_WORLD);
+                std::cerr << "msg " << waiting->front() << " " << WORK_SEND << std::endl;
                 waiting->pop();
             }
             else
@@ -391,10 +398,13 @@ void handler(int argc, char** argv)
         }
         else if (status.MPI_TAG == WORK_RQST)
         {
+            std::cerr << "work request" << std::endl;
             if(work->size() > 0)
             {
+                std::cerr << "work send" << std::endl;
                 char* msg = work->front();
                 MPI_Send(msg, strlen(msg), MPI_CHAR, status.MPI_SOURCE, WORK_SEND, MPI_COMM_WORLD);
+                std::cerr << "msg " << status.MPI_SOURCE << " " << WORK_SEND << std::endl;
                 work->pop();
             }
             else
@@ -402,7 +412,8 @@ void handler(int argc, char** argv)
                 waiting->push(status.MPI_SOURCE);
                 if(waiting->size() == size - 1)
                 {
-                    for(int i = 0; i < size; i++)
+                    std::cerr << "exiting" << std::endl;
+                    for(int i = 1; i < size; i++)
                         MPI_Send(NULL, 0, MPI_INT, i, END, MPI_COMM_WORLD);
 
                     delete work;
@@ -437,11 +448,12 @@ void worker(int argc, char** argv)
     char* buf;
 
     MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+    std::cerr << "recv " << status.MPI_SOURCE << " " << status.MPI_TAG << std::endl;
     if(status.MPI_TAG == END)
         return;
     MPI_Get_count(&status, MPI_CHAR, &count);
     Mandelbrot::rep = new char[count + 1]();
-    MPI_Recv(Mandelbrot::rep, count, MPI_CHAR, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(Mandelbrot::rep, count, MPI_CHAR, 0, REP_SEND, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
     Mandelbrot::rep[count] = '\0';
 
     int default_param[4];
@@ -455,10 +467,14 @@ void worker(int argc, char** argv)
     while(1)
     {
         MPI_Send(NULL, 0, MPI_INT, 0, WORK_RQST, MPI_COMM_WORLD);
+        std::cerr << "msg " << 0 << " " << WORK_RQST << std::endl;
         MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+        std::cerr << "recv " << status.MPI_SOURCE << " " << status.MPI_TAG << std::endl;
 
         if(status.MPI_TAG == WORK_SEND)
         {
+            std::cerr << "processing work" << std::endl;
+
             MPI_Get_count(&status, MPI_CHAR, &count);
             buf = new char[count]();
             
@@ -471,10 +487,13 @@ void worker(int argc, char** argv)
             m->dichotomie3(divs.size(), divs);
 
             delete m;
+
+            std::cerr << "processing done" << std::endl;
         }
         else if(status.MPI_TAG == END)
         {
-            break;
+            std::cerr << "exiting" << std::endl;
+            return;
         }
     }
 }
@@ -522,6 +541,7 @@ char* create_work(int enough, mpf_t x, mpf_t y, mpf_t w, mpf_t h)
 bool needWork()
 {
     MPI_Send(NULL, 0, MPI_INT, 0, SIZE_RQST, MPI_COMM_WORLD);
+    std::cerr << "msg " << 0 << " " << SIZE_RQST << std::endl;
     int queue_size, size;
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Recv(&queue_size, 1, MPI_INT, 0, SIZE_RQST, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -537,4 +557,5 @@ bool needWork()
 void sendWork(char* buf)
 {
     MPI_Send(buf, strlen(buf), MPI_CHAR, 0, WORK_SEND, MPI_COMM_WORLD);
+    std::cerr << "msg " << 0 << " " << WORK_SEND << std::endl;
 }

@@ -158,7 +158,6 @@ Matrice Matrice::operator=(Matrice droite)
 			this.mat[y*this->width + x] = droite.mat[y*this->width + x];
 		}
 	}
-
 }
 
 int Matrice::get_width()

@@ -349,9 +349,16 @@ void Mandelbrot::save()
     int nume=matSave( img, Mandelbrot::rep);
 
     char nom_inf[128];
-    sprintf( nom_inf, "../img/%s/info.txt", Mandelbrot::rep);
+    sprintf( nom_inf, "%s/info.txt", Mandelbrot::rep);
+
+    printf("%s\n", nom_inf);
 
     FILE* fichier = fopen(nom_inf, "a");
+
+    if(!fichier)
+    {
+        perror(nom_inf);
+    }
 
     fprintf(fichier,"mandel%d",nume);
     fprintf(fichier,"\n\tXposition=");

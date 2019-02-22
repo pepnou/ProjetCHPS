@@ -348,7 +348,7 @@ void handler(int argc, char** argv)
 
     std::cout << r.str().c_str() << std::endl;
 
-    Mandelbrot::rep = new char[r.str().size() + 1]();
+    Mandelbrot::rep = new char[r.str().size()]();
     strcpy(Mandelbrot::rep, r.str().c_str());
 
     for(int i = 1; i < size; i++)
@@ -468,8 +468,9 @@ void worker(int argc, char** argv)
     if(status.MPI_TAG == END)
         return;
     MPI_Get_count(&status, MPI_CHAR, &count);
-    Mandelbrot::rep = new char[count]();
+    Mandelbrot::rep = new char[count + 1]();
     MPI_Recv(Mandelbrot::rep, count, MPI_CHAR, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    Mandelbrot::rep[count] = '\0';
 
     int default_param[4];
     MPI_Bcast(default_param, 4, MPI_INT, 0, MPI_COMM_WORLD);

@@ -37,9 +37,12 @@ class Matrice
 		int get_width();
 		int get_height();
 		void blurer();
-		void edge_detector();
+		void edger_detectorer();
+		void edger_detectorer_laplacianer_gaussinerer();
+		void edger_detectorer_laplacianer();
 		void convolutionner();
-		void gausser();
+		void gaussiblur();
+		void gaussilter();
 		int * get_co(int x, int y);
 		void set_val();
 };

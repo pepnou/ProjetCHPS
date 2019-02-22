@@ -1,5 +1,7 @@
 #include "ppm.hpp"
 
+//CLASSE DES IMAGES, TOUT CA TOU CA :)
+
 Image::Image(int w, int h):
 	width(w),
 	height(h),
@@ -114,6 +116,10 @@ pixel_t* Image::get_le_pixel(int x, int y)
 
 
 
+
+
+//CLASSE DES MATRICES, TOUT CA TOU CA :)
+
 Matrice::Matrice(int32_t w, int32_t h):
 	width(w),
 	height(h),
@@ -139,6 +145,20 @@ Matrice::~Matrice()
 {
 	delete [] this->mat;
 	mat = nullptr;
+}
+
+Matrice Matrice::operator=(Matrice droite)
+{
+	this.height = droite.height;
+	this.width = droite.width;
+	for (int i = 0; i < dorite.height; i++)
+	{
+		for (int j = 0; j < droite.width; j++)
+		{
+			this.mat[y*this->width + x] = droite.mat[y*this->width + x];
+		}
+	}
+
 }
 
 int Matrice::get_width()
@@ -214,10 +234,15 @@ void Matrice::convolutionner(double** petite_mat, int width, int height)
 	this->mat = convolutionned;
 }
 
-void Matrice::gausser()
+void Matrice::gaussiblur()
 {
 	double** convoluer = {{2, 4, 5, 4, 2}, {4, 9, 12, 9, 4} ,{5, 12, 15, 12, 5}, {4, 9, 12, 9, 4}, {2, 4, 5, 4, 2}};
 	this->convolutionner(convoluer, 5, 5);
+}
+
+void Matrice::gaussilter()
+{
+//BONSOIR, A FAIRE SVP
 }
 
 int * Matrice::get_co(int x, int y)
@@ -239,8 +264,20 @@ void Matrice::set_val(int x, int y, int32_t val)
 	this->mat[y*this->width + x] = val;
 }
 
-//TO FUCKING DO !
-void Matrice::edge_detector()
+void Matrice::edger_detectorer_laplacianer()
 {
+	double** convoluer = {{0, -1, 0}, {-1, 4, -1}, {0, -1, 0}};
+	this->convolutionner(convoluer, 3, 3);
+}
 
+void Matrice::edger_detectorer_laplacianer_gaussinerer()
+{
+	double** convoluer = {{0, 0, -1, 0, 0}, {0, -1, -2, -1, 0}, {-1, -2, 16, -2, -1}, {0, -1, -2, -1, 0}, {0, 0, -1, 0, 0}};
+	this->convolutionner(convoluer, 5, 5);
+}
+
+void Matrice::edger_detectorer()
+{
+	double** convoluer = {{-1, -1, -1}, {-1, 8, -1}, {-1, -1, -1}};
+	this->convolutionner(convoluer, 3, 3);
 }

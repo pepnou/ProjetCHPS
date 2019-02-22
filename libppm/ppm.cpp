@@ -241,7 +241,26 @@ void Matrice::gaussiblur()
 
 void Matrice::gaussilter()
 {
-//BONSOIR, A FAIRE SVP
+	int y0 = this->width/2;
+	int x0 = this->height/2;
+	int sigma_x = x0/2;
+	int sigma_y = y0/2;
+
+
+	for (int i = 0; i < this->height; i++)
+	{
+		for (int j = 0; j < this->width; j++)
+		{
+
+			double X =(pow(i - x0, 2)/(2*pow(sigma_x, 2)));
+
+			double Y =(pow(j - y0, 2)/(2*pow(sigma_y, 2)));
+
+			double flou = exp(-(X + Y));
+
+			this->mat[j*this->width + i] = (((this->mat[j*this->width + i]+256)%256) * flou);
+		}
+	}
 }
 
 int * Matrice::get_co(int x, int y)

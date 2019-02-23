@@ -374,6 +374,7 @@ void handler(int argc, char** argv)
 
         if (status.MPI_TAG == SIZE_RQST)
         {
+            MPI_Recv(NULL, 0, MPI_INT, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             std::cerr << "size send" << std::endl;
             int tmp = (int)work->size();
             MPI_Send(&(tmp), 1, MPI_INT, status.MPI_SOURCE, SIZE_RQST, MPI_COMM_WORLD);
@@ -383,7 +384,9 @@ void handler(int argc, char** argv)
         {
             std::cerr << "work received" << std::endl;
             MPI_Get_count(&status, MPI_CHAR, &count);
-            buf = new char[count]();
+            buf = new char[count+1]();
+            MPI_Recv(buf, count, MPI_CHAR, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            buf[count] = '\0';
             // TODO meh ... tout sauf efficace .... a changer ...
             
             if(waiting->size() > 0)
@@ -398,6 +401,7 @@ void handler(int argc, char** argv)
         }
         else if (status.MPI_TAG == WORK_RQST)
         {
+            MPI_Recv(NULL, 0, MPI_INT, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             std::cerr << "work request" << std::endl;
             if(work->size() > 0)
             {
@@ -459,9 +463,9 @@ void worker(int argc, char** argv)
     int default_param[4];
     MPI_Bcast(default_param, 4, MPI_INT, 0, MPI_COMM_WORLD);
     Mandelbrot::im_width = default_param[0];
-	Mandelbrot::im_height = default_param[1];
-	Mandelbrot::surEchantillonage = default_param[2];
-	Mandelbrot::color = default_param[3];    
+    Mandelbrot::im_height = default_param[1];
+    Mandelbrot::surEchantillonage = default_param[2];
+    Mandelbrot::color = default_param[3];    
 
 
     while(1)

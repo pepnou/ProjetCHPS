@@ -513,12 +513,12 @@ void Mandelbrot::dichotomie3(int n_div, vector<int>& divs)
     bool filtre, needwork;
     int img_num;
 
-    //if(IsGood_2(&filtre))
-    //{
+    if(IsGood_2(&filtre))
+    {
         getHandlerInfo(needwork, img_num);
 
 
-	//if(filtre)
+	if(filtre)
 	    save(img_num);
 
 	if(enough)
@@ -728,7 +728,7 @@ void Mandelbrot::dichotomie3(int n_div, vector<int>& divs)
                 }
             }
         }
-    //}
+    }
 }
 
 /*

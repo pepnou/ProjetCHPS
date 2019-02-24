@@ -7,6 +7,7 @@
 #include <cmath>
 #include <ctime>
 #include <vector>
+#include <unistd.h>
 
 #include "mandelbrot.hpp"
 #include "workHandler.hpp"
@@ -371,12 +372,19 @@ void handler(int argc, char** argv)
     work->push(buf);
 
     int img_count = 0, info[2];
-
+    int flag;
 
     uint64_t tick = rdtsc();
     while(1)
     {
-        MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+        while(1)
+        {
+            MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status);
+            if(flag)
+                break;
+            else
+                usleep(100);
+        }
         //std::cerr << "recv " << status.MPI_SOURCE << " " << status.MPI_TAG << std::endl;
 
         if (status.MPI_TAG == INFO_RQST)

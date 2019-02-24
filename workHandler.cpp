@@ -490,9 +490,11 @@ void worker(int argc, char** argv)
             //std::cerr << "processing work" << std::endl;
 
             MPI_Get_count(&status, MPI_CHAR, &count);
-            buf = new char[count]();
+            buf = new char[count + 1]();
             
             MPI_Recv(buf, count, MPI_CHAR, 0, WORK_SEND, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+            buf[count] = '\0';
 
             Mandelbrot* m = new Mandelbrot(buf);
 
@@ -545,9 +547,13 @@ char* create_work(int enough, mpf_t x, mpf_t y, mpf_t w, mpf_t h)
     r.str("");
     r << enough << ":" << tmpx << char_x << "e" << e1 << ":" << tmpy << char_y << "e" << e2 << ":" << "0." << char_width << "e" << e3 << ":" << "0." << char_height << "e" << e4;
 
+    
+
     char* res = new char[r.str().size() + 1]();
     strcpy(res, r.str().c_str());
     res[r.str().size()] = '\0';
+    
+    //std::cerr << res << std::endl;
 
     return res;
 }
@@ -573,6 +579,6 @@ void getHandlerInfo(bool& needwork, int& img_num)
 
 void sendWork(char* buf)
 {
-    MPI_Send(buf, strlen(buf), MPI_CHAR, 0, WORK_SEND, MPI_COMM_WORLD);
+    MPI_Ssend(buf, strlen(buf), MPI_CHAR, 0, WORK_SEND, MPI_COMM_WORLD);
     //std::cerr << "msg " << 0 << " " << WORK_SEND << std::endl;
 }

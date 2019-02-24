@@ -350,7 +350,7 @@ void Mandelbrot::save(int img_num)
     matSave( img, Mandelbrot::rep, img_num);
 
     /*char nom_inf[128];
-    sprintf( nom_inf, "%s/info.txt", Mandelbrot::rep);
+    sprintf( nom_inf, "%s/info%d.txt", Mandelbrot::rep, img_num);
 
     printf("%s\n", nom_inf);
 
@@ -361,7 +361,7 @@ void Mandelbrot::save(int img_num)
         perror(nom_inf);
     }
 
-    fprintf(fichier,"mandel%d",nume);
+    fprintf(fichier,"mandel%d",img_num);
     fprintf(fichier,"\n\tXposition=");
     mpf_out_str(fichier, 10, 150, pos_x);
     fprintf(fichier,"\n\tYposition=");
@@ -374,24 +374,24 @@ void Mandelbrot::save(int img_num)
 
     
 
-	/*if(mpf_cmp_ui(this->pos_y, 0) != 0)
-	{
-		flip( *(this->img), *(this->img), 0);
-		nume = matSave( this->img, this->rep);
+    /*if(mpf_cmp_ui(this->pos_y, 0) != 0)
+    {
+            flip( *(this->img), *(this->img), 0);
+            nume = matSave( this->img, this->rep);
 
-		fprintf(fichier,"mandel%d",nume);
-	    fprintf(fichier,"\n\tx : ");
-	    mpf_out_str(fichier, 10, 150, pos_x);
-	    fprintf(fichier,"\n\ty : ");
-	    mpf_out_str(fichier, 10, 150, pos_y);
-	    fprintf(fichier,"\n\tw : ");
-	    mpf_out_str(fichier, 10, 150, width);
-	    fprintf(fichier,"\n\th : ");
-	    mpf_out_str(fichier, 10, 150, height);
-	    fprintf(fichier,"\n");
-	}*/
+            fprintf(fichier,"mandel%d",nume);
+        fprintf(fichier,"\n\tx : ");
+        mpf_out_str(fichier, 10, 150, pos_x);
+        fprintf(fichier,"\n\ty : ");
+        mpf_out_str(fichier, 10, 150, pos_y);
+        fprintf(fichier,"\n\tw : ");
+        mpf_out_str(fichier, 10, 150, width);
+        fprintf(fichier,"\n\th : ");
+        mpf_out_str(fichier, 10, 150, height);
+        fprintf(fichier,"\n");
+    }*/
 
-	//fclose(fichier);
+    //fclose(fichier);
 }
 
 bool Mandelbrot::IsGood_2(bool* filtre)
@@ -513,12 +513,12 @@ void Mandelbrot::dichotomie3(int n_div, vector<int>& divs)
     bool filtre, needwork;
     int img_num;
 
-    if(IsGood_2(&filtre))
-    {
+    //if(IsGood_2(&filtre))
+    //{
         getHandlerInfo(needwork, img_num);
 
 
-	if(filtre)
+	//if(filtre)
 	    save(img_num);
 
 	if(enough)
@@ -728,7 +728,7 @@ void Mandelbrot::dichotomie3(int n_div, vector<int>& divs)
                 }
             }
         }
-    }
+    //}
 }
 
 /*

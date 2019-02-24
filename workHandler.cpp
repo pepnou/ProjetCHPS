@@ -46,9 +46,14 @@ void handler(int argc, char** argv)
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
 
+    std::vector<int> divs;
+    divs.push_back(2);
+    divs.push_back(3);
 
 
-	int default_param[4];
+
+
+    int default_param[4];
     //PARAMETRES PAR DEFAULT, A NE PAS CHANGER
     	// largeur
     default_param[0] = 1920;
@@ -362,7 +367,7 @@ void handler(int argc, char** argv)
     cmd << "mkdir -p " << r.str().c_str();
     system(cmd.str().c_str());
 
-    buf = create_work(enough, x, y, w, h);
+    buf = create_work(enough, x, y, w, h, divs);
     work->push(buf);
 
     int img_count = 0, info[2];
@@ -449,13 +454,7 @@ void worker(int argc, char** argv)
     Mandelbrot::surEchantillonage = 4;
     Mandelbrot::color = RAINBOW;
 
-    std::vector<int> divs;
-    divs.push_back(2);
-    divs.push_back(3);
-
-
-
-
+   
     
     MPI_Status status;
     int count;
@@ -500,7 +499,7 @@ void worker(int argc, char** argv)
 
             delete [] buf;
 
-            m->dichotomie3(divs.size(), divs);
+            m->dichotomie3();
 
             delete m;
 
@@ -517,7 +516,7 @@ void worker(int argc, char** argv)
 
 
 
-char* create_work(int enough, mpf_t x, mpf_t y, mpf_t w, mpf_t h)
+char* create_work(int enough, mpf_t x, mpf_t y, mpf_t w, mpf_t h, std::vector<int> divs)
 {
     std::stringstream r("");
     
@@ -547,7 +546,8 @@ char* create_work(int enough, mpf_t x, mpf_t y, mpf_t w, mpf_t h)
     r.str("");
     r << enough << ":" << tmpx << char_x << "e" << e1 << ":" << tmpy << char_y << "e" << e2 << ":" << "0." << char_width << "e" << e3 << ":" << "0." << char_height << "e" << e4;
 
-    
+    for(int i = 0; i < divs.size(); i++)
+        r << ":" << divs.at(i);
 
     char* res = new char[r.str().size() + 1]();
     strcpy(res, r.str().c_str());

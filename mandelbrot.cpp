@@ -6,8 +6,9 @@ using namespace cv;
 using namespace std;
 
 
-Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int enough) 
+Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int enough, std::vector<int> divs) 
 	: enough(enough) ,
+        divs(divs) ,
 	divMat(new Mat(im_height*surEchantillonage, im_width*surEchantillonage, CV_32SC1)) ,
 	img(new Mat(im_height, im_width, CV_8UC3)) ,
 	sEMat(new Mat(im_height, im_width, CV_8UC1))
@@ -83,6 +84,10 @@ Mandelbrot::Mandelbrot(char* buf)
 
     mpf_init2( height, prec);
     mpf_set_str( height, tmp, 10);
+
+
+    while((tmp = strtok(NULL, ":")))
+        divs.push_back(atoi(tmp));
 
 
     mpf_init2(atomic_w, mpf_get_prec(width) + ceil(log(im_width*surEchantillonage) / log(2)));
@@ -503,7 +508,7 @@ void Mandelbrot::IterUp(){
 	
 }
 
-void Mandelbrot::dichotomie3(int n_div, vector<int>& divs)
+void Mandelbrot::dichotomie3()
 {
     int prec = mpf_get_prec(pos_x);
 
@@ -544,10 +549,11 @@ void Mandelbrot::dichotomie3(int n_div, vector<int>& divs)
     
             if(needwork)
             {
+                std::vector<int> divs_cpy = divs;
                 bool first = true;
                 Mandelbrot *M = nullptr;
 
-                for(int i = 0; i < n_div; i++)
+                for(int i = divs.size() - 1; i >= 0; i--)
                 {
                     int n_prec = prec + ceil(log(divs.at(i))/log(2));
                     mpf_t temp, delta_x, delta_y;
@@ -610,12 +616,12 @@ void Mandelbrot::dichotomie3(int n_div, vector<int>& divs)
                             {
                                 if(first)
                                 {
-                                    M = new Mandelbrot(tab_x[x], tab_y[y], delta_x, delta_y , enough - 1);
+                                    M = new Mandelbrot(tab_x[x], tab_y[y], delta_x, delta_y , enough - 1, divs_cpy);
                                     first = false;
                                 }
                                 else
                                 {
-                                    char* buf = create_work(enough - 1, tab_x[x], tab_y[y], delta_x, delta_y);
+                                    char* buf = create_work(enough - 1, tab_x[x], tab_y[y], delta_x, delta_y, divs_cpy);
                                     sendWork(buf);
                                     free(buf);
                                 }
@@ -633,17 +639,19 @@ void Mandelbrot::dichotomie3(int n_div, vector<int>& divs)
                     delete [] tab_x;
                     delete [] tab_y;
                     mpf_clears(temp, delta_x, delta_y, NULL);
+
+                    divs_cpy.pop_back();
                 }
                 
                 if(M != nullptr)
                 {
-                    M->dichotomie3(n_div, divs);
+                    M->dichotomie3();
                     delete M;
                 }
             }
             else
             {
-                for(int i = 0; i < n_div; i++)
+                for(int i = divs.size() - 1; i >=0; i--)
                 {
                     int n_prec = prec + ceil(log(divs.at(i))/log(2));
                     mpf_t temp, delta_x, delta_y;
@@ -704,10 +712,10 @@ void Mandelbrot::dichotomie3(int n_div, vector<int>& divs)
                         {
                             if(mpf_cmp_ui(tab_y[y], 0) < 0)
                             {
-                                Mandelbrot* M = new Mandelbrot(tab_x[x], tab_y[y], delta_x, delta_y , enough - 1);
+                                Mandelbrot* M = new Mandelbrot(tab_x[x], tab_y[y], delta_x, delta_y , enough - 1, divs);
                                 //en bas a gauche
                                                     
-                                M->dichotomie3(n_div, divs);
+                                M->dichotomie3();
                                                     
                                 delete M;
                                                     
@@ -725,6 +733,8 @@ void Mandelbrot::dichotomie3(int n_div, vector<int>& divs)
                     delete [] tab_x;
                     delete [] tab_y;
                     mpf_clears(temp, delta_x, delta_y, NULL);
+                
+                    divs.pop_back();
                 }
             }
         }

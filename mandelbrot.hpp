@@ -33,14 +33,14 @@ class Mandelbrot
 		mpf_t atomic_w, atomic_h;
 		int iterations, enough;
                 double ThresholdCont, ThresholdSave;
-
+                std::vector<int> divs;
 		
                 
                 cv::Mat *divMat, *img, *sEMat;
                 
 		void calcSeq(mpf_t* x, mpf_t* y);
 	public:
-		Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int _enough);
+		Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int _enough, std::vector<int> divs);
                 Mandelbrot(char* buf);
 		~Mandelbrot();
 		void del_mem();
@@ -53,7 +53,7 @@ class Mandelbrot
 		void IterUp();
 		bool IsGood_2(bool* filtre);
 		
-                void dichotomie3(int n_div, std::vector<int>& divs);
+                void dichotomie3();
 		bool random_img (int enough, double zoom, gmp_randstate_t& state);
 
 		// static int pas;

@@ -48,7 +48,7 @@ class Mandelbrot
                 void escapeSpeedCalcSeq();
 
 		void draw();
-		void save();
+		void save(int img_num);
 		bool IsGood();
 		void IterUp();
 		bool IsGood_2(bool* filtre);

@@ -18,7 +18,7 @@
 #define JAUNE_BLEU 2
 #define SINCOS 3
 
-#define SIZE_RQST 0
+#define INFO_RQST 0
 #define WORK_SEND 1
 #define WORK_RQST 2
 #define END 3
@@ -313,7 +313,7 @@ void handler(int argc, char** argv)
 			<< "color=" << default_param[3] << std::endl
 			<< "enough=" << enough << std::endl
 			<< "super-sampling=" << default_param[2] << std::endl;
-
+ 
 		if (vm2.count("config"))
 		{
 		    for(int i = 1; i < size; i++)
@@ -344,7 +344,7 @@ void handler(int argc, char** argv)
     std::time_t t = std::time(0);
     std::tm* now = std::localtime(&t);
     
-    r << "../Img/" << now->tm_year + 1900 << "-" << now->tm_mon + 1 << "-" << now->tm_mday << "_" << now->tm_hour << ":" << now->tm_min << ":" << now->tm_sec;
+    r << std::setfill('0') << std::right << "../Img/" << now->tm_year + 1900 << "-" << std::setw(2) << now->tm_mon + 1 << "-" << std::setw(2) << now->tm_mday << "_" << std::setw(2) << now->tm_hour << ":" << std::setw(2) << now->tm_min << ":" << std::setw(2) << now->tm_sec;
 
 
     Mandelbrot::rep = new char[r.str().size()]();
@@ -353,7 +353,7 @@ void handler(int argc, char** argv)
     for(int i = 1; i < size; i++)
     {
         MPI_Send(Mandelbrot::rep, strlen(Mandelbrot::rep), MPI_CHAR, i, REP_SEND, MPI_COMM_WORLD);
-        std::cerr << "msg " << i << " " << REP_SEND << std::endl;
+        //std::cerr << "msg " << i << " " << REP_SEND << std::endl;
     }
 
     MPI_Bcast(default_param, 4, MPI_INT, 0, MPI_COMM_WORLD);
@@ -365,24 +365,28 @@ void handler(int argc, char** argv)
     buf = create_work(enough, x, y, w, h);
     work->push(buf);
 
+    int img_count = 0, info[2];
+
 
     uint64_t tick = rdtsc();
     while(1)
     {
         MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-        std::cerr << "recv " << status.MPI_SOURCE << " " << status.MPI_TAG << std::endl;
+        //std::cerr << "recv " << status.MPI_SOURCE << " " << status.MPI_TAG << std::endl;
 
-        if (status.MPI_TAG == SIZE_RQST)
+        if (status.MPI_TAG == INFO_RQST)
         {
             MPI_Recv(NULL, 0, MPI_INT, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            std::cerr << "size send" << std::endl;
-            int tmp = (int)work->size();
-            MPI_Send(&(tmp), 1, MPI_INT, status.MPI_SOURCE, SIZE_RQST, MPI_COMM_WORLD);
-            std::cerr << "msg " << status.MPI_SOURCE << " " << SIZE_RQST << std::endl;
+            //std::cerr << "size send" << std::endl;
+            info[0] = (int)work->size();
+            info[1] = img_count;
+            MPI_Send(info, 2, MPI_INT, status.MPI_SOURCE, INFO_RQST, MPI_COMM_WORLD);
+            img_count++;
+            //std::cerr << "msg " << status.MPI_SOURCE << " " << SIZE_RQST << std::endl;
         } 
         else if (status.MPI_TAG == WORK_SEND) 
         {
-            std::cerr << "work received" << std::endl;
+            //std::cerr << "work received" << std::endl;
             MPI_Get_count(&status, MPI_CHAR, &count);
             buf = new char[count+1]();
             MPI_Recv(buf, count, MPI_CHAR, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -393,7 +397,7 @@ void handler(int argc, char** argv)
             {
 
                 MPI_Send(buf, count, MPI_CHAR, waiting->front(), WORK_SEND, MPI_COMM_WORLD);
-                std::cerr << "msg " << waiting->front() << " " << WORK_SEND << std::endl;
+                //std::cerr << "msg " << waiting->front() << " " << WORK_SEND << std::endl;
                 waiting->pop();
             }
             else
@@ -402,13 +406,13 @@ void handler(int argc, char** argv)
         else if (status.MPI_TAG == WORK_RQST)
         {
             MPI_Recv(NULL, 0, MPI_INT, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            std::cerr << "work request" << std::endl;
+            //std::cerr << "work request" << std::endl;
             if(work->size() > 0)
             {
-                std::cerr << "work send" << std::endl;
+                //std::cerr << "work send" << std::endl;
                 char* msg = work->front();
                 MPI_Send(msg, strlen(msg), MPI_CHAR, status.MPI_SOURCE, WORK_SEND, MPI_COMM_WORLD);
-                std::cerr << "msg " << status.MPI_SOURCE << " " << WORK_SEND << std::endl;
+                //std::cerr << "msg " << status.MPI_SOURCE << " " << WORK_SEND << std::endl;
                 work->pop();
             }
             else
@@ -416,7 +420,7 @@ void handler(int argc, char** argv)
                 waiting->push(status.MPI_SOURCE);
                 if(waiting->size() == size - 1)
                 {
-                    std::cerr << "exiting" << std::endl;
+                    //std::cerr << "exiting" << std::endl;
                     for(int i = 1; i < size; i++)
                         MPI_Send(NULL, 0, MPI_INT, i, END, MPI_COMM_WORLD);
 
@@ -428,7 +432,13 @@ void handler(int argc, char** argv)
             }
         }
     }
-    if(verbose)std::cout <<"Time spend in cycle : "<< rdtsc() - tick << std::endl;
+    if(verbose)
+    {
+        std::cout <<"Time spend in cycle : "<< rdtsc() - tick << std::endl;
+        FILE* f = fopen("log.txt", "a");
+        fprintf(f, "%d %lu\n", size, rdtsc() - tick);
+        fclose(f);
+    }
 }
 
 void worker(int argc, char** argv)
@@ -452,7 +462,7 @@ void worker(int argc, char** argv)
     char* buf;
 
     MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-    std::cerr << "recv " << status.MPI_SOURCE << " " << status.MPI_TAG << std::endl;
+    //std::cerr << "recv " << status.MPI_SOURCE << " " << status.MPI_TAG << std::endl;
     if(status.MPI_TAG == END)
         return;
     MPI_Get_count(&status, MPI_CHAR, &count);
@@ -471,13 +481,13 @@ void worker(int argc, char** argv)
     while(1)
     {
         MPI_Send(NULL, 0, MPI_INT, 0, WORK_RQST, MPI_COMM_WORLD);
-        std::cerr << "msg " << 0 << " " << WORK_RQST << std::endl;
+        //std::cerr << "msg " << 0 << " " << WORK_RQST << std::endl;
         MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-        std::cerr << "recv " << status.MPI_SOURCE << " " << status.MPI_TAG << std::endl;
+        //std::cerr << "recv " << status.MPI_SOURCE << " " << status.MPI_TAG << std::endl;
 
         if(status.MPI_TAG == WORK_SEND)
         {
-            std::cerr << "processing work" << std::endl;
+            //std::cerr << "processing work" << std::endl;
 
             MPI_Get_count(&status, MPI_CHAR, &count);
             buf = new char[count]();
@@ -492,11 +502,11 @@ void worker(int argc, char** argv)
 
             delete m;
 
-            std::cerr << "processing done" << std::endl;
+            //std::cerr << "processing done" << std::endl;
         }
         else if(status.MPI_TAG == END)
         {
-            std::cerr << "exiting" << std::endl;
+            //std::cerr << "exiting" << std::endl;
             return;
         }
     }
@@ -542,18 +552,21 @@ char* create_work(int enough, mpf_t x, mpf_t y, mpf_t w, mpf_t h)
     return res;
 }
 
-bool needWork()
+void getHandlerInfo(bool& needwork, int& img_num)
 {
-    MPI_Send(NULL, 0, MPI_INT, 0, SIZE_RQST, MPI_COMM_WORLD);
-    std::cerr << "msg " << 0 << " " << SIZE_RQST << std::endl;
-    int queue_size, size;
+    MPI_Send(NULL, 0, MPI_INT, 0, INFO_RQST, MPI_COMM_WORLD);
+    //std::cerr << "msg " << 0 << " " << SIZE_RQST << std::endl;
+    int size, info[2];
     MPI_Comm_size(MPI_COMM_WORLD, &size);
-    MPI_Recv(&queue_size, 1, MPI_INT, 0, SIZE_RQST, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-    if(queue_size < size)
-        return true;
+    MPI_Recv(info, 2, MPI_INT, 0, INFO_RQST, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+    if(info[0] < size)
+        needwork = true; 
     else
-        return false;
+        needwork = false;
+
+    img_num = info[1];
 }
 
 
@@ -561,5 +574,5 @@ bool needWork()
 void sendWork(char* buf)
 {
     MPI_Send(buf, strlen(buf), MPI_CHAR, 0, WORK_SEND, MPI_COMM_WORLD);
-    std::cerr << "msg " << 0 << " " << WORK_SEND << std::endl;
+    //std::cerr << "msg " << 0 << " " << WORK_SEND << std::endl;
 }

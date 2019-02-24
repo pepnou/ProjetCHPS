@@ -345,11 +345,11 @@ void Mandelbrot::draw()
 	}
 }
 
-void Mandelbrot::save()
+void Mandelbrot::save(int img_num)
 {
-    int nume=matSave( img, Mandelbrot::rep);
+    matSave( img, Mandelbrot::rep, img_num);
 
-    char nom_inf[128];
+    /*char nom_inf[128];
     sprintf( nom_inf, "%s/info.txt", Mandelbrot::rep);
 
     printf("%s\n", nom_inf);
@@ -370,7 +370,7 @@ void Mandelbrot::save()
     mpf_out_str(fichier, 10, 150, width);
     fprintf(fichier,"\n\theight=");
     mpf_out_str(fichier, 10, 150, height);
-    fprintf(fichier,"\n");
+    fprintf(fichier,"\n");*/
 
     
 
@@ -391,7 +391,7 @@ void Mandelbrot::save()
 	    fprintf(fichier,"\n");
 	}*/
 
-	fclose(fichier);
+	//fclose(fichier);
 }
 
 bool Mandelbrot::IsGood_2(bool* filtre)
@@ -510,12 +510,16 @@ void Mandelbrot::dichotomie3(int n_div, vector<int>& divs)
     escapeSpeedCalcSeq();
     draw();
 
-    bool filtre;
+    bool filtre, needwork;
+    int img_num;
 
     if(IsGood_2(&filtre))
     {
+        getHandlerInfo(needwork, img_num);
+
+
 	if(filtre)
-	    save();
+	    save(img_num);
 
 	if(enough)
 	{	
@@ -538,7 +542,7 @@ void Mandelbrot::dichotomie3(int n_div, vector<int>& divs)
 
 
     
-            if(needWork())
+            if(needwork)
             {
                 bool first = true;
                 Mandelbrot *M = nullptr;
@@ -609,10 +613,12 @@ void Mandelbrot::dichotomie3(int n_div, vector<int>& divs)
                                     M = new Mandelbrot(tab_x[x], tab_y[y], delta_x, delta_y , enough - 1);
                                     first = false;
                                 }
-                                
-                                char* buf = create_work(enough - 1, tab_x[x], tab_y[y], delta_x, delta_y);
-                                sendWork(buf);
-                                free(buf);
+                                else
+                                {
+                                    char* buf = create_work(enough - 1, tab_x[x], tab_y[y], delta_x, delta_y);
+                                    sendWork(buf);
+                                    free(buf);
+                                }
                             }
                         }
                     }

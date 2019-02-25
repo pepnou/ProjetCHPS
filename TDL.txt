@@ -12,3 +12,16 @@ Semestre 2, bonjour.
 - combiner aléa et dicho
 - fixer nombre max d'itérations
 - fixer/changer IsGood ~
+
+- elaguage : classement interactif des 10 premiers
+- comparer les perf sur des projet aboutit, et pas sur de la merde
+- aller le plus profond possible le plus rapidement possible
+- nouvelle methodes de generation :
+	-> chaque process conserve une liste des 10 meilleures images
+	-> arriver a une limite d'arbre
+	-> re elaguer et garder seulement un %age des n_proc * 10 images de fin
+	-> relancer le process sur les meilleures des meilleurs gardées
+- tester la nouvelle implementation d'OpenCV maison
+
+"""- avoir un truc qui marche pour que Jean Nassim puisse donner des idées d'amelioration"""
+

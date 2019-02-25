@@ -1,0 +1,13 @@
+to be completed tho
+
+mandel.hpp
+ligne 37 cv:: *divmat *img *semat
+
+color.hpp ligne 11->14
+cv::Vec3b
+
+changements a effectuer :
+cv::Vec3b devient struct pix{char r, g, b;}
+divMat devient int32_t [im_h*ssample][im_w*ssample]
+img devient struct pix ** [im_h][im_w]
+sEMat devient uint8_t ** [im_h][im_w]

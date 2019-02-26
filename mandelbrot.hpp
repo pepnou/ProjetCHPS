@@ -13,6 +13,7 @@
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>
+#include <map>
 
 
 #include <opencv2/core.hpp>
@@ -51,16 +52,18 @@ class Mandelbrot
 		void save(int img_num);
 		bool IsGood();
 		void IterUp();
-		bool IsGood_2(bool* filtre);
+		bool IsGood_2(bool* filtre, double* res2);
 		
                 void dichotomie3();
 		bool random_img (int enough, double zoom, gmp_randstate_t& state);
 
 		// static int pas;
-        static int surEchantillonage;
-        static int im_width, im_height;
+                static int surEchantillonage;
+                static int im_width, im_height;
 		static int color;
 		static char* rep;
+
+                static std::multimap<double, char*> map;
 };
 
 #endif

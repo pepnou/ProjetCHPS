@@ -399,7 +399,7 @@ void Mandelbrot::save(int img_num)
     //fclose(fichier);
 }
 
-bool Mandelbrot::IsGood_2(bool* filtre)
+bool Mandelbrot::IsGood_2(bool* filtre, double* res2)
 {
 	*filtre = false;
 	bool continue_y_or_n;
@@ -455,6 +455,8 @@ bool Mandelbrot::IsGood_2(bool* filtre)
 			*filtre = true;
 		else
 			*filtre = false;
+
+                *res2 = res;
 	}
 
 	delete src_gray;
@@ -517,14 +519,25 @@ void Mandelbrot::dichotomie3()
 
     bool filtre, needwork;
     int img_num;
+    double res;
 
-    if(IsGood_2(&filtre))
+    if(IsGood_2(&filtre, &res))
     {
         getHandlerInfo(needwork, img_num);
 
 
-	if(filtre)
-	    save(img_num);
+	/*if(filtre)
+	    save(img_num);*/
+
+        {
+            char* buf = create_work2(pos_x, pos_y, width, height);
+            map.insert(std::pair<double, char*>(res, buf));
+
+            if(map.size() > 10)
+                map.erase(std::prev(map.end()));
+        } 
+
+
 
 	if(enough)
 	{	

@@ -8,6 +8,8 @@
 #include <ctime>
 #include <vector>
 #include <unistd.h>
+#include <map>
+
 
 #include "mandelbrot.hpp"
 #include "workHandler.hpp"
@@ -24,6 +26,7 @@
 #define WORK_RQST 2
 #define END 3
 #define REP_SEND 4
+#define LIST_SEND 5
 
 
 
@@ -32,8 +35,7 @@ int Mandelbrot::im_width;
 int Mandelbrot::im_height;
 int Mandelbrot::color;
 char* Mandelbrot::rep;
-
-
+std::multimap<double, char*> Mandelbrot::map;
 
 void handler(int argc, char** argv)
 {
@@ -445,6 +447,47 @@ void handler(int argc, char** argv)
             }
         }
     }
+
+    
+    std::multimap<double, char*> map;
+    
+    double key;
+    char *val, *tmp;
+
+    for(int i = 1; i < size; i++)
+    {
+        std::cerr << i << std::endl;
+        MPI_Probe(i, LIST_SEND, MPI_COMM_WORLD, &status);
+        MPI_Get_count(&status, MPI_CHAR, &count);
+        buf = new char[count+1]();
+        MPI_Recv(buf, count, MPI_CHAR, status.MPI_SOURCE, LIST_SEND, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        buf[count] = '\0';
+
+        tmp = strtok(buf, "|");
+        while(tmp)
+        {
+            key = atof(tmp);
+
+            tmp = strtok(NULL, "|");
+            val = new char[strlen(tmp) + 1]();
+            strcpy(val, tmp);
+            val[strlen(tmp) + 1] = '\0';
+        
+            map.insert(std::pair<double, char*>(key, val));
+
+            tmp = strtok(NULL, "|");
+        }
+    }
+
+    std::vector<std::multimap<double, char*>::value_type> v(map.begin(), map.end());
+    
+    {
+        FILE* f2 = fopen("../Img/test.txt", "w+");
+        for(int i = 0; i < 10 && i < v.size(); i++)
+            fprintf(f2, "%s\n", v[i].second);
+        fclose(f2);
+    }
+
     if(verbose)
     {
         std::cout <<"Time spend in cycle : "<< rdtsc() - tick << std::endl;
@@ -516,9 +559,23 @@ void worker(int argc, char** argv)
         else if(status.MPI_TAG == END)
         {
             //std::cerr << "exiting" << std::endl;
-            return;
+            break;
         }
     }
+
+    //for(std::multimap<doubla, char*>::iterator it = Mandelbrot::map.begin(); it)
+    
+    std::stringstream list("");
+    int i = 0;
+    for( std::vector<std::multimap<double, char*>::value_type> v(Mandelbrot::map.begin(), Mandelbrot::map.end()); i < v.size(); i++)
+    {
+        if(i == 0)
+            list << v[i].first << "|" << v[i].second;
+        else
+            list << "|" << v[i].first << "|" << v[i].second;
+    }
+
+    MPI_Send(list.str().c_str(), list.str().size(), MPI_CHAR, 0, LIST_SEND, MPI_COMM_WORLD);
 }
 
 
@@ -556,6 +613,45 @@ char* create_work(int enough, mpf_t x, mpf_t y, mpf_t w, mpf_t h, std::vector<in
 
     for(int i = 0; i < divs.size(); i++)
         r << ":" << divs.at(i);
+
+    char* res = new char[r.str().size() + 1]();
+    strcpy(res, r.str().c_str());
+    res[r.str().size()] = '\0';
+    
+    //std::cerr << res << std::endl;
+
+    return res;
+}
+
+char* create_work2(mpf_t x, mpf_t y, mpf_t w, mpf_t h)
+{
+    std::stringstream r("");
+    
+    mp_exp_t e1, e2, e3, e4;
+    char *char_width, *char_height, *char_x, *char_y;
+    char tmpx[3] = {'0','.','\0'}, tmpy[3] = {'0','.','\0'};
+
+
+    char_x = mpf_get_str( NULL, &e1, 10, 1000, x);
+    if(char_x[0] == '-')
+    {
+        char_x[0] = '.';
+	tmpx[0] = '-';
+	tmpx[1] = '0';
+    }
+    char_y = mpf_get_str( NULL, &e2, 10, 1000, y);
+    if(char_y[0] == '-')
+    {
+	char_y[0] = '.';
+	tmpy[0] = '-';
+	tmpy[1] = '0';
+    }
+
+    char_width = mpf_get_str( NULL, &e3, 10, 1000, w);
+    char_height = mpf_get_str( NULL, &e4, 10, 1000, h);
+    
+    r.str("");
+    r << tmpx << char_x << "e" << e1 << ":" << tmpy << char_y << "e" << e2 << ":" << "0." << char_width << "e" << e3 << ":" << "0." << char_height << "e" << e4;
 
     char* res = new char[r.str().size() + 1]();
     strcpy(res, r.str().c_str());

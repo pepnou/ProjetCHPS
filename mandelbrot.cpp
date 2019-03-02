@@ -523,7 +523,7 @@ void Mandelbrot::dichotomie3()
 
     if(IsGood_2(&filtre, &res))
     {
-        getHandlerInfo(needwork, img_num);
+        getHandlerInfo(needwork, img_num, 1);
 
 
 	/*if(filtre)
@@ -531,10 +531,12 @@ void Mandelbrot::dichotomie3()
 
         {
             char* buf = create_work2(pos_x, pos_y, width, height);
-            map.insert(std::pair<double, char*>(res, buf));
+            /*map.insert(std::pair<double, char*>(res, buf));
 
             if(map.size() > 10)
-                map.erase(std::prev(map.end()));
+                map.erase(std::prev(map.end()));*/
+
+            insert_top10(res, buf);
         } 
 
 
@@ -751,6 +753,19 @@ void Mandelbrot::dichotomie3()
                 }
             }
         }
+    }
+    else
+    {
+        unsigned long images_faites = 0;
+        for(int k = 0; k <= enough; k++)
+        {
+            for(int j = 0; j <= k; j++)
+            {
+                images_faites += pow(4, j) * pow(9, k-j);
+            }
+        }
+
+        getHandlerInfo(needwork, img_num, 1);
     }
 }
 

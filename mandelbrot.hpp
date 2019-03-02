@@ -25,6 +25,11 @@
 #include "rdtsc.hpp"
 #include "matOp.hpp"
 
+typedef struct
+{
+    double key;
+    char* val;
+}keyed_char;
 
 class Mandelbrot
 {
@@ -63,7 +68,8 @@ class Mandelbrot
 		static int color;
 		static char* rep;
 
-                static std::multimap<double, char*> map;
+                //static std::multimap<double, char*> map;
+                static keyed_char* top10;
 };
 
 #endif

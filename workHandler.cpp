@@ -493,7 +493,9 @@ void handler(int argc, char** argv)
              
             images_faites += images_faites_recv;
             pourcentage_images_faites = (double)images_faites / images_a_faire;
-            printf( RESTC DELLI "%3.15lf%%", pourcentage_images_faites*100);
+            printf( RESTC DELLI "% 3.15lf%%", pourcentage_images_faites*100);
+            //std::cout << images_faites_recv << std::endl;
+            std::cout << std::endl;
             fflush(stdout);
             /*std::cout << RESTC << DELLI << "[";
             for(int i = 0; i < pourcentage_images_faites*(window_width-2); i++)

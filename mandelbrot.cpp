@@ -521,6 +521,8 @@ void Mandelbrot::dichotomie3()
     int img_num;
     double res;
 
+    
+
     if(IsGood_2(&filtre, &res))
     {
         if(mpf_cmp_ui(pos_y, 0) < 0)
@@ -570,7 +572,7 @@ void Mandelbrot::dichotomie3()
             mpf_t equalz;
             mpf_init(equalz);
     
-            if(needwork)
+            /*if(needwork)
             {
                 std::vector<int> divs_cpy = divs;
                 bool first = true;
@@ -634,7 +636,8 @@ void Mandelbrot::dichotomie3()
                         mpf_mul_ui(temp, delta_y, c);
                         mpf_add(tab_y[c], tab_y[0], temp);
 
-                        mpf_div(equalz, tab_y[c], height);
+                        mpf_abs(equalz, tab_y[c]);
+                        mpf_div(equalz, equalz, old_height);
                         if(mpf_cmp_d(equalz, 0.00001) < 0)
                             mpf_set_ui(tab_y[c], 0);
                     }
@@ -681,7 +684,7 @@ void Mandelbrot::dichotomie3()
                 }
             }
             else
-            {
+            {*/
                 for(int i = divs.size() - 1; i >=0; i--)
                 {
                     int n_prec = prec + ceil(log(divs.at(i))/log(2));
@@ -736,8 +739,9 @@ void Mandelbrot::dichotomie3()
                         //tab_y[c] = tab_y[0] + c*delta_y
                         mpf_mul_ui(temp, delta_y, c);
                         mpf_add(tab_y[c], tab_y[0], temp);
-
-                        mpf_div(equalz, tab_y[c], height);
+                        
+                        mpf_abs(equalz, tab_y[c]);
+                        mpf_div(equalz, equalz, old_height);
                         if(mpf_cmp_d(equalz, 0.00001) < 0)
                             mpf_set_ui(tab_y[c], 0);
                     }
@@ -746,8 +750,15 @@ void Mandelbrot::dichotomie3()
                     {
                         for (int y = 0; y < divs.at(i); y++)
                         {
+                            
                             if(mpf_cmp_ui(tab_y[y], 0) <= 0)
                             {
+                                if(enough == 2)
+                                {
+                                    char* azerty = create_work(enough - 1, tab_x[x], tab_y[y], delta_x, delta_y, divs);
+                                    std::cout << azerty << std::endl;
+                                    free(azerty);
+                                }
                                 Mandelbrot* M = new Mandelbrot(tab_x[x], tab_y[y], delta_x, delta_y , enough - 1, divs);
                                 //en bas a gauche
                                                     
@@ -772,7 +783,7 @@ void Mandelbrot::dichotomie3()
                 
                     divs.pop_back();
                 }
-            }
+            //}
         }
     }
     else

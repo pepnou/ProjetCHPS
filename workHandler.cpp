@@ -9,8 +9,8 @@
 #include <vector>
 #include <unistd.h>
 #include <map>
-#include <cstdlib>
-#include <cstdio>
+#include <stdlib.h>
+#include <stdio.h>
 #include <sys/ioctl.h>
 #include <signal.h>
 #include <stdint.h>
@@ -42,15 +42,19 @@
 #define BACKC "\e[D"
 #define DELLI "\e[K"
 
-int window_width, window_height;
+unsigned short window_width = 203;
 
 //window resize signal handler
-void resize(int jsp)
+void resize(int sig)
 {
 	struct winsize w;
-	ioctl( 0, TIOCGWINSZ, &w);
+	int err = ioctl( STDOUT_FILENO, TIOCGWINSZ, &w);
+        
+        if(err)
+            perror("ioctl");
+
+        std::cerr << w.ws_col << std::endl;
 	window_width = w.ws_col;
-	window_height = w.ws_row;
 }
 
 
@@ -78,7 +82,7 @@ void insert_top10(double key, char* val)
 {
     //std::cerr << key << " : " << val << std::endl;
     if(Mandelbrot::top10[10].val != NULL)
-        free(Mandelbrot::top10[10].val);
+        delete [] Mandelbrot::top10[10].val;
 
     Mandelbrot::top10[10].key = key;
     Mandelbrot::top10[10].val = val;
@@ -107,9 +111,10 @@ void insert_top10(double key, char* val)
 
 void handler(int argc, char** argv)
 {
-    resize(0);
+    //resize(SIGWINCH);
+    //std::cerr << window_width << std::endl;
     init_top10();
-    signal( SIGWINCH, &resize);
+    //signal( SIGWINCH, &resize);
 
     MPI_Status status;
     int size, count;
@@ -485,15 +490,21 @@ void handler(int argc, char** argv)
             img_count++;
             //std::cerr << "msg " << status.MPI_SOURCE << " " << SIZE_RQST << std::endl;
             
-            
+             
             images_faites += images_faites_recv;
-            pourcentage_images_faites = images_faites / images_faites;
-            std::cout << RESTC << "[";
+            pourcentage_images_faites = (double)images_faites / images_a_faire;
+            printf( RESTC DELLI "%3.15lf%%", pourcentage_images_faites*100);
+            fflush(stdout);
+            /*std::cout << RESTC << DELLI << "[";
             for(int i = 0; i < pourcentage_images_faites*(window_width-2); i++)
                 std::cout << "#";
-            for(int i = 0; i < window_width-2 - pourcentage_images_faites*(window_width-2); i++)
+            for(int i = 0; i < (window_width - 2) - pourcentage_images_faites*(window_width-2); i++)
                 std::cout << "-";
             std::cout << "]";
+            std::cout.flush();*/
+            
+
+            //std::cout << images_faites << " / " << images_a_faire << " : " << pourcentage_images_faites << std::endl;
         } 
         else if (status.MPI_TAG == WORK_SEND) 
         {
@@ -604,7 +615,7 @@ void handler(int argc, char** argv)
             tmp = strtok(NULL, "|");
             val = new char[strlen(tmp) + 1]();
             strcpy(val, tmp);
-            val[strlen(tmp) + 1] = '\0';
+            val[strlen(tmp)] = '\0';
         
             insert_top10(key, val);
 
@@ -622,6 +633,8 @@ void handler(int argc, char** argv)
         }
         fclose(f2);
     }
+
+    std::cout << std::endl;
 
 
     if(verbose)

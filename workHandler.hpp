@@ -4,6 +4,8 @@
 #include <gmp.h>
 #include <vector>
 
+void resize(int sig);
+
 void handler(int argc, char** argv);
 void handler2(int argc, char** argv);
 void worker(int argc, char** argv);

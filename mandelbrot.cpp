@@ -523,7 +523,14 @@ void Mandelbrot::dichotomie3()
 
     if(IsGood_2(&filtre, &res))
     {
-        getHandlerInfo(needwork, img_num, 1);
+        if(mpf_cmp_ui(pos_y, 0) < 0)
+        {
+            getHandlerInfo(needwork, img_num, 2);
+        }
+        else if(mpf_cmp_ui(pos_y, 0) == 0)
+        {
+            getHandlerInfo(needwork, img_num, 1);
+        }
 
 
 	/*if(filtre)
@@ -560,13 +567,16 @@ void Mandelbrot::dichotomie3()
 	    //delete l'image ou on est
 	    del_mem();
 
-
+            mpf_t equalz;
+            mpf_init(equalz);
     
             if(needwork)
             {
                 std::vector<int> divs_cpy = divs;
                 bool first = true;
                 Mandelbrot *M = nullptr;
+
+                
 
                 for(int i = divs.size() - 1; i >= 0; i--)
                 {
@@ -617,17 +627,23 @@ void Mandelbrot::dichotomie3()
                         //tab_x[c] = tab_x[0] + c*delta_x
                         mpf_mul_ui(temp, delta_x, c);
                         mpf_add(tab_x[c], tab_x[0], temp);
-
+                        
+                        
+                        mpf_set_prec(equalz, mpf_get_prec(tab_y[c]));
                         //tab_y[c] = tab_y[0] + c*delta_y
                         mpf_mul_ui(temp, delta_y, c);
                         mpf_add(tab_y[c], tab_y[0], temp);
+
+                        mpf_div(equalz, tab_y[c], height);
+                        if(mpf_cmp_d(equalz, 0.00001) < 0)
+                            mpf_set_ui(tab_y[c], 0);
                     }
 
                     for (int x = 0; x < divs.at(i); x++)
                     {
                         for (int y = 0; y < divs.at(i); y++)
                         {
-                            if(mpf_cmp_ui(tab_y[y], 0) < 0)
+                            if(mpf_cmp_ui(tab_y[y], 0) <= 0)
                             {
                                 if(first)
                                 {
@@ -716,16 +732,21 @@ void Mandelbrot::dichotomie3()
                         mpf_mul_ui(temp, delta_x, c);
                         mpf_add(tab_x[c], tab_x[0], temp);
 
+                        mpf_set_prec(equalz, mpf_get_prec(tab_y[c]));
                         //tab_y[c] = tab_y[0] + c*delta_y
                         mpf_mul_ui(temp, delta_y, c);
                         mpf_add(tab_y[c], tab_y[0], temp);
+
+                        mpf_div(equalz, tab_y[c], height);
+                        if(mpf_cmp_d(equalz, 0.00001) < 0)
+                            mpf_set_ui(tab_y[c], 0);
                     }
 
                     for (int x = 0; x < divs.at(i); x++)
                     {
                         for (int y = 0; y < divs.at(i); y++)
                         {
-                            if(mpf_cmp_ui(tab_y[y], 0) < 0)
+                            if(mpf_cmp_ui(tab_y[y], 0) <= 0)
                             {
                                 Mandelbrot* M = new Mandelbrot(tab_x[x], tab_y[y], delta_x, delta_y , enough - 1, divs);
                                 //en bas a gauche
@@ -765,7 +786,15 @@ void Mandelbrot::dichotomie3()
             }
         }
 
-        getHandlerInfo(needwork, img_num, 1);
+
+        if(mpf_cmp_ui(pos_y, 0) < 0)
+        {
+            getHandlerInfo(needwork, img_num, 2*images_faites);
+        }
+        else if(mpf_cmp_ui(pos_y, 0) == 0)
+        {
+            getHandlerInfo(needwork, img_num, images_faites);
+        }
     }
 }
 

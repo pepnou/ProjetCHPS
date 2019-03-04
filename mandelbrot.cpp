@@ -520,8 +520,13 @@ void Mandelbrot::dichotomie3()
     bool filtre, needwork;
     int img_num;
     double res;
-
     
+
+
+    /*char* azert = create_work2(pos_x, pos_y, width, height);
+
+    std::cout << enough << std::endl << azert << std::endl;
+    std::cout.flush();*/
 
     if(IsGood_2(&filtre, &res))
     {
@@ -572,7 +577,7 @@ void Mandelbrot::dichotomie3()
             mpf_t equalz;
             mpf_init(equalz);
     
-            /*if(needwork)
+            if(needwork)
             {
                 std::vector<int> divs_cpy = divs;
                 bool first = true;
@@ -684,7 +689,7 @@ void Mandelbrot::dichotomie3()
                 }
             }
             else
-            {*/
+            {
                 for(int i = divs.size() - 1; i >=0; i--)
                 {
                     int n_prec = prec + ceil(log(divs.at(i))/log(2));
@@ -753,12 +758,12 @@ void Mandelbrot::dichotomie3()
                             
                             if(mpf_cmp_ui(tab_y[y], 0) <= 0)
                             {
-                                if(enough == 2)
+                                /*if(enough == 2)
                                 {
                                     char* azerty = create_work(enough - 1, tab_x[x], tab_y[y], delta_x, delta_y, divs);
                                     std::cout << azerty << std::endl;
                                     free(azerty);
-                                }
+                                }*/
                                 Mandelbrot* M = new Mandelbrot(tab_x[x], tab_y[y], delta_x, delta_y , enough - 1, divs);
                                 //en bas a gauche
                                                     
@@ -783,18 +788,26 @@ void Mandelbrot::dichotomie3()
                 
                     divs.pop_back();
                 }
-            //}
+            }
         }
     }
     else
     {
         unsigned long images_faites = 0;
-        for(int k = 0; k <= enough; k++)
+        if(divs.size() == 2)
         {
-            for(int j = 0; j <= k; j++)
+            for(int k = 0; k <= enough; k++)
             {
-                images_faites += pow(4, j) * pow(9, k-j);
+                for(int j = 0; j <= k; j++)
+                {
+                    images_faites += pow(4, j) * pow(9, k-j);
+                }
             }
+        }
+        else if(divs.size() == 1)
+        {
+            for(int k = 0; k <= enough; k++)
+                images_faites += pow(4,k);
         }
 
 

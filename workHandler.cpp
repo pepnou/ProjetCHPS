@@ -20,8 +20,6 @@
 #include "workHandler.hpp"
 #include "rdtsc.hpp"
 
-// namespace po = boost::program_options;
-
 #define RAINBOW 1
 #define JAUNE_BLEU 2
 #define SINCOS 3
@@ -42,30 +40,12 @@
 #define BACKC "\e[D"
 #define DELLI "\e[K"
 
-unsigned short window_width = 203;
-
-//window resize signal handler
-void resize(int sig)
-{
-	struct winsize w;
-	int err = ioctl( STDOUT_FILENO, TIOCGWINSZ, &w);
-        
-        if(err)
-            perror("ioctl");
-
-        std::cerr << w.ws_col << std::endl;
-	window_width = w.ws_col;
-}
-
-
-
 
 int Mandelbrot::surEchantillonage;
 int Mandelbrot::im_width;
 int Mandelbrot::im_height;
 int Mandelbrot::color;
 char* Mandelbrot::rep;
-//std::multimap<double, char*> Mandelbrot::map;
 keyed_char* Mandelbrot::top10 = new keyed_char[11];
 
 void init_top10()
@@ -80,7 +60,6 @@ void init_top10()
 
 void insert_top10(double key, char* val)
 {
-    //std::cerr << key << " : " << val << std::endl;
     if(Mandelbrot::top10[10].val != NULL)
         delete [] Mandelbrot::top10[10].val;
 
@@ -109,56 +88,9 @@ void insert_top10(double key, char* val)
     }
 }
 
-void handler(int argc, char** argv)
+void getExploOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int& enough, bool& verbose, int size)
 {
-    //resize(SIGWINCH);
-    //std::cerr << window_width << std::endl;
-    init_top10();
-    //signal( SIGWINCH, &resize);
-
-    MPI_Status status;
-    int size, count;
-    char* buf;
-
-    std::queue<int> *waiting = new std::queue<int>();
-    std::queue<char*> *work = new std::queue<char*>();
-
-
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
-
-
-    std::vector<int> divs;
-    divs.push_back(2);
-    divs.push_back(3);
-
-
-
-
-    int default_param[4];
-    //PARAMETRES PAR DEFAULT, A NE PAS CHANGER
-    	// largeur
-    default_param[0] = 1920;
-    	// hauteur
-    default_param[1] = 1080;
-    	// sur echantillonage
-    default_param[2] = 4;
-    	// couleur
-    default_param[3] = RAINBOW;
-    
-
-
-    int enough = 1;
-    bool verbose = false;
-
-    mpf_t x, y, w, h;
-    mpf_inits( x, y, w, h, NULL);
-
-    mpf_set_d( x, -0.5);
-    mpf_set_d( y, 0.0);
-    mpf_set_d( w, 3);
-    mpf_set_d( h, 2);
-
-    try
+	try
 	{
 		boost::program_options::options_description generic("Generic options");
 		generic.add_options()
@@ -195,7 +127,7 @@ void handler(int argc, char** argv)
 
 		boost::program_options::variables_map vm;
 
-		std::ifstream ifs("Config.cfg");
+		std::ifstream ifs("ExploConfig.cfg");
 		store(parse_config_file(ifs, config_file_options), vm);
 		notify(vm);
 
@@ -389,7 +321,7 @@ void handler(int argc, char** argv)
 		}
 		char_width = mpf_get_str( NULL, &e3, 10, 1000, w);
 		char_height = mpf_get_str( NULL, &e4, 10, 1000, h);
-		std::ofstream ofs("Config.cfg",std::ofstream::trunc);
+		std::ofstream ofs("ExploConfig.cfg",std::ofstream::trunc);
 		ofs << "Xposition=" << tmpx << char_x << "e" << e1 << std::endl
 			<< "Yposition=" << tmpy << char_y << "e" << e2 << std::endl
 			<< "im-width=" << default_param[0] << std::endl
@@ -402,9 +334,9 @@ void handler(int argc, char** argv)
  
 		if (vm2.count("config"))
 		{
-		    for(int i = 1; i < size; i++)
-                        MPI_Send(NULL, 0, MPI_INT, i, END, MPI_COMM_WORLD);
-                    return;
+			for(int i = 1; i < size; i++)
+			MPI_Send(NULL, 0, MPI_INT, i, END, MPI_COMM_WORLD);
+			return;
 		}
 	}
 	catch(std::exception& E)
@@ -422,10 +354,8 @@ void handler(int argc, char** argv)
 	}
 
 
-   
-    
 
-    std::stringstream r;
+	std::stringstream r;
     r.str("");
     std::time_t t = std::time(0);
     std::tm* now = std::localtime(&t);
@@ -437,19 +367,94 @@ void handler(int argc, char** argv)
     strcpy(Mandelbrot::rep, r.str().c_str());
 
     for(int i = 1; i < size; i++)
-    {
         MPI_Send(Mandelbrot::rep, strlen(Mandelbrot::rep), MPI_CHAR, i, REP_SEND, MPI_COMM_WORLD);
-        //std::cerr << "msg " << i << " " << REP_SEND << std::endl;
-    }
 
     MPI_Bcast(default_param, 4, MPI_INT, 0, MPI_COMM_WORLD);
+}
+
+void receiveExploOptions()
+{
+	MPI_Status status;
+    int count;
+
+    MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+    if(status.MPI_TAG == END)
+        return;
+
+    MPI_Get_count(&status, MPI_CHAR, &count);
+    Mandelbrot::rep = new char[count + 1]();
+    MPI_Recv(Mandelbrot::rep, count, MPI_CHAR, 0, REP_SEND, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    Mandelbrot::rep[count] = '\0';
+
+    int default_param[4];
+    MPI_Bcast(default_param, 4, MPI_INT, 0, MPI_COMM_WORLD);
+
+    Mandelbrot::im_width = default_param[0];
+    Mandelbrot::im_height = default_param[1];
+    Mandelbrot::surEchantillonage = default_param[2];
+    Mandelbrot::color = default_param[3];
+}
+
+void handler(int argc, char** argv)
+{
+	init_top10();
+
+	MPI_Status status;
+	int size, rank, count;
+	char* buf;
+
+	std::queue<int> *waiting = new std::queue<int>();
+	std::queue<char*> *work = new std::queue<char*>();
+
+
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+
+	std::vector<int> divs;
+	divs.push_back(2);
+	divs.push_back(3);
+
+	int default_param[4];
+	//PARAMETRES PAR DEFAULT, A NE PAS CHANGER
+	// largeur
+	default_param[0] = 1920;
+	// hauteur
+	default_param[1] = 1080;
+	// sur echantillonage
+	default_param[2] = 4;
+	// couleur
+	default_param[3] = RAINBOW;
+
+
+
+	int enough = 1;
+	bool verbose = false;
+
+	mpf_t x, y, w, h;
+	mpf_inits( x, y, w, h, NULL);
+
+	mpf_set_d( x, -0.5);
+	mpf_set_d( y, 0.0);
+	mpf_set_d( w, 3);
+	mpf_set_d( h, 2);
+
+
+	getExploOptions( argc, argv, default_param, x, y, w, h, enough, verbose, size);
+    
+
+
     
     std::stringstream cmd("");
-    cmd << "mkdir -p " << r.str().c_str();
+    cmd << "mkdir -p " << Mandelbrot::rep;
     system(cmd.str().c_str());
+
+
 
     buf = create_work(enough, x, y, w, h, divs);
     work->push(buf);
+
+    
 
     int img_count = 0, info[2];
     int flag;
@@ -478,39 +483,23 @@ void handler(int argc, char** argv)
             else
                 usleep(100);
         }
-        //std::cerr << "recv " << status.MPI_SOURCE << " " << status.MPI_TAG << std::endl;
 
         if (status.MPI_TAG == INFO_RQST)
         {
             MPI_Recv(&images_faites_recv, 1, MPI_LONG, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            //std::cerr << "size send" << std::endl;
             info[0] = (int)work->size();
             info[1] = img_count;
             MPI_Send(info, 2, MPI_INT, status.MPI_SOURCE, INFO_RQST, MPI_COMM_WORLD);
             img_count++;
-            //std::cerr << "msg " << status.MPI_SOURCE << " " << SIZE_RQST << std::endl;
             
              
             images_faites += images_faites_recv;
             pourcentage_images_faites = (double)images_faites / images_a_faire;
             printf( RESTC DELLI "% 3.15lf%%", pourcentage_images_faites*100);
-            //std::cout << pourcentage_images_faites*100 << "  " << images_faites_recv << std::endl;
-            //std::cout << std::endl;
             fflush(stdout);
-            /*std::cout << RESTC << DELLI << "[";
-            for(int i = 0; i < pourcentage_images_faites*(window_width-2); i++)
-                std::cout << "#";
-            for(int i = 0; i < (window_width - 2) - pourcentage_images_faites*(window_width-2); i++)
-                std::cout << "-";
-            std::cout << "]";
-            std::cout.flush();*/
-            
-
-            //std::cout << images_faites << " / " << images_a_faire << " : " << pourcentage_images_faites << std::endl;
         } 
         else if (status.MPI_TAG == WORK_SEND) 
         {
-            //std::cerr << "work received" << std::endl;
             MPI_Get_count(&status, MPI_CHAR, &count);
             buf = new char[count+1]();
             MPI_Recv(buf, count, MPI_CHAR, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -521,7 +510,6 @@ void handler(int argc, char** argv)
             {
 
                 MPI_Send(buf, count, MPI_CHAR, waiting->front(), WORK_SEND, MPI_COMM_WORLD);
-                //std::cerr << "msg " << waiting->front() << " " << WORK_SEND << std::endl;
                 waiting->pop();
             }
             else
@@ -530,13 +518,10 @@ void handler(int argc, char** argv)
         else if (status.MPI_TAG == WORK_RQST)
         {
             MPI_Recv(NULL, 0, MPI_INT, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            //std::cerr << "work request" << std::endl;
             if(work->size() > 0)
             {
-                //std::cerr << "work send" << std::endl;
                 char* msg = work->front();
                 MPI_Send(msg, strlen(msg), MPI_CHAR, status.MPI_SOURCE, WORK_SEND, MPI_COMM_WORLD);
-                //std::cerr << "msg " << status.MPI_SOURCE << " " << WORK_SEND << std::endl;
                 work->pop();
             }
             else
@@ -544,7 +529,6 @@ void handler(int argc, char** argv)
                 waiting->push(status.MPI_SOURCE);
                 if(waiting->size() == size - 1)
                 {
-                    //std::cerr << "exiting" << std::endl;
                     for(int i = 1; i < size; i++)
                         MPI_Send(NULL, 0, MPI_INT, i, END, MPI_COMM_WORLD);
 
@@ -557,52 +541,11 @@ void handler(int argc, char** argv)
         }
     }
 
-    
-    /*std::multimap<double, char*> map;
-    
     double key;
     char *val, *tmp;
 
     for(int i = 1; i < size; i++)
     {
-        std::cerr << i << std::endl;
-        MPI_Probe(i, LIST_SEND, MPI_COMM_WORLD, &status);
-        MPI_Get_count(&status, MPI_CHAR, &count);
-        buf = new char[count+1]();
-        MPI_Recv(buf, count, MPI_CHAR, status.MPI_SOURCE, LIST_SEND, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        buf[count] = '\0';
-
-        tmp = strtok(buf, "|");
-        while(tmp)
-        {
-            key = atof(tmp);
-
-            tmp = strtok(NULL, "|");
-            val = new char[strlen(tmp) + 1]();
-            strcpy(val, tmp);
-            val[strlen(tmp) + 1] = '\0';
-        
-            map.insert(std::pair<double, char*>(key, val));
-
-            tmp = strtok(NULL, "|");
-        }
-    }
-
-    std::vector<std::multimap<double, char*>::value_type> v(map.begin(), map.end());
-    
-    {
-        FILE* f2 = fopen("../Img/test.txt", "w+");
-        for(int i = 0; i < 10 && i < v.size(); i++)
-            fprintf(f2, "%s\n", v[i].second);
-        fclose(f2);
-    }*/
-
-    double key;
-    char *val, *tmp;
-
-    for(int i = 1; i < size; i++)
-    {
-        //std::cerr << i << std::endl;
         MPI_Probe(i, LIST_SEND, MPI_COMM_WORLD, &status);
         MPI_Get_count(&status, MPI_CHAR, &count);
         buf = new char[count+1]();
@@ -626,18 +569,15 @@ void handler(int argc, char** argv)
     }
 
     
+    FILE* f2 = fopen("../Img/test.txt", "w+");
+    for(int i = 0; i < 10 && Mandelbrot::top10[i].val != NULL; i++)
     {
-        FILE* f2 = fopen("../Img/test.txt", "w+");
-        for(int i = 0; i < 10 && Mandelbrot::top10[i].val != NULL; i++)
-        {
-            //std::cerr << "top10  :  " << Mandelbrot::top10[i].key << " : " << Mandelbrot::top10[i].val << std::endl;
-            fprintf(f2, "0:%s:2\n", Mandelbrot::top10[i].val);
-        }
-        fclose(f2);
+        fprintf(f2, "0:%s:2\n", Mandelbrot::top10[i].val);
     }
+    fclose(f2);
+
 
     std::cout << std::endl;
-
 
     if(verbose)
     {
@@ -652,47 +592,19 @@ void worker(int argc, char** argv)
 {
     init_top10();
 
-    
-    //PARAMETRES PAR DEFAULT, A NE PAS CHANGER
-    Mandelbrot::im_width = 1920;
-    Mandelbrot::im_height = 1080;
-    Mandelbrot::surEchantillonage = 4;
-    Mandelbrot::color = RAINBOW;
-
-   
-    
     MPI_Status status;
     int count;
     char* buf;
 
-    MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-    //std::cerr << "recv " << status.MPI_SOURCE << " " << status.MPI_TAG << std::endl;
-    if(status.MPI_TAG == END)
-        return;
-    MPI_Get_count(&status, MPI_CHAR, &count);
-    Mandelbrot::rep = new char[count + 1]();
-    MPI_Recv(Mandelbrot::rep, count, MPI_CHAR, 0, REP_SEND, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    Mandelbrot::rep[count] = '\0';
-
-    int default_param[4];
-    MPI_Bcast(default_param, 4, MPI_INT, 0, MPI_COMM_WORLD);
-    Mandelbrot::im_width = default_param[0];
-    Mandelbrot::im_height = default_param[1];
-    Mandelbrot::surEchantillonage = default_param[2];
-    Mandelbrot::color = default_param[3];    
-
+    receiveExploOptions();
 
     while(1)
     {
         MPI_Send(NULL, 0, MPI_INT, 0, WORK_RQST, MPI_COMM_WORLD);
-        //std::cerr << "msg " << 0 << " " << WORK_RQST << std::endl;
         MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-        //std::cerr << "recv " << status.MPI_SOURCE << " " << status.MPI_TAG << std::endl;
 
         if(status.MPI_TAG == WORK_SEND)
         {
-            //std::cerr << "processing work" << std::endl;
-
             MPI_Get_count(&status, MPI_CHAR, &count);
             buf = new char[count + 1]();
             
@@ -708,26 +620,12 @@ void worker(int argc, char** argv)
 
             delete m;
 
-            //std::cerr << "processing done" << std::endl;
         }
         else if(status.MPI_TAG == END)
         {
-            //std::cerr << "exiting" << std::endl;
             break;
         }
     }
-
-    //for(std::multimap<doubla, char*>::iterator it = Mandelbrot::map.begin(); it)
-    
-    /*std::stringstream list("");
-    int i = 0;
-    for( std::vector<std::multimap<double, char*>::value_type> v(Mandelbrot::map.begin(), Mandelbrot::map.end()); i < v.size(); i++)
-    {
-        if(i == 0)
-            list << v[i].first << "|" << v[i].second;
-        else
-            list << "|" << v[i].first << "|" << v[i].second;
-    }*/
 
     std::stringstream list("");
     for( int i = 0;i < 10 && Mandelbrot::top10[i].val != NULL; i++)
@@ -742,9 +640,6 @@ void worker(int argc, char** argv)
 
     MPI_Send(list.str().c_str(), list.str().size(), MPI_CHAR, 0, LIST_SEND, MPI_COMM_WORLD);
 }
-
-
-
 
 char* create_work(int enough, mpf_t x, mpf_t y, mpf_t w, mpf_t h, std::vector<int> divs)
 {
@@ -783,8 +678,6 @@ char* create_work(int enough, mpf_t x, mpf_t y, mpf_t w, mpf_t h, std::vector<in
     strcpy(res, r.str().c_str());
     res[r.str().size()] = '\0';
     
-    //std::cerr << res << std::endl;
-
     return res;
 }
 
@@ -822,15 +715,13 @@ char* create_work2(mpf_t x, mpf_t y, mpf_t w, mpf_t h)
     strcpy(res, r.str().c_str());
     res[r.str().size()] = '\0';
     
-    //std::cerr << res << std::endl;
-
     return res;
 }
 
 void getHandlerInfo(bool& needwork, int& img_num, long images_faites)
 {
     MPI_Send(&images_faites, 1, MPI_LONG, 0, INFO_RQST, MPI_COMM_WORLD);
-    //std::cerr << "msg " << 0 << " " << SIZE_RQST << std::endl;
+
     int size, info[2];
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
@@ -844,62 +735,14 @@ void getHandlerInfo(bool& needwork, int& img_num, long images_faites)
     img_num = info[1];
 }
 
-
-
 void sendWork(char* buf)
 {
     MPI_Ssend(buf, strlen(buf), MPI_CHAR, 0, WORK_SEND, MPI_COMM_WORLD);
-    //std::cerr << "msg " << 0 << " " << WORK_SEND << std::endl;
 }
 
-
-void handler2(int argc, char** argv)
+void getGenOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int& enough, bool& verbose, int size)
 {
-    init_top10();
-
-    
-    MPI_Status status;
-    int size, count;
-    char* buf;
-    std::queue<int> *waiting = new std::queue<int>();
-    std::queue<char*> *work = new std::queue<char*>();
-
-
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
-
-
-    std::vector<int> divs;
-    divs.push_back(2);
-    divs.push_back(3);
-
-
-
-
-    int default_param[4];
-    //PARAMETRES PAR DEFAULT, A NE PAS CHANGER
-    	// largeur
-    default_param[0] = 1920;
-    	// hauteur
-    default_param[1] = 1080;
-    	// sur echantillonage
-    default_param[2] = 4;
-    	// couleur
-    default_param[3] = RAINBOW;
-    
-
-
-    int enough = 1;
-    bool verbose = false;
-
-    mpf_t x, y, w, h;
-    mpf_inits( x, y, w, h, NULL);
-
-    mpf_set_d( x, -0.5);
-    mpf_set_d( y, 0.0);
-    mpf_set_d( w, 3);
-    mpf_set_d( h, 2);
-
-    try
+	try
 	{
 		boost::program_options::options_description generic("Generic options");
 		generic.add_options()
@@ -1180,17 +1023,93 @@ void handler2(int argc, char** argv)
     for(int i = 1; i < size; i++)
     {
         MPI_Send(Mandelbrot::rep, strlen(Mandelbrot::rep), MPI_CHAR, i, REP_SEND, MPI_COMM_WORLD);
-        //std::cerr << "msg " << i << " " << REP_SEND << std::endl;
     }
 
     MPI_Bcast(default_param, 4, MPI_INT, 0, MPI_COMM_WORLD);
+}
+
+void receiveGenOptions()
+{
+	int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    int num_img = 0;
+   
+    
+    MPI_Status status;
+    int count;
+
+    MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+    if(status.MPI_TAG == END)
+        return;
+
+    MPI_Get_count(&status, MPI_CHAR, &count);
+    Mandelbrot::rep = new char[count + 1]();
+    MPI_Recv(Mandelbrot::rep, count, MPI_CHAR, 0, REP_SEND, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    Mandelbrot::rep[count] = '\0';
+
+    int default_param[4];
+    MPI_Bcast(default_param, 4, MPI_INT, 0, MPI_COMM_WORLD);
+    Mandelbrot::im_width = default_param[0];
+    Mandelbrot::im_height = default_param[1];
+    Mandelbrot::surEchantillonage = default_param[2];
+    Mandelbrot::color = default_param[3];
+}
+
+void handler2(int argc, char** argv)
+{
+    init_top10();
+
+    
+    MPI_Status status;
+    int size, count;
+    char* buf;
+    std::queue<int> *waiting = new std::queue<int>();
+    std::queue<char*> *work = new std::queue<char*>();
+
+
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+
+    std::vector<int> divs;
+    divs.push_back(2);
+    divs.push_back(3);
+
+
+
+
+    int default_param[4];
+	//PARAMETRES PAR DEFAULT, A NE PAS CHANGER
+	// largeur
+	default_param[0] = 1920;
+	// hauteur
+	default_param[1] = 1080;
+	// sur echantillonage
+	default_param[2] = 4;
+	// couleur
+	default_param[3] = RAINBOW;
+    
+
+
+    int enough = 1;
+    bool verbose = false;
+
+    mpf_t x, y, w, h;
+    mpf_inits( x, y, w, h, NULL);
+
+    mpf_set_d( x, -0.5);
+    mpf_set_d( y, 0.0);
+    mpf_set_d( w, 3);
+    mpf_set_d( h, 2);
+
+
+    getGenOptions( argc, argv, default_param, x, y, w, h, enough, verbose, size);
+
+    
     
     std::stringstream cmd("");
-    cmd << "mkdir -p " << r.str().c_str();
+    cmd << "mkdir -p " << Mandelbrot::rep;
     system(cmd.str().c_str());
 
-    /*buf = create_work(enough, x, y, w, h, divs);
-    work->push(buf);*/
 
     FILE* f = fopen("../Img/test.txt", "r");
     buf = new char[2049];
@@ -1219,7 +1138,6 @@ void handler2(int argc, char** argv)
             else
                 usleep(100);
         }
-        //std::cerr << "recv " << status.MPI_SOURCE << " " << status.MPI_TAG << std::endl;
 
         if (status.MPI_TAG == INFO_RQST)
         {
@@ -1229,11 +1147,9 @@ void handler2(int argc, char** argv)
             info[1] = img_count;
             MPI_Send(info, 2, MPI_INT, status.MPI_SOURCE, INFO_RQST, MPI_COMM_WORLD);
             img_count++;
-            //std::cerr << "msg " << status.MPI_SOURCE << " " << SIZE_RQST << std::endl;
         } 
         else if (status.MPI_TAG == WORK_SEND) 
         {
-            //std::cerr << "work received" << std::endl;
             MPI_Get_count(&status, MPI_CHAR, &count);
             buf = new char[count+1]();
             MPI_Recv(buf, count, MPI_CHAR, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -1244,7 +1160,6 @@ void handler2(int argc, char** argv)
             {
 
                 MPI_Send(buf, count, MPI_CHAR, waiting->front(), WORK_SEND, MPI_COMM_WORLD);
-                //std::cerr << "msg " << waiting->front() << " " << WORK_SEND << std::endl;
                 waiting->pop();
             }
             else
@@ -1253,13 +1168,10 @@ void handler2(int argc, char** argv)
         else if (status.MPI_TAG == WORK_RQST)
         {
             MPI_Recv(NULL, 0, MPI_INT, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            //std::cerr << "work request" << std::endl;
             if(work->size() > 0)
             {
-                //std::cerr << "work send" << std::endl;
                 char* msg = work->front();
                 MPI_Send(msg, strlen(msg), MPI_CHAR, status.MPI_SOURCE, WORK_SEND, MPI_COMM_WORLD);
-                //std::cerr << "msg " << status.MPI_SOURCE << " " << WORK_SEND << std::endl;
                 work->pop();
             }
             else
@@ -1267,7 +1179,6 @@ void handler2(int argc, char** argv)
                 waiting->push(status.MPI_SOURCE);
                 if(waiting->size() == size - 1)
                 {
-                    //std::cerr << "exiting" << std::endl;
                     for(int i = 1; i < size; i++)
                         MPI_Send(NULL, 0, MPI_INT, i, END, MPI_COMM_WORLD);
 
@@ -1294,15 +1205,7 @@ void handler2(int argc, char** argv)
 void worker2(int argc, char** argv)
 {
     init_top10();
-
     
-    //PARAMETRES PAR DEFAULT, A NE PAS CHANGER
-    Mandelbrot::im_width = 1920;
-    Mandelbrot::im_height = 1080;
-    Mandelbrot::surEchantillonage = 4;
-    Mandelbrot::color = RAINBOW;
-
-
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     int num_img = 0;
@@ -1312,21 +1215,7 @@ void worker2(int argc, char** argv)
     int count;
     char* buf;
 
-    MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-    //std::cerr << "recv " << status.MPI_SOURCE << " " << status.MPI_TAG << std::endl;
-    if(status.MPI_TAG == END)
-        return;
-    MPI_Get_count(&status, MPI_CHAR, &count);
-    Mandelbrot::rep = new char[count + 1]();
-    MPI_Recv(Mandelbrot::rep, count, MPI_CHAR, 0, REP_SEND, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    Mandelbrot::rep[count] = '\0';
-
-    int default_param[4];
-    MPI_Bcast(default_param, 4, MPI_INT, 0, MPI_COMM_WORLD);
-    Mandelbrot::im_width = default_param[0];
-    Mandelbrot::im_height = default_param[1];
-    Mandelbrot::surEchantillonage = default_param[2];
-    Mandelbrot::color = default_param[3];    
+    receiveGenOptions();
 
 
     while(1)

@@ -22,9 +22,9 @@ int main(int argc, char** argv)
     std::cout << rank + 1 << " / " << size << std::endl;
 
     if(rank == 0)
-        handler(argc, argv);
+        handler2(argc, argv);
     else
-        worker(argc, argv);
+        worker2(argc, argv);
 
     MPI_Finalize();
 

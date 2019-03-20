@@ -10,12 +10,11 @@
 
 #include <gmp.h>
 
-/*
+
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
-*/
 
-int matSave(cv::Mat* mat, char* rep);
-int frameSave(cv::Mat mat, char* rep, int num, int ligne);
+
+void matSave(cv::Mat* mat, char* rep, int img_num);
 
 #endif

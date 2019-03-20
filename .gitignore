@@ -4,5 +4,6 @@ test
 alpha.png
 *.png
 build/
-img/
+Img/
 video/
+*.swp

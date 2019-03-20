@@ -395,8 +395,14 @@ bool receiveExploOptions()
     return true;
 }
 
-void fill_work(std::queue<char*> *work, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int enough, std::vector<int> divs, size)
+void fill_work(std::queue<char*> *work, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int enough, std::vector<int> divs, int size, int depth)
 {
+	mpf_t equalz;
+    mpf_init(equalz);	
+
+	std::vector<int> divs_cpy = divs;
+	int prec = mpf_get_prec(x);
+
 	for(int i = divs.size() - 1; i >= 0; i--)
     {
         int n_prec = prec + ceil(log(divs.at(i))/log(2));
@@ -405,40 +411,40 @@ void fill_work(std::queue<char*> *work, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int 
         mpf_t* tab_x = new mpf_t[divs.at(i)];
         mpf_t* tab_y = new mpf_t[divs.at(i)];
 
-        if(mpf_get_prec(old_pos_x)>=mpf_get_prec(old_pos_y))
-            mpf_init2(temp, mpf_get_prec(old_pos_x) + n_prec/64);
+        if(mpf_get_prec(x)>=mpf_get_prec(y))
+            mpf_init2(temp, mpf_get_prec(x) + n_prec/64);
         else
-            mpf_init2(temp, mpf_get_prec(old_pos_y) + n_prec/64);
+            mpf_init2(temp, mpf_get_prec(y) + n_prec/64);
 
-        mpf_init2(delta_x, mpf_get_prec(old_width));
-        mpf_init2(delta_y, mpf_get_prec(old_height));
+        mpf_init2(delta_x, mpf_get_prec(w));
+        mpf_init2(delta_y, mpf_get_prec(h));
 
         //initialise chacun des elements du tableau avant de pouvoir s'en servir
         for (int init = 0; init < divs.at(i); init++)
         {
-                mpf_init2(tab_x[init], mpf_get_prec(old_pos_x) + n_prec/64);
-                mpf_init2(tab_y[init], mpf_get_prec(old_pos_y) + n_prec/64);
+                mpf_init2(tab_x[init], mpf_get_prec(x) + n_prec/64);
+                mpf_init2(tab_y[init], mpf_get_prec(y) + n_prec/64);
         }
 
         n_prec %= 64;
 
 
         //calcul de delta_x, la distance entre de nouveaux points en x
-        mpf_div_ui(delta_x, old_width, divs.at(i));
+        mpf_div_ui(delta_x, w, divs.at(i));
         //calcul de delta_y, la distance entre de nouveaux points en y
-        mpf_div_ui(delta_y, old_height, divs.at(i));
+        mpf_div_ui(delta_y, h, divs.at(i));
 
 
         //tab_x[0] = pos_x - width/2 + width/2*divs.at(i)
-        mpf_div_ui(temp, old_width, 2*divs.at(i));
-        mpf_add(tab_x[0], old_pos_x, temp);
-        mpf_div_ui(temp, old_width, 2);
+        mpf_div_ui(temp, w, 2*divs.at(i));
+        mpf_add(tab_x[0], x, temp);
+        mpf_div_ui(temp, w, 2);
         mpf_sub(tab_x[0], tab_x[0], temp);
 
         //tab_y[0] = pos_y - height/2 + height/2*divs.at(i)
-        mpf_div_ui(temp, old_height, 2*divs.at(i));
-        mpf_add(tab_y[0], old_pos_y, temp);
-        mpf_div_ui(temp, old_height, 2);
+        mpf_div_ui(temp, h, 2*divs.at(i));
+        mpf_add(tab_y[0], y, temp);
+        mpf_div_ui(temp, h, 2);
         mpf_sub(tab_y[0], tab_y[0], temp);
 
         for (int c = 1; c < divs.at(i); c++)
@@ -454,7 +460,7 @@ void fill_work(std::queue<char*> *work, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int 
             mpf_add(tab_y[c], tab_y[0], temp);
 
             mpf_abs(equalz, tab_y[c]);
-            mpf_div(equalz, equalz, old_height);
+            mpf_div(equalz, equalz, h);
             if(mpf_cmp_d(equalz, 0.00001) < 0)
                 mpf_set_ui(tab_y[c], 0);
         }
@@ -465,17 +471,13 @@ void fill_work(std::queue<char*> *work, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int 
             {
                 if(mpf_cmp_ui(tab_y[y], 0) <= 0)
                 {
-                    if(first)
+                    if(depth == 0)
                     {
-                        M = new Mandelbrot(tab_x[x], tab_y[y], delta_x, delta_y , enough - 1, divs_cpy);
-                        first = false;
+                    	char* buf = create_work(enough - 1, tab_x[x], tab_y[y], delta_x, delta_y, divs_cpy);
+                    	work->push(buf);
                     }
-                    else
-                    {
-                        char* buf = create_work(enough - 1, tab_x[x], tab_y[y], delta_x, delta_y, divs_cpy);
-                        sendWork(buf);
-                        free(buf);
-                    }
+                	else
+                		fill_work(work, tab_x[x], tab_y[y], delta_x, delta_y, enough - 1, divs_cpy, size, depth - 1);
                 }
             }
         }
@@ -495,23 +497,26 @@ void fill_work(std::queue<char*> *work, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int 
     }
 }
 
-void init_work(std::queue<char*> *work, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int enough, std::vector<int> divs, size)
+void init_work(std::queue<char*> *work, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int enough, std::vector<int> divs, int size)
 {
 	char* buf;
-	buf = create_work(enough, x, y, w, h, divs);
-    work->push(buf);
+	/*buf = create_work(enough, x, y, w, h, divs);
+    work->push(buf);*/
 
-    /*int depth;
-    long nb_image = 0;
+    int depth;
+    long nb_image;
     for(depth = 0; depth < enough && nb_image < size - 1; depth++)
     {
+    	nb_image = 0;
     	for(int i = 0; i <= depth; i++)
     	{
     		nb_image += pow(4, depth)*pow(9, i);
     	}
     }
 
-    fill_work(std::queue<char*> *work, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int enough, std::vector<int> divs, size);*/
+    buf = create_work(depth, x, y, w, h, divs);
+    work->push(buf);
+    fill_work(work, x,  y, w, h, enough,divs, size, depth);
 }
 
 void handler(int argc, char** argv)

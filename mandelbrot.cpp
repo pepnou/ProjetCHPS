@@ -353,50 +353,6 @@ void Mandelbrot::draw()
 void Mandelbrot::save(int img_num)
 {
     matSave( img, Mandelbrot::rep, img_num);
-
-    /*char nom_inf[128];
-    sprintf( nom_inf, "%s/info%d.txt", Mandelbrot::rep, img_num);
-
-    printf("%s\n", nom_inf);
-
-    FILE* fichier = fopen(nom_inf, "a");
-
-    if(!fichier)
-    {
-        perror(nom_inf);
-    }
-
-    fprintf(fichier,"mandel%d",img_num);
-    fprintf(fichier,"\n\tXposition=");
-    mpf_out_str(fichier, 10, 150, pos_x);
-    fprintf(fichier,"\n\tYposition=");
-    mpf_out_str(fichier, 10, 150, pos_y);
-    fprintf(fichier,"\n\twidth=");
-    mpf_out_str(fichier, 10, 150, width);
-    fprintf(fichier,"\n\theight=");
-    mpf_out_str(fichier, 10, 150, height);
-    fprintf(fichier,"\n");*/
-
-    
-
-    /*if(mpf_cmp_ui(this->pos_y, 0) != 0)
-    {
-            flip( *(this->img), *(this->img), 0);
-            nume = matSave( this->img, this->rep);
-
-            fprintf(fichier,"mandel%d",nume);
-        fprintf(fichier,"\n\tx : ");
-        mpf_out_str(fichier, 10, 150, pos_x);
-        fprintf(fichier,"\n\ty : ");
-        mpf_out_str(fichier, 10, 150, pos_y);
-        fprintf(fichier,"\n\tw : ");
-        mpf_out_str(fichier, 10, 150, width);
-        fprintf(fichier,"\n\th : ");
-        mpf_out_str(fichier, 10, 150, height);
-        fprintf(fichier,"\n");
-    }*/
-
-    //fclose(fichier);
 }
 
 bool Mandelbrot::IsGood_2(bool* filtre, double* res2)
@@ -419,6 +375,9 @@ bool Mandelbrot::IsGood_2(bool* filtre, double* res2)
 	blur( *(src_gray), *(detected_edges), Size(3,3) );
 	Canny( *(detected_edges), *(detected_edges), lowThreshold, lowThreshold*ratio, kernel_size);
 	double res = countNonZero(*detected_edges)*1000/(im_height*im_width);
+
+	delete src_gray;
+	delete detected_edges;
 
 	if(res<ThresholdCont)
 		continue_y_or_n = false;
@@ -456,11 +415,9 @@ bool Mandelbrot::IsGood_2(bool* filtre, double* res2)
 		else
 			*filtre = false;
 
-                *res2 = res;
-	}
 
-	delete src_gray;
-	delete detected_edges;
+        *res2 = (res*0.55)/this->im_width;
+	}
 
 	return continue_y_or_n;
 }
@@ -821,84 +778,3 @@ void Mandelbrot::dichotomie3()
         }
     }
 }
-
-/*
-bool Mandelbrot::random_img (int enough, double zoom, gmp_randstate_t& state)
-{    
-    this->escapeSpeedCalcThread4();
-    this->draw();
-    
-    bool filtre;
-    this->IsGood_2(&filtre);
-
-    if(filtre)
-    {
-        this->save();
-
-    
-        int max_test = 10;
-        bool good = false;
-
-        if(--enough)
-        {
-			this->IterUp();
-			this->iterations *= 2;
-
-			mpf_t nx, ny ,cx, cy, nw, nh, temp, zoom_mpf, Wdiff, Wdiff2, Hdiff, Hdiff2;
-
-			mpf_inits(nx, ny ,cx, cy, nw, nh, temp, zoom_mpf, Wdiff, Wdiff2, Hdiff, Hdiff2, NULL);
-
-			mpf_set_d(zoom_mpf, zoom);
-						
-			mpf_div(nw, this->width, zoom_mpf);        //calcul nouveaux W 
-			mpf_div(nh, this->height, zoom_mpf);        //calcul nouveaux H
-			
-			mpf_set(cx,this->pos_x);
-			mpf_set(cy,this->pos_y);
-			
-			
-			mpf_sub(Wdiff, this->width, nw);
-			
-			mpf_neg(Wdiff2, Wdiff);
-			mpf_div_ui(Wdiff2, Wdiff2, 2);
-			mpf_add(Wdiff2, Wdiff2, cx);
-			
-			
-			mpf_sub(Hdiff, this->height, nh);
-			
-			mpf_neg(Hdiff2, Hdiff);
-			mpf_div_ui(Hdiff2, Hdiff2, 2);
-			mpf_add(Hdiff2, Hdiff2, cy);
-			
-			
-			del_mem();
-            
-            do{
-				mpf_urandomb (nx, state, mpf_get_prec(nx));
-				mpf_mul(nx, nx, Wdiff);
-				mpf_add(nx, nx, Wdiff2);
-
-				mpf_urandomb (ny, state, mpf_get_prec(ny));
-				mpf_mul(ny, ny, Hdiff);
-				mpf_add(ny, ny, Hdiff2);
-
-				Mandelbrot* M = new Mandelbrot(nx, ny, nw, nh ,im_width, im_height, surEchantillonage, iterations, color, mpmc, rep);
-
-				good = M->random_img(enough, zoom, state);
-				delete M;    
-            } while( (good == false) && (--max_test > 0) );
-            
-            mpf_clears(nx, ny ,cx, cy, nw, nh, temp, zoom_mpf, Wdiff, Wdiff2, Hdiff, Hdiff2, NULL);
-            if (!max_test) return false;
-        }
-
-        return true;
-    }
-    else{
-        return false;
-    }   
-}
-
-
-
-*/

@@ -1,13 +1,19 @@
 nouvelle To Do List
 Semestre 2, bonjour.
 
-- Parallèlisme MPI
+//- Parallèlisme MPI
 - Optimisation seq.
 - Vectorisation (avec GMP ?)
-- Estimateur de distance
+? - Estimateur de distance
 - allouer un thread à un noeud/coeur -> hwloc()
 - Utiliser IsGood sur l'image parent
 - revoir algo exploration et son implementation
 - combiner aléa et dicho
 - fixer nombre max d'itérations
 - fixer/changer IsGood ~
+
+- generation de grosses images
+	-> repartition
+	-> cb de process
+	-> lecture ecriture
+	-> libppm

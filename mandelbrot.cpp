@@ -406,8 +406,8 @@ bool Mandelbrot::IsGood_2(bool* filtre, double* res2)
 
 	Mat* src_gray = new Mat(im_height, im_width, CV_8UC3);		//entier non signé 8 bit à 3 dimension
 	Mat* detected_edges = new Mat(im_height, im_width, CV_8UC1);	//pareil a 2 dimension
-	if(!detected_edges) cout<<"fuck"<<endl;
-	if(!src_gray) cout<<"fuck2"<<endl;
+	if(!detected_edges) cout<<"error detected edge\n"<<endl;
+	if(!src_gray) cout<<"error src grey\n"<<endl;
 
 
 	int lowThreshold = 30;	

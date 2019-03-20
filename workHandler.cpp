@@ -34,10 +34,6 @@
 //controle curseur
 #define SAVEC "\e[s"
 #define RESTC "\e[u"
-#define UPC "\e[A"
-#define DOWNC "\e[B"
-#define FORWC "\e[C"
-#define BACKC "\e[D"
 #define DELLI "\e[K"
 
 
@@ -88,7 +84,7 @@ void insert_top10(double key, char* val)
     }
 }
 
-void getExploOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int& enough, bool& verbose, int size)
+bool getExploOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int& enough, bool& verbose, int size)
 {
 	try
 	{
@@ -336,7 +332,7 @@ void getExploOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y
 		{
 			for(int i = 1; i < size; i++)
 			MPI_Send(NULL, 0, MPI_INT, i, END, MPI_COMM_WORLD);
-			return;
+			return false;
 		}
 	}
 	catch(std::exception& E)
@@ -370,16 +366,18 @@ void getExploOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y
         MPI_Send(Mandelbrot::rep, strlen(Mandelbrot::rep), MPI_CHAR, i, REP_SEND, MPI_COMM_WORLD);
 
     MPI_Bcast(default_param, 4, MPI_INT, 0, MPI_COMM_WORLD);
+
+    return true;
 }
 
-void receiveExploOptions()
+bool receiveExploOptions()
 {
 	MPI_Status status;
     int count;
 
     MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
     if(status.MPI_TAG == END)
-        return;
+        return false;
 
     MPI_Get_count(&status, MPI_CHAR, &count);
     Mandelbrot::rep = new char[count + 1]();
@@ -393,6 +391,8 @@ void receiveExploOptions()
     Mandelbrot::im_height = default_param[1];
     Mandelbrot::surEchantillonage = default_param[2];
     Mandelbrot::color = default_param[3];
+
+    return true;
 }
 
 void handler(int argc, char** argv)
@@ -418,11 +418,11 @@ void handler(int argc, char** argv)
 	int default_param[4];
 	//PARAMETRES PAR DEFAULT, A NE PAS CHANGER
 	// largeur
-	default_param[0] = 1920;
+	default_param[0] = 48;
 	// hauteur
-	default_param[1] = 1080;
+	default_param[1] = 27;
 	// sur echantillonage
-	default_param[2] = 4;
+	default_param[2] = 1;
 	// couleur
 	default_param[3] = RAINBOW;
 
@@ -440,7 +440,8 @@ void handler(int argc, char** argv)
 	mpf_set_d( h, 2);
 
 
-	getExploOptions( argc, argv, default_param, x, y, w, h, enough, verbose, size);
+	if(!getExploOptions( argc, argv, default_param, x, y, w, h, enough, verbose, size))
+		return;
     
 
 
@@ -568,8 +569,10 @@ void handler(int argc, char** argv)
         }
     }
 
+    std::stringstream file_name("");
+    file_name << Mandelbrot::rep << "/Coordinates.txt";
     
-    FILE* f2 = fopen("../Img/test.txt", "w+");
+    FILE* f2 = fopen(file_name.str().c_str(), "w+");
     for(int i = 0; i < 10 && Mandelbrot::top10[i].val != NULL; i++)
     {
         fprintf(f2, "0:%s:2\n", Mandelbrot::top10[i].val);
@@ -596,7 +599,8 @@ void worker(int argc, char** argv)
     int count;
     char* buf;
 
-    receiveExploOptions();
+    if(!receiveExploOptions())
+    	return;
 
     while(1)
     {
@@ -740,8 +744,9 @@ void sendWork(char* buf)
     MPI_Ssend(buf, strlen(buf), MPI_CHAR, 0, WORK_SEND, MPI_COMM_WORLD);
 }
 
-void getGenOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int& enough, bool& verbose, int size)
+bool getGenOptions(int argc, char** argv, int* default_param, char* &file, bool& verbose, int size)
 {
+	file = NULL;
 	try
 	{
 		boost::program_options::options_description generic("Generic options");
@@ -754,19 +759,13 @@ void getGenOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y, 
 		config.add_options()
 			("im-width,w", boost::program_options::value< int >(), ": width of the generated images")
 			("im-height,h", boost::program_options::value< int >(), ": height of the generated images")
-			("Xposition,X", boost::program_options::value< std::string >(), ": abscissa of the center of the current fractal zone in the complex plane, should be between -2 and 2")
-			("Yposition,Y", boost::program_options::value< std::string >(), ": ordinate of the center of the current fractal zone in the complex plane, should be between -2 and 2")
-			("width,W", boost::program_options::value< std::string >(), ": width of the current fractal zone in the complex plane, see --help-dimension")
-			("height,H", boost::program_options::value< std::string >(), ": height of the current fractal zone in the complex plane, see --help-dimension")
+			("file,f", boost::program_options::value< std::string>(), ": file containing positions of places in the fractal used to genrate images")
 			("color,C", boost::program_options::value< int >(), ": the color algorithm used, see --help-color")
-			("enough,E", boost::program_options::value< int >(), ": the maximum number of dichotomical division before stoping")
 			("super-sampling,S", boost::program_options::value< int >(), ": the maximum number of points calculated per pixel");
 
 		boost::program_options::options_description hidden("Hidden options");
 		hidden.add_options()
-			("help-color", "")
-			("help-thread", "")
-			("help-dimension", "");
+			("help-color", "");
 
 		boost::program_options::options_description cmdline_options;
 		cmdline_options.add(generic).add(config).add(hidden);
@@ -779,26 +778,9 @@ void getGenOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y, 
 
 		boost::program_options::variables_map vm;
 
-		std::ifstream ifs("Config.cfg");
+		std::ifstream ifs("GenConfig.cfg");
 		store(parse_config_file(ifs, config_file_options), vm);
 		notify(vm);
-
-		if (vm.count("Xposition"))
-		{
-			int prec = ceil(vm["Xposition"].as<std::string>().length()*log(10)/log(2));
-			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
-			prec = (prec < 64)?64:prec;
-			mpf_set_prec( x, prec);
-			mpf_set_str( x, vm["Xposition"].as<std::string>().c_str(), 10);
-		}
-		if (vm.count("Yposition"))
-		{
-			int prec = ceil(vm["Yposition"].as<std::string>().length()*log(10)/log(2));
-			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
-			prec = (prec < 64)?64:prec;
-			mpf_set_prec( y, prec);
-			mpf_set_str( y, vm["Yposition"].as<std::string>().c_str(), 10);
-		}
 		
 		if (vm.count("im-width"))
 		{
@@ -809,36 +791,17 @@ void getGenOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y, 
 		{
 			default_param[1] = vm["im-height"].as<int>();
 		}
-                if (vm.count("width"))
-                {
-                    // 2^x > 10^n
-                    // x > log2(10^n) = n*log2(10) = n*ln(10)/ln(2)
-                    int prec = ceil(vm["width"].as<std::string>().length()*log(10)/log(2));
-                    prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
-                    prec = (prec < 64)?64:prec;
-                    mpf_set_prec( w, prec);
-                    mpf_set_str( w, vm["width"].as<std::string>().c_str(), 10);
-                }
-		
-		if (vm.count("height"))
+
+		if (vm.count("file"))
 		{
-			// 2^x > 10^n
-			// x > log2(10^n) = n*log2(10) = n*ln(10)/ln(2)
-			int prec = ceil(vm["height"].as<std::string>().length()*log(10)/log(2));
-			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
-			prec = (prec < 64)?64:prec;
-			mpf_set_prec( h, prec);
-			mpf_set_str( h, vm["height"].as<std::string>().c_str(), 10);
+			file = new char[vm["file"].as<std::string>().size() + 1]();
+			strcpy(file, vm["im-height"].as<std::string>().c_str());
+			file[vm["file"].as<std::string>().size()] = '\0';
 		}
 		
 		if (vm.count("color"))
 		{
 			default_param[3] = vm["color"].as<int>();
-		}
-		
-		if (vm.count("enough"))
-		{
-			enough = vm["enough"].as<int>();
 		}
 		
 		if (vm.count("super-sampling"))
@@ -862,23 +825,6 @@ void getGenOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y, 
 			std::cout << visible << "\n";
 			exit(0);
 		}
-		if (vm2.count("Xposition"))
-		{
-			int prec = ceil(vm2["Xposition"].as<std::string>().length()*log(10)/log(2));
-			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
-			prec = (prec < 64)?64:prec;
-			mpf_set_prec( x, prec);
-			mpf_set_str( x, vm2["Xposition"].as<std::string>().c_str(), 10);
-		}
-		if (vm2.count("Yposition"))
-		{
-			int prec = ceil(vm2["Yposition"].as<std::string>().length()*log(10)/log(2));
-			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
-			prec = (prec < 64)?64:prec;
-			mpf_set_prec( y, prec);
-			mpf_set_str( y, vm2["Yposition"].as<std::string>().c_str(), 10);
-		}
-		
 		if (vm2.count("im-width"))
 		{
 			default_param[0] = vm2["im-width"].as<int>();
@@ -888,26 +834,17 @@ void getGenOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y, 
 		{
 			default_param[1] = vm2["im-height"].as<int>();
 		}
-		if (vm2.count("width"))
+
+		if (vm2.count("file"))
 		{
-			// 2^x > 10^n
-			// x > log2(10^n) = n*log2(10) = n*ln(10)/ln(2)
-			int prec = ceil(vm2["width"].as<std::string>().length()*log(10)/log(2));
-			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
-			prec = (prec < 64)?64:prec;
-			mpf_set_prec( w, prec);
-			mpf_set_str( w, vm2["width"].as<std::string>().c_str(), 10);
-		}
-		
-		if (vm2.count("height"))
-		{
-			// 2^x > 10^n
-			// x > log2(10^n) = n*log2(10) = n*ln(10)/ln(2)
-			int prec = ceil(vm2["height"].as<std::string>().length()*log(10)/log(2));
-			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
-			prec = (prec < 64)?64:prec;
-			mpf_set_prec( h, prec);
-			mpf_set_str( h, vm2["height"].as<std::string>().c_str(), 10);
+			std::string s = vm2["file"].as<std::string>();
+
+			if(file)
+				delete [] file;
+
+			file = new char[s.size() + 1]();
+			strcpy(file, s.c_str());
+			file[s.size()] = '\0';
 		}
 		
 		if (vm2.count("color"))
@@ -915,15 +852,11 @@ void getGenOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y, 
 			default_param[3] = vm2["color"].as<int>();
 		}
 		
-		if (vm2.count("enough"))
-		{
-			enough = vm2["enough"].as<int>();
-		}
-		
 		if (vm2.count("super-sampling"))
 		{
 			default_param[3] = vm2["super-sampling"].as<int>();
 		}
+
 		if (vm2.count("verbose"))
 		{
 			verbose = true;
@@ -937,58 +870,18 @@ void getGenOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y, 
 				<< std::endl;
 			exit(0);
 		}
-		if (vm2.count("help-thread"))
-		{
-			std::cout<< "This option allows you to choose the maximum number of thread created by the program." << std::endl
-				<< "Note that one more thread is created to explore the fractal and create tasks for the other thread." << std::endl
-				<< "If you want to use all your possible threds, use -1." << std::endl
-				<< "There is no current way to only use one thread." << std::endl
-				<< std::endl;
-			exit(0);
-		}
-		if (vm2.count("help-dimension"))
-		{
-			std::cout<< "This option allows yout to choose the width and the height of the current fractal zone in the complex plane." << std::endl
-				<< "Note that if the ratio of the image is different than the one of the complex plan, generated images will be out of shape." << std::endl
-				<< std::endl;
-			exit(0);
-		}
 
-		mp_exp_t e1, e2, e3, e4;
-		char *char_width, *char_height, *char_x, *char_y;
-		char tmpx[3] = {'0','.','\0'}, tmpy[3] = {'0','.','\0'};
-		char_x = mpf_get_str( NULL, &e1, 10, 1000, x);
-		if(char_x[0] == '-')
-		{
-			char_x[0] = '.';
-			tmpx[0] = '-';
-			tmpx[1] = '0';
-		}
-		char_y = mpf_get_str( NULL, &e2, 10, 1000, y);
-		if(char_y[0] == '-')
-		{
-			char_y[0] = '.';
-			tmpy[0] = '-';
-			tmpy[1] = '0';
-		}
-		char_width = mpf_get_str( NULL, &e3, 10, 1000, w);
-		char_height = mpf_get_str( NULL, &e4, 10, 1000, h);
-		std::ofstream ofs("Config.cfg",std::ofstream::trunc);
-		ofs << "Xposition=" << tmpx << char_x << "e" << e1 << std::endl
-			<< "Yposition=" << tmpy << char_y << "e" << e2 << std::endl
-			<< "im-width=" << default_param[0] << std::endl
+		std::ofstream ofs("GenConfig.cfg",std::ofstream::trunc);
+		ofs << "im-width=" << default_param[0] << std::endl
 			<< "im-height=" << default_param[1] << std::endl
-			<< "width=" << "0." << char_width << "e" << e3 << std::endl
-			<< "height=" << "0." << char_height << "e" << e4 << std::endl
 			<< "color=" << default_param[3] << std::endl
-			<< "enough=" << enough << std::endl
 			<< "super-sampling=" << default_param[2] << std::endl;
  
 		if (vm2.count("config"))
 		{
-		    for(int i = 1; i < size; i++)
-                        MPI_Send(NULL, 0, MPI_INT, i, END, MPI_COMM_WORLD);
-                    return;
+			for(int i = 1; i < size; i++)
+			MPI_Send(NULL, 0, MPI_INT, i, END, MPI_COMM_WORLD);
+			return false;
 		}
 	}
 	catch(std::exception& E)
@@ -996,29 +889,12 @@ void getGenOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y, 
 		std::cout << E.what() << std::endl;
 	}
 
-	if(mpf_get_prec(w) > mpf_get_prec(x))
-	{
-	    mpf_set_prec( x, mpf_get_prec(w));
-	}
-	if(mpf_get_prec(h) > mpf_get_prec(y))
-	{
-	    mpf_set_prec( y, mpf_get_prec(h));
-	}
-
-
-   
+    std::string r;
+    r = file;
+    r.resize(r.find_last_of('/'));
     
-
-    std::stringstream r;
-    r.str("");
-    std::time_t t = std::time(0);
-    std::tm* now = std::localtime(&t);
-    
-    r << std::setfill('0') << std::right << "../Img/" << now->tm_year + 1900 << "-" << std::setw(2) << now->tm_mon + 1 << "-" << std::setw(2) << now->tm_mday << "_" << std::setw(2) << now->tm_hour << ":" << std::setw(2) << now->tm_min << ":" << std::setw(2) << now->tm_sec;
-
-
-    Mandelbrot::rep = new char[r.str().size()]();
-    strcpy(Mandelbrot::rep, r.str().c_str());
+    Mandelbrot::rep = new char[r.size()]();
+    strcpy(Mandelbrot::rep, r.c_str());
 
     for(int i = 1; i < size; i++)
     {
@@ -1026,9 +902,11 @@ void getGenOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y, 
     }
 
     MPI_Bcast(default_param, 4, MPI_INT, 0, MPI_COMM_WORLD);
+
+    return true;
 }
 
-void receiveGenOptions()
+bool receiveGenOptions()
 {
 	int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -1040,7 +918,7 @@ void receiveGenOptions()
 
     MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
     if(status.MPI_TAG == END)
-        return;
+        return false;
 
     MPI_Get_count(&status, MPI_CHAR, &count);
     Mandelbrot::rep = new char[count + 1]();
@@ -1053,6 +931,8 @@ void receiveGenOptions()
     Mandelbrot::im_height = default_param[1];
     Mandelbrot::surEchantillonage = default_param[2];
     Mandelbrot::color = default_param[3];
+
+    return true;
 }
 
 void handler2(int argc, char** argv)
@@ -1089,8 +969,6 @@ void handler2(int argc, char** argv)
 	default_param[3] = RAINBOW;
     
 
-
-    int enough = 1;
     bool verbose = false;
 
     mpf_t x, y, w, h;
@@ -1102,21 +980,23 @@ void handler2(int argc, char** argv)
     mpf_set_d( h, 2);
 
 
-    getGenOptions( argc, argv, default_param, x, y, w, h, enough, verbose, size);
+    char* file = NULL;
 
-    
-    
-    std::stringstream cmd("");
-    cmd << "mkdir -p " << Mandelbrot::rep;
-    system(cmd.str().c_str());
+    if(!getGenOptions( argc, argv, default_param, file, verbose, size))
+    	return;
 
 
-    FILE* f = fopen("../Img/test.txt", "r");
+    FILE* f = fopen(file, "r");
+    if(f == NULL)
+    {
+    	perror("fopen");
+    	MPI_Abort(MPI_COMM_WORLD, 911);
+    }
     buf = new char[2049];
 
     while(fgets(buf, 2048, f))
     {
-        std::cerr << buf << std::endl;
+        //std::cerr << buf << std::endl;
         work->push(buf);
         buf = new char[2049];
     }
@@ -1214,7 +1094,8 @@ void worker2(int argc, char** argv)
     int count;
     char* buf;
 
-    receiveGenOptions();
+    if(!receiveGenOptions())
+    	return;
 
 
     while(1)

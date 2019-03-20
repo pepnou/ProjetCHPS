@@ -33,7 +33,7 @@ void matSave(Mat* mat, char* rep, int img_num)
 int frameSave(Mat mat, char* rep, int num, int ligne)
 {
 	vector<int> compression_params;
-    compression_params.push_back( IMWRITE_PNG_COMPRESSION);
+    compression_params.push_back( 16);
     compression_params.push_back(9);
 	
 	stringstream nom_img("");

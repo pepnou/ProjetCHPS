@@ -376,9 +376,6 @@ bool Mandelbrot::IsGood_2(bool* filtre, double* res2)
 	Canny( *(detected_edges), *(detected_edges), lowThreshold, lowThreshold*ratio, kernel_size);
 	double res = countNonZero(*detected_edges)*1000/(im_height*im_width);
 
-	delete src_gray;
-	delete detected_edges;
-
 	if(res<ThresholdCont)
 		continue_y_or_n = false;
 	else
@@ -418,6 +415,9 @@ bool Mandelbrot::IsGood_2(bool* filtre, double* res2)
 
         *res2 = (res*0.55)/this->im_width;
 	}
+
+	delete src_gray;
+	delete detected_edges;
 
 	return continue_y_or_n;
 }

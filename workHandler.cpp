@@ -1142,7 +1142,6 @@ void handler2(int argc, char** argv)
         if (status.MPI_TAG == INFO_RQST)
         {
             MPI_Recv(NULL, 0, MPI_INT, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            //std::cerr << "size send" << std::endl;
             info[0] = (int)work->size();
             info[1] = img_count;
             MPI_Send(info, 2, MPI_INT, status.MPI_SOURCE, INFO_RQST, MPI_COMM_WORLD);
@@ -1221,14 +1220,10 @@ void worker2(int argc, char** argv)
     while(1)
     {
         MPI_Send(NULL, 0, MPI_INT, 0, WORK_RQST, MPI_COMM_WORLD);
-        //std::cerr << "msg " << 0 << " " << WORK_RQST << std::endl;
         MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
-        //std::cerr << "recv " << status.MPI_SOURCE << " " << status.MPI_TAG << std::endl;
 
         if(status.MPI_TAG == WORK_SEND)
         {
-            //std::cerr << "processing work" << std::endl;
-
             MPI_Get_count(&status, MPI_CHAR, &count);
             buf = new char[count + 1]();
             
@@ -1244,12 +1239,9 @@ void worker2(int argc, char** argv)
             m->save(rank*10 + (num_img++));
 
             delete m;
-
-            //std::cerr << "processing done" << std::endl;
         }
         else if(status.MPI_TAG == END)
         {
-            //std::cerr << "exiting" << std::endl;
             break;
         }
     }

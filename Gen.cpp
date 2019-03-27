@@ -19,10 +19,6 @@ int main(int argc, char** argv)
         std::exit(0);
     }
 
-    MPI_Info info;
-    MPI_Comm node;
-    MPI_Comm_split_type(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED, rank, info, &node);
-
     std::cout << rank + 1 << " / " << size << std::endl;
 
     if(rank == 0)

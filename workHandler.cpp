@@ -1072,42 +1072,73 @@ bool receiveGenOptions()
     return true;
 }
 
-void decomposeWork(mpf_t x, mpf_t y, mpf_t w, mpf_t h)
+void decomposeWork(char* buf, mpf_t x, mpf_t y, mpf_t w, mpf_t h)
 {
+    int prec;
+    char* tmp;
 
+    tmp = strtok( buf, ":");
+
+    tmp = strtok(NULL, ":");
+    prec = ceil(strlen(tmp)*log(10)/log(2));
+    prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
+    prec = (prec < 64)?64:prec;
+
+    mpf_init2( x, prec);
+    mpf_set_str( x, tmp, 10);
+
+
+    tmp = strtok(NULL, ":");
+    prec = ceil(strlen(tmp)*log(10)/log(2));
+    prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
+    prec = (prec < 64)?64:prec;
+
+    mpf_init2( y, prec);
+    mpf_set_str( y, tmp, 10);
+
+
+    tmp = strtok(NULL, ":");
+    prec = ceil(strlen(tmp)*log(10)/log(2));
+    prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
+    prec = (prec < 64)?64:prec;
+
+    mpf_init2( w, prec);
+    mpf_set_str( w, tmp, 10);
+
+
+    tmp = strtok(NULL, ":");
+    prec = ceil(strlen(tmp)*log(10)/log(2));
+    prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
+    prec = (prec < 64)?64:prec;
+
+    mpf_init2( h, prec);
+    mpf_set_str( h, tmp, 10);
 }
 
 void getSubImages(std::queue<char*> *work, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int imgHeight, int blocHeight)
 {
-	std::vector<int> divs;
+    std::vector<int> divs;
+    divs.push_back(2);
 
-	divs.push_back(2);
+    mpf_t nh,ny;
+    mpf_init2(nh,mpf_get_prec(h));
+    mpf_init2(ny,mpf_get_prec(y));
 
-            mpf_t nh,ny;
+    int N = imgHeight / blocHeight;
 
-	    mpf_init2(nh,mpf_get_prec(h));
+    mpf_div_ui( nh, h, N); 
+    mpf_sub( ny, h, nh);
+    mpf_div_ui(ny,ny,2);
 
-	    mpf_init2(ny,mpf_get_prec(y));
+    mpf_add(ny,y,ny);
 
-	int N;
+    for (int i=0;i<N;i++)
+    {
+        char* buf = create_work( 0, x, ny, w, nh, divs);
+        work->push(buf);
 
- 	N= imgHeight/blocHeight;
-
-	   mpf_div_ui( nh,h,N); 
-
-	   mpf_sub(ny,h,nh);
-
-	   mpf_div_ui(ny,ny,2);
-
-	for (int i=0;i<N;i++){
-
-		char*buf=create_work(0,x,ny,w,nh);
-
-		wok->push(buf);
-
-		mpf_sub(ny,ny,nh);
-
-	}
+        mpf_sub(ny,ny,nh);
+    }
 }
 
 void handler2(int argc, char** argv)
@@ -1147,16 +1178,6 @@ void handler2(int argc, char** argv)
     
 
     bool verbose = false;
-
-    mpf_t x, y, w, h;
-    mpf_inits( x, y, w, h, NULL);
-
-    mpf_set_d( x, -0.5);
-    mpf_set_d( y, 0.0);
-    mpf_set_d( w, 3);
-    mpf_set_d( h, 2);
-
-
     char* file = NULL;
 
     if(!getGenOptions( argc, argv, default_param, file, verbose, size, blocHeight))
@@ -1171,12 +1192,17 @@ void handler2(int argc, char** argv)
     }
     buf = new char[2049];
 
+    mpf_t x, y, w, h;
+
     while(fgets(buf, 2048, f))
     {
-        /*work->push(buf);
-        buf = new char[2049];*/
+        //work->push(buf);
+        //buf = new char[2049];
+        decomposeWork(buf, x, y, w, h);
+        getSubImages(work, x, y, w, h, default_param[1], blocHeight);
     }
     free(buf);
+    mpf_clears( x, y, w, h, NULL);
     
     fclose(f);
 
@@ -1293,7 +1319,7 @@ void worker2(int argc, char** argv)
             delete [] buf;
 
             m->escapeSpeedCalcSeq();
-            m->save(rank*10 + (num_img++));
+            m->save(rank*50 + (num_img++));
 
             delete m;
         }

@@ -19,7 +19,7 @@ void img_init(char* rep, int img_num, int height, int width)
     stringstream entete("");
     entete << "P6\n"<< width << " " <<height << "\n255\n";
 
-    int file_section = open(nom_img.str().c_str(), O_CREAT | O_WRONLY, 0600);
+    int file_section = open(nom_img.str().c_str(), O_CREAT | O_RDWR, 0600);
     int ret = ftruncate(file_section, (height * width * 3 + entete.str().size()) * sizeof(char));
     if(ret == -1)
     {
@@ -28,7 +28,7 @@ void img_init(char* rep, int img_num, int height, int width)
         MPI_Abort(MPI_COMM_WORLD, 42);
     }   
 
-    FILE *fd = fopen(nom_img.str().c_str(), "w");
+    FILE *fd = fopen(nom_img.str().c_str(), "r+");
     fprintf(fd, "%s", entete.str().c_str());
     fclose(fd);
 }
@@ -38,22 +38,30 @@ void img_partial_save(int start, int width, int height, Mat* mat, char* rep, int
     stringstream nom_img("");
     nom_img << rep << "/mandel" << img_num << ".ppm";
     
-    char* recopie = (char*)malloc(3*width*height*sizeof(char));
+    unsigned char* recopie = (unsigned char*)malloc(3*width*height*sizeof(char));
 
-    for (int i = 0; i < height; i+=3)
+    for (int j = 0; j < width; j++)
     {
-        for (int j = 0; j < width; j++)
+        for (int i = 0; i < height; i++)
         {
-            Vec3b rgb = mat->at<char>(i, j);
+            Vec3b rgb = mat->at<Vec3b>(i, j);
             
-            recopie[i*width+j] = rgb[2];
-            recopie[i*width+j + 1] = rgb[1];
-            recopie[i*width+j + 2] = rgb[0];
+            recopie[i * width + j    ] = (unsigned char)rgb[2];
+            recopie[i * width + j + 1] = (unsigned char)rgb[1];
+            recopie[i * width + j + 2] = (unsigned char)rgb[0];
+
+            std::cerr << (int)recopie[i * width + j] << " " << (int)recopie[i * width + j + 1] << " " << (int)recopie[i * width + j + 2] << std::endl;
         }
     }
 
-    FILE *fd = fopen(nom_img.str().c_str(), "w");
-    fseek(fd, start, SEEK_SET);
+    FILE *fd = fopen(nom_img.str().c_str(), "r+");
+    int ret = fseek(fd, start, SEEK_SET);
+    if(ret == -1)
+    {
+        perror("fseek");
+        MPI_Abort(MPI_COMM_WORLD, 44);
+    }
+
     fwrite(recopie, sizeof(char), 3*width*height, fd);
     fclose(fd);
 }

@@ -211,11 +211,11 @@ void Mandelbrot::escapeSpeedCalcSeq()
     // on libere tout
     for(int i = 0; i < this->im_width*this->surEchantillonage; ++i)
     {
-	mpf_clear(x[i]);
+	    mpf_clear(x[i]);
     }
     for(int i = 0; i < this->im_height*this->surEchantillonage; ++i)
     {
-	mpf_clear(y[i]);
+	    mpf_clear(y[i]);
     }
 
     delete [] x;

@@ -1145,16 +1145,24 @@ void getSubImages(std::queue<char*> *work, mpf_t x, mpf_t y, mpf_t w, mpf_t h, i
     for (int i=0;i<N;i++)
     {
         char* buf = create_work( 0, x, ny, w, nh, divs);
-        info << img_num++ << "|" << i * blocHeight * imWidth * 3 + header.str().size() << "|" << buf;
-        free(buf);
-        buf = (char*)malloc((info.str().size() + 1) * sizeof(char));
+
+        int start = i * blocHeight * imWidth * 3 + header.str().size() + 1;
+
+        info << img_num << "|" << start << "|" << buf;
+
+        delete buf;
+        buf = new char[info.str().size() + 1]();
+
         strcpy(buf, info.str().c_str());
         buf[info.str().size()] = '\0';
 
         work->push(buf);
 
         mpf_sub(ny,ny,nh);
+        info.str("");
     }
+
+    img_num++;
 }
 
 void handler2(int argc, char** argv)
@@ -1344,8 +1352,8 @@ void worker2(int argc, char** argv)
             delete [] buf;
 
             m->escapeSpeedCalcSeq();
+            //m->draw();
             m->save(img_num, start);
-
 
             delete m;
         }

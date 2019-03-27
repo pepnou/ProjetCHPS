@@ -1079,7 +1079,35 @@ void decomposeWork(mpf_t x, mpf_t y, mpf_t w, mpf_t h)
 
 void getSubImages(std::queue<char*> *work, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int imgHeight, int blocHeight)
 {
+	std::vector<int> divs;
 
+	divs.push_back(2);
+
+            mpf_t nh,ny;
+
+	    mpf_init2(nh,mpf_get_prec(h));
+
+	    mpf_init2(ny,mpf_get_prec(y));
+
+	int N;
+
+ 	N= imgHeight/blocHeight;
+
+	   mpf_div_ui( nh,h,N); 
+
+	   mpf_sub(ny,h,nh);
+
+	   mpf_div_ui(ny,ny,2);
+
+	for (int i=0;i<N;i++){
+
+		char*buf=create_work(0,x,ny,w,nh);
+
+		wok->push(buf);
+
+		mpf_sub(ny,ny,nh);
+
+	}
 }
 
 void handler2(int argc, char** argv)

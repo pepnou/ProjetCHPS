@@ -30,27 +30,38 @@ void matSave(Mat* mat, char* rep, int img_num)
     }
 }
 
-int frameSave(Mat mat, char* rep, int num, int ligne)
+void img_init(char* rep, int img_num, int height, int width)
 {
-	vector<int> compression_params;
-    compression_params.push_back( 16);
-    compression_params.push_back(9);
-	
-	stringstream nom_img("");
-	nom_img << "mkdir -p ../video/" << rep << "/frames/" << num << "/";
-	
-	system(nom_img.str().c_str());
-	
-	nom_img.str("");
-	nom_img << "../video/" << rep << "/frames/" << num << "/" << ligne << ".png";
+    stringstream nom_img("");
+    nom_img << rep << "/mandel" << img_num << ".png";
 
-	try
+    stringstream entete("");
+    entete << "P6\n"<< width << " " <<height << "\n256\n"; 
+
+    int file_section = open(nom_img, O_CREAT, 0600);
+    ftruncate(file_section, (height*width*3*sizeof(char)+strlen(entete)));
+    FILE *fd = fopen(nom_img, "w");
+    fprintf(fd, "%s", entete);
+    fclose(fd);
+}
+
+void img_partial_save(int start, int width, int height, Mat* mat, char* rep, int img_num)
+{
+    stringstream nom_img("");
+    nom_img << rep << "/mandel" << img_num << ".png";
+    
+    char recopie = malloc(3*width*height*sizeof(char));
+
+    for (int i = 0; i < width*height; i+=3)
     {
-        imwrite(nom_img.str().c_str(), mat, compression_params);
+        for (int j = 0; j < 3; ++)
+        {
+            recopie[i+j] = mat->at<char>(i, j);
+        }
     }
-    catch (const Exception& ex)
-    {
-        fprintf(stderr, "Exception converting image to PNG format: %s\n", ex.what());
-    }
-    return num-1;
+
+    FILE *fd = fopen(nom_img, "w");
+    fseek(fd, start, SEEK_SET);
+    fwrite(recopie);
+    fclose(fd);
 }

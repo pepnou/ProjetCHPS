@@ -15,6 +15,7 @@
 #include <opencv2/imgcodecs.hpp>
 
 
-void matSave(cv::Mat* mat, char* rep, int img_num);
+void img_init(char* rep, int img_num, int height, int width);
+void img_partial_save(int start, int width, int height, cv::Mat* mat, char* rep, int img_num);
 
 #endif

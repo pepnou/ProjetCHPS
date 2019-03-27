@@ -18,6 +18,7 @@
 
 #include "mandelbrot.hpp"
 #include "workHandler.hpp"
+#include "matOp.hpp"
 #include "rdtsc.hpp"
 
 #define RAINBOW 1
@@ -570,7 +571,12 @@ void handler(int argc, char** argv)
 
     std::stringstream cmd("");
     cmd << "mkdir -p " << Mandelbrot::rep;
-    system(cmd.str().c_str());
+    int ret = system(cmd.str().c_str());
+    if(ret == -1 || ret == 127)
+    {
+        perror("system");
+        MPI_Abort(MPI_COMM_WORLD, 43);
+    }
 
 
     init_work(work, x, y, w, h, enough, divs, size);
@@ -649,7 +655,7 @@ void handler(int argc, char** argv)
             else
             {
                 waiting->push(status.MPI_SOURCE);
-                if(waiting->size() == size - 1)
+                if(waiting->size() == (unsigned int)size - 1)
                 {
                     for(int i = 1; i < size; i++)
                         MPI_Send(NULL, 0, MPI_INT, i, END, MPI_COMM_WORLD);
@@ -796,7 +802,7 @@ char* create_work(int enough, mpf_t x, mpf_t y, mpf_t w, mpf_t h, std::vector<in
     r.str("");
     r << enough << ":" << tmpx << char_x << "e" << e1 << ":" << tmpy << char_y << "e" << e2 << ":" << "0." << char_width << "e" << e3 << ":" << "0." << char_height << "e" << e4;
 
-    for(int i = 0; i < divs.size(); i++)
+    for(unsigned int i = 0; i < divs.size(); i++)
         r << ":" << divs.at(i);
 
     char* res = new char[r.str().size() + 1]();
@@ -1047,8 +1053,6 @@ bool receiveGenOptions()
 {
 	int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    int num_img = 0;
-   
     
     MPI_Status status;
     int count;
@@ -1115,8 +1119,10 @@ void decomposeWork(char* buf, mpf_t x, mpf_t y, mpf_t w, mpf_t h)
     mpf_set_str( h, tmp, 10);
 }
 
-void getSubImages(std::queue<char*> *work, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int imgHeight, int blocHeight)
+void getSubImages(std::queue<char*> *work, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int imgHeight, int imWidth, int blocHeight)
 {
+    static int img_num = 0;
+
     std::vector<int> divs;
     divs.push_back(2);
 
@@ -1132,9 +1138,19 @@ void getSubImages(std::queue<char*> *work, mpf_t x, mpf_t y, mpf_t w, mpf_t h, i
 
     mpf_add(ny,y,ny);
 
+    std::stringstream info;
+    std::stringstream header;
+    header << "P6\n"<< imWidth << " " << imgHeight << "\n255\n";
+
     for (int i=0;i<N;i++)
     {
         char* buf = create_work( 0, x, ny, w, nh, divs);
+        info << img_num++ << "|" << i * blocHeight * imWidth * 3 + header.str().size() << "|" << buf;
+        free(buf);
+        buf = (char*)malloc((info.str().size() + 1) * sizeof(char));
+        strcpy(buf, info.str().c_str());
+        buf[info.str().size()] = '\0';
+
         work->push(buf);
 
         mpf_sub(ny,ny,nh);
@@ -1194,12 +1210,15 @@ void handler2(int argc, char** argv)
 
     mpf_t x, y, w, h;
 
+    int nbr_img = 0;
     while(fgets(buf, 2048, f))
     {
+        img_init( Mandelbrot::rep, nbr_img++, default_param[1], default_param[0]);
+
         //work->push(buf);
         //buf = new char[2049];
         decomposeWork(buf, x, y, w, h);
-        getSubImages(work, x, y, w, h, default_param[1], blocHeight);
+        getSubImages(work, x, y, w, h, default_param[1], default_param[0], blocHeight);
     }
     free(buf);
     mpf_clears( x, y, w, h, NULL);
@@ -1258,7 +1277,7 @@ void handler2(int argc, char** argv)
             else
             {
                 waiting->push(status.MPI_SOURCE);
-                if(waiting->size() == size - 1)
+                if(waiting->size() == (unsigned int)size - 1)
                 {
                     for(int i = 1; i < size; i++)
                         MPI_Send(NULL, 0, MPI_INT, i, END, MPI_COMM_WORLD);
@@ -1289,8 +1308,8 @@ void worker2(int argc, char** argv)
     
     int rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    int num_img = 0;
-   
+    
+    int img_num = 0, start;
     
     MPI_Status status;
     int count;
@@ -1314,12 +1333,19 @@ void worker2(int argc, char** argv)
 
             buf[count] = '\0';
 
-            Mandelbrot* m = new Mandelbrot(buf);
+            char* tmp = strtok(buf, "|");
+            img_num = atoi(tmp);
+            tmp = strtok(NULL, "|");
+            start = atoi(tmp);
+
+            tmp = strtok(NULL, "|");
+            Mandelbrot* m = new Mandelbrot(tmp);
 
             delete [] buf;
 
             m->escapeSpeedCalcSeq();
-            m->save(rank*50 + (num_img++));
+            m->save(img_num, start);
+
 
             delete m;
         }

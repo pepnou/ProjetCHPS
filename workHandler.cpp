@@ -865,7 +865,7 @@ void sendWork(char* buf)
     MPI_Ssend(buf, strlen(buf), MPI_CHAR, 0, WORK_SEND, MPI_COMM_WORLD);
 }
 
-bool getGenOptions(int argc, char** argv, int* default_param, char* &file, bool& verbose, int size)
+bool getGenOptions(int argc, char** argv, int* default_param, char* &file, bool& verbose, int size, int& blocHeight)
 {
 	file = NULL;
 	try
@@ -882,7 +882,8 @@ bool getGenOptions(int argc, char** argv, int* default_param, char* &file, bool&
 			("im-height,h", boost::program_options::value< int >(), ": height of the generated images")
 			("file,f", boost::program_options::value< std::string>(), ": file containing positions of places in the fractal used to genrate images")
 			("color,C", boost::program_options::value< int >(), ": the color algorithm used, see --help-color")
-			("super-sampling,S", boost::program_options::value< int >(), ": the maximum number of points calculated per pixel");
+			("super-sampling,S", boost::program_options::value< int >(), ": the maximum number of points calculated per pixel")
+            ("blocHeight,H", boost::program_options::value< int >(), ": the height of the blocs the images are divided into");
 
 		boost::program_options::options_description hidden("Hidden options");
 		hidden.add_options()
@@ -928,6 +929,11 @@ bool getGenOptions(int argc, char** argv, int* default_param, char* &file, bool&
 		if (vm.count("super-sampling"))
 		{
 			default_param[2] = vm["super-sampling"].as<int>();
+		}
+
+        if (vm.count("blocHeight"))
+		{
+			blocHeight = vm["blocHeight"].as<int>();
 		}
 		
 		boost::program_options::positional_options_description positional;
@@ -978,6 +984,11 @@ bool getGenOptions(int argc, char** argv, int* default_param, char* &file, bool&
 			default_param[3] = vm2["super-sampling"].as<int>();
 		}
 
+        if (vm2.count("blocHeight"))
+		{
+			blocHeight = vm2["blocHeight"].as<int>();
+		}
+
 		if (vm2.count("verbose"))
 		{
 			verbose = true;
@@ -996,9 +1007,10 @@ bool getGenOptions(int argc, char** argv, int* default_param, char* &file, bool&
 		ofs << "im-width=" << default_param[0] << std::endl
 			<< "im-height=" << default_param[1] << std::endl
 			<< "color=" << default_param[3] << std::endl
-			<< "super-sampling=" << default_param[2] << std::endl;
+			<< "super-sampling=" << default_param[2] << std::endl
+            << "blocHeight=" << blocHeight << std::endl;
  
-		if (vm2.count("config"))
+		if (vm2.count("config") || default_param[1] % blocHeight != 0)
 		{
 			for(int i = 1; i < size; i++)
 			MPI_Send(NULL, 0, MPI_INT, i, END, MPI_COMM_WORLD);
@@ -1009,6 +1021,9 @@ bool getGenOptions(int argc, char** argv, int* default_param, char* &file, bool&
 	{
 		std::cout << E.what() << std::endl;
 	}
+
+    int tmp = default_param[1];
+    default_param[1] = blocHeight;
 
     std::string r;
     r = file;
@@ -1023,7 +1038,8 @@ bool getGenOptions(int argc, char** argv, int* default_param, char* &file, bool&
     }
 
     MPI_Bcast(default_param, 4, MPI_INT, 0, MPI_COMM_WORLD);
-
+    
+    default_param[1] = tmp;
     return true;
 }
 
@@ -1054,6 +1070,16 @@ bool receiveGenOptions()
     Mandelbrot::color = default_param[3];
 
     return true;
+}
+
+void decomposeWork(mpf_t x, mpf_t y, mpf_t w, mpf_t h)
+{
+
+}
+
+void getSubImages(std::queue<char*> *work, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int imgHeight, int blocHeight)
+{
+
 }
 
 void handler2(int argc, char** argv)
@@ -1088,6 +1114,8 @@ void handler2(int argc, char** argv)
 	default_param[2] = 4;
 	// couleur
 	default_param[3] = RAINBOW;
+    // blocHeight
+    int blocHeight = 54;
     
 
     bool verbose = false;
@@ -1103,7 +1131,7 @@ void handler2(int argc, char** argv)
 
     char* file = NULL;
 
-    if(!getGenOptions( argc, argv, default_param, file, verbose, size))
+    if(!getGenOptions( argc, argv, default_param, file, verbose, size, blocHeight))
     	return;
 
 
@@ -1117,9 +1145,8 @@ void handler2(int argc, char** argv)
 
     while(fgets(buf, 2048, f))
     {
-        //std::cerr << buf << std::endl;
-        work->push(buf);
-        buf = new char[2049];
+        /*work->push(buf);
+        buf = new char[2049];*/
     }
     free(buf);
     

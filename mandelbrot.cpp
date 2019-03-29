@@ -228,7 +228,6 @@ void Mandelbrot::calcSeq(mpf_t* x, mpf_t* y)
     mpf_t xn, yn, xnp1, ynp1, mod, xsqr, ysqr, tmp;
     mpf_inits( xn, yn, xnp1, ynp1, mod, tmp, xsqr, ysqr, NULL);
 
-    //#pragma omp parrallel for schedule(dynamic, )
     for(int j = 0; j < im_height; j++)
     {
         for (int i = 0; i < im_width; i++)
@@ -297,7 +296,7 @@ void Mandelbrot::calcPar(mpf_t* x, mpf_t* y)
     mpf_t xn, yn, xnp1, ynp1, mod, xsqr, ysqr, tmp;
     mpf_inits( xn, yn, xnp1, ynp1, mod, tmp, xsqr, ysqr, NULL);
 
-    //#pragma omp parrallel for schedule(dynamic, )
+    #pragma omp parrallel for schedule(guided) 
     for(int j = 0; j < im_height; j++)
     {
         for (int i = 0; i < im_width; i++)

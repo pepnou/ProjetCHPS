@@ -40,7 +40,8 @@ void img_partial_save(int start, int width, int height, Mat* mat, char* rep, int
     
     unsigned char* recopie = (unsigned char*)malloc(3*width*height*sizeof(char));
 
-    for (int j = 0; j < width; j++)
+    /*
+    for (int i = 0; i < width*height; i+=3)
     {
         for (int i = 0; i < height; i++)
         {
@@ -51,6 +52,17 @@ void img_partial_save(int start, int width, int height, Mat* mat, char* rep, int
             recopie[i * width + j + 2] = (unsigned char)rgb[0];
 
             std::cerr << (int)recopie[i * width + j] << " " << (int)recopie[i * width + j + 1] << " " << (int)recopie[i * width + j + 2] << std::endl;
+        }
+    }
+    */
+
+    for (int i = 0; i < height; ++i)
+    {
+        for (int j = 0; j < width; ++j)
+        {
+           recopie[(i*width + j)*3] = mat->at<Vec3b>(i, j)[1];
+           recopie[(i*width + j)*3 + 1] = mat->at<Vec3b>(i, j)[0];
+           recopie[(i*width + j)*3 + 2] = mat->at<Vec3b>(i, j)[2];
         }
     }
 

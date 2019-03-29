@@ -1146,7 +1146,7 @@ void getSubImages(std::queue<char*> *work, mpf_t x, mpf_t y, mpf_t w, mpf_t h, i
     {
         char* buf = create_work( 0, x, ny, w, nh, divs);
 
-        int start = i * blocHeight * imWidth * 3 + header.str().size() + 1;
+        int start = (header.str().size() + 1) + imgHeight * imWidth * 3 - (i+1) * blocHeight * imWidth * 3;
 
         info << img_num << "|" << start << "|" << buf;
 

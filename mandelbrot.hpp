@@ -45,6 +45,7 @@ class Mandelbrot
                 cv::Mat *divMat, *img, *sEMat;
                 
 		void calcSeq(mpf_t* x, mpf_t* y);
+		void calcPar(mpf_t* x, mpf_t* y);
 	public:
 		Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int _enough, std::vector<int> divs);
                 Mandelbrot(char* buf);

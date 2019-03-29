@@ -292,6 +292,75 @@ void Mandelbrot::calcSeq(mpf_t* x, mpf_t* y)
 
 }
 
+void Mandelbrot::calcPar(mpf_t* x, mpf_t* y)
+{
+    mpf_t xn, yn, xnp1, ynp1, mod, xsqr, ysqr, tmp;
+    mpf_inits( xn, yn, xnp1, ynp1, mod, tmp, xsqr, ysqr, NULL);
+
+    //#pragma omp parrallel for schedule(dynamic, )
+    for(int j = 0; j < im_height; j++)
+    {
+        for (int i = 0; i < im_width; i++)
+        {
+            int sE = sEMat->at<char>( j, i);
+
+            for(int m = 0; m < sE; m++)
+            {
+                for(int n = 0; n < sE; n++)
+                {
+                    if((sE != 1 && divMat->at<int>(j*surEchantillonage+n ,i*surEchantillonage+m) == -1) || sE == 1)
+                    {
+                        mpf_set_ui(xn,0);
+                        mpf_set_ui(yn,0);
+                        mpf_set_ui(xsqr,0);
+                        mpf_set_ui(ysqr,0);
+
+                        for (int k = 1; k < iterations; k++)
+                        {
+                            //  xnp1 = xn² - yn² + xc
+                            mpf_sub(xnp1, xsqr, ysqr); //  xnp1 = xsqr - ysqr = xn² - yn²
+                            //mpf_add(xnp1, xnp1, xc); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+                            mpf_add(xnp1, xnp1, x[i*surEchantillonage+m]); //  xnp1 = xnp1 + xc = xn² - yn² + xc
+
+                            //  ynp1 = 2*xn*yn + yc
+                            mpf_mul(ynp1, xn, yn); //  ynp1 = xn * yn
+                            mpf_mul_ui(ynp1, ynp1, 2); //  ynp1 = ynp1 * 2 = 2 * xn * yn
+                            //mpf_add(ynp1, ynp1, yc); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+                            mpf_add(ynp1, ynp1, y[j*surEchantillonage+n]); //  ynp1 = ynp1 + yc = 2 * xn * yn + yc
+
+                            //  xn = xnp1
+                            //  yn = ynp1
+                            mpf_set( xn, xnp1); //  xn = xnp1
+                            mpf_set( yn, ynp1); //  yn = ynp1
+                                        
+                            //xsqr = xn²
+                            mpf_mul(xsqr, xn, xn);
+
+                            //ysqr = yn²
+                            mpf_mul(ysqr, yn, yn);
+
+                            //  mod = xnp1² + ynp1²
+                            mpf_add(mod, xsqr, ysqr); //  mod = xsqr + ysqr = xn² + yn²
+
+                            if(mpf_cmp_ui(mod, 4) > 0)
+                            {
+                                divMat->at<int>(j*surEchantillonage+n, i*surEchantillonage+m) = k;
+                                break;
+                            } else if(k == iterations -1)
+                            {
+                                divMat->at<int>(j*surEchantillonage+n, i*surEchantillonage+m) = iterations;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    mpf_clears( xn, yn, xnp1, ynp1, mod, tmp, xsqr, ysqr, NULL);
+
+}
+
 
 void Mandelbrot::draw()
 {

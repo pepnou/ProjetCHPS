@@ -1336,8 +1336,8 @@ void worker2(int argc, char** argv)
         MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
         //std::cerr << "recv " << status.MPI_SOURCE << " " << status.MPI_TAG << std::endl;
 
-        if(status.MPI_TAG == WORK_SEND)
-        {
+		if(status.MPI_TAG == WORK_SEND)
+		{
             //std::cerr << "processing work" << std::endl;
 
             MPI_Get_count(&status, MPI_CHAR, &count);

@@ -64,11 +64,23 @@ void img_partial_save(int start, int width, int height, Mat* mat, char* rep, int
     
     char* recopie = (char*)malloc(3*width*height*sizeof(char));
 
+    /*
     for (int i = 0; i < width*height; i+=3)
     {
         for (int j = 0; j < 3; j++)
         {
             recopie[i+j] = mat->at<char>(i, j);
+        }
+    }
+    */
+
+    for (int i = 0; i < width; ++i)
+    {
+        for (int j = 0; j < height; ++j)
+        {
+           recopie[(i*width + j)*3] = mat->at<Vec3b>(i, j)[0];
+           recopie[(i*width + j)*3 + 1] = mat->at<Vec3b>(i, j)[1];
+           recopie[(i*width + j)*3 + 2] = mat->at<Vec3b>(i, j)[2];
         }
     }
 

@@ -16,7 +16,13 @@ set (COMPILATION_OPTION "-O3" "-Wall" "-g")
 add_executable(Explo ${EXP_SRC})
 add_executable(Gen ${GEN_SRC})
 
-
+find_package (OpenMP REQUIRED)
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+#include_directories(${OpenMP_INCLUDE_DIRS})
+#target_link_libraries (Explo ${OpenMP_LIBRARIES})
+#target_link_libraries(Gen ${OpenMP_LIBRARIES})
 
 find_package (OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})

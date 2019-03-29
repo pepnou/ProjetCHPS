@@ -53,6 +53,7 @@ class Mandelbrot
 		void del_mem();
     
                 void escapeSpeedCalcSeq();
+		void escapeSpeedCalcPar();
 
 		void draw();
 		void save(int img_num, int start);

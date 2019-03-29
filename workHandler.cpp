@@ -1351,8 +1351,7 @@ void worker2(int argc, char** argv)
 
             delete [] buf;
 
-            m->escapeSpeedCalcSeq();
-            //m->draw();
+            m->escapeSpeedCalcPar();
             m->save(img_num, start);
 
             delete m;

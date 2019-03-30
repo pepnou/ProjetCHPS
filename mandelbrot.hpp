@@ -24,6 +24,7 @@
 #include "color.hpp"
 #include "rdtsc.hpp"
 #include "matOp.hpp"
+#include "mpmc.hpp"
 
 typedef struct
 {
@@ -46,6 +47,7 @@ class Mandelbrot
                 
 		void calcSeq(mpf_t* x, mpf_t* y);
 		void calcPar(mpf_t* x, mpf_t* y);
+
 	public:
 		Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int _enough, std::vector<int> divs);
                 Mandelbrot(char* buf);
@@ -72,6 +74,8 @@ class Mandelbrot
 
                 //static std::multimap<double, char*> map;
                 static keyed_char* top10;
+
+		static Mpmc* mpmc;
 };
 
 #endif

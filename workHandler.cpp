@@ -85,7 +85,7 @@ void insert_top10(double key, char* val)
     }
 }
 
-bool getExploOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int& enough, bool& verbose, int size)
+bool getExploOptions(int argc, char** argv, int* default_param, mpfr_t x, mpfr_t y, mpfr_t w, mpfr_t h, int& enough, bool& verbose, int size)
 {
 	try
 	{
@@ -133,16 +133,16 @@ bool getExploOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y
 			int prec = ceil(vm["Xposition"].as<std::string>().length()*log(10)/log(2));
 			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
 			prec = (prec < 64)?64:prec;
-			mpf_set_prec( x, prec);
-			mpf_set_str( x, vm["Xposition"].as<std::string>().c_str(), 10);
+			mpfr_set_prec( x, prec);
+			mpfr_set_str( x, vm["Xposition"].as<std::string>().c_str(), 10, MPFR_RNDN);
 		}
 		if (vm.count("Yposition"))
 		{
 			int prec = ceil(vm["Yposition"].as<std::string>().length()*log(10)/log(2));
 			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
 			prec = (prec < 64)?64:prec;
-			mpf_set_prec( y, prec);
-			mpf_set_str( y, vm["Yposition"].as<std::string>().c_str(), 10);
+			mpfr_set_prec( y, prec);
+			mpfr_set_str( y, vm["Yposition"].as<std::string>().c_str(), 10, MPFR_RNDN);
 		}
 		
 		if (vm.count("im-width"))
@@ -161,8 +161,8 @@ bool getExploOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y
                     int prec = ceil(vm["width"].as<std::string>().length()*log(10)/log(2));
                     prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
                     prec = (prec < 64)?64:prec;
-                    mpf_set_prec( w, prec);
-                    mpf_set_str( w, vm["width"].as<std::string>().c_str(), 10);
+                    mpfr_set_prec( w, prec);
+                    mpfr_set_str( w, vm["width"].as<std::string>().c_str(), 10, MPFR_RNDN);
                 }
 		
 		if (vm.count("height"))
@@ -172,8 +172,8 @@ bool getExploOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y
 			int prec = ceil(vm["height"].as<std::string>().length()*log(10)/log(2));
 			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
 			prec = (prec < 64)?64:prec;
-			mpf_set_prec( h, prec);
-			mpf_set_str( h, vm["height"].as<std::string>().c_str(), 10);
+			mpfr_set_prec( h, prec);
+			mpfr_set_str( h, vm["height"].as<std::string>().c_str(), 10, MPFR_RNDN);
 		}
 		
 		if (vm.count("color"))
@@ -212,16 +212,16 @@ bool getExploOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y
 			int prec = ceil(vm2["Xposition"].as<std::string>().length()*log(10)/log(2));
 			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
 			prec = (prec < 64)?64:prec;
-			mpf_set_prec( x, prec);
-			mpf_set_str( x, vm2["Xposition"].as<std::string>().c_str(), 10);
+			mpfr_set_prec( x, prec);
+			mpfr_set_str( x, vm2["Xposition"].as<std::string>().c_str(), 10, MPFR_RNDN);
 		}
 		if (vm2.count("Yposition"))
 		{
 			int prec = ceil(vm2["Yposition"].as<std::string>().length()*log(10)/log(2));
 			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
 			prec = (prec < 64)?64:prec;
-			mpf_set_prec( y, prec);
-			mpf_set_str( y, vm2["Yposition"].as<std::string>().c_str(), 10);
+			mpfr_set_prec( y, prec);
+			mpfr_set_str( y, vm2["Yposition"].as<std::string>().c_str(), 10, MPFR_RNDN);
 		}
 		
 		if (vm2.count("im-width"))
@@ -240,8 +240,8 @@ bool getExploOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y
 			int prec = ceil(vm2["width"].as<std::string>().length()*log(10)/log(2));
 			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
 			prec = (prec < 64)?64:prec;
-			mpf_set_prec( w, prec);
-			mpf_set_str( w, vm2["width"].as<std::string>().c_str(), 10);
+			mpfr_set_prec( w, prec);
+			mpfr_set_str( w, vm2["width"].as<std::string>().c_str(), 10, MPFR_RNDN);
 		}
 		
 		if (vm2.count("height"))
@@ -251,8 +251,8 @@ bool getExploOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y
 			int prec = ceil(vm2["height"].as<std::string>().length()*log(10)/log(2));
 			prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
 			prec = (prec < 64)?64:prec;
-			mpf_set_prec( h, prec);
-			mpf_set_str( h, vm2["height"].as<std::string>().c_str(), 10);
+			mpfr_set_prec( h, prec);
+			mpfr_set_str( h, vm2["height"].as<std::string>().c_str(), 10, MPFR_RNDN);
 		}
 		
 		if (vm2.count("color"))
@@ -302,22 +302,22 @@ bool getExploOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y
 		mp_exp_t e1, e2, e3, e4;
 		char *char_width, *char_height, *char_x, *char_y;
 		char tmpx[3] = {'0','.','\0'}, tmpy[3] = {'0','.','\0'};
-		char_x = mpf_get_str( NULL, &e1, 10, 1000, x);
+		char_x = mpfr_get_str( NULL, &e1, 10, 1000, x, MPFR_RNDN);
 		if(char_x[0] == '-')
 		{
 			char_x[0] = '.';
 			tmpx[0] = '-';
 			tmpx[1] = '0';
 		}
-		char_y = mpf_get_str( NULL, &e2, 10, 1000, y);
+		char_y = mpfr_get_str( NULL, &e2, 10, 1000, y, MPFR_RNDN);
 		if(char_y[0] == '-')
 		{
 			char_y[0] = '.';
 			tmpy[0] = '-';
 			tmpy[1] = '0';
 		}
-		char_width = mpf_get_str( NULL, &e3, 10, 1000, w);
-		char_height = mpf_get_str( NULL, &e4, 10, 1000, h);
+		char_width = mpfr_get_str( NULL, &e3, 10, 1000, w, MPFR_RNDN);
+		char_height = mpfr_get_str( NULL, &e4, 10, 1000, h, MPFR_RNDN);
 		std::ofstream ofs("ExploConfig.cfg",std::ofstream::trunc);
 		ofs << "Xposition=" << tmpx << char_x << "e" << e1 << std::endl
 			<< "Yposition=" << tmpy << char_y << "e" << e2 << std::endl
@@ -341,13 +341,13 @@ bool getExploOptions(int argc, char** argv, int* default_param, mpf_t x, mpf_t y
 		std::cout << E.what() << std::endl;
 	}
 
-	if(mpf_get_prec(w) > mpf_get_prec(x))
+	if(mpfr_get_prec(w) > mpfr_get_prec(x))
 	{
-	    mpf_set_prec( x, mpf_get_prec(w));
+	    mpfr_set_prec( x, mpfr_get_prec(w));
 	}
-	if(mpf_get_prec(h) > mpf_get_prec(y))
+	if(mpfr_get_prec(h) > mpfr_get_prec(y))
 	{
-	    mpf_set_prec( y, mpf_get_prec(h));
+	    mpfr_set_prec( y, mpfr_get_prec(h));
 	}
 
 
@@ -396,81 +396,81 @@ bool receiveExploOptions()
     return true;
 }
 
-void fill_work(std::queue<char*> *work, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int enough, std::vector<int> divs, int size, int depth)
+void fill_work(std::queue<char*> *work, mpfr_t x, mpfr_t y, mpfr_t w, mpfr_t h, int enough, std::vector<int> divs, int size, int depth)
 {
-	mpf_t equalz;
-    mpf_init(equalz);	
+	mpfr_t equalz;
+    mpfr_init(equalz);	
 
 	std::vector<int> divs_cpy = divs;
-	int prec = mpf_get_prec(x);
+	int prec = mpfr_get_prec(x);
 
 	for(int i = divs.size() - 1; i >= 0; i--)
     {
         int n_prec = prec + ceil(log(divs.at(i))/log(2));
-        mpf_t temp, delta_x, delta_y;
+        mpfr_t temp, delta_x, delta_y;
 
-        mpf_t* tab_x = new mpf_t[divs.at(i)];
-        mpf_t* tab_y = new mpf_t[divs.at(i)];
+        mpfr_t* tab_x = new mpfr_t[divs.at(i)];
+        mpfr_t* tab_y = new mpfr_t[divs.at(i)];
 
-        if(mpf_get_prec(x)>=mpf_get_prec(y))
-            mpf_init2(temp, mpf_get_prec(x) + n_prec/64);
+        if(mpfr_get_prec(x)>=mpfr_get_prec(y))
+            mpfr_init2(temp, mpfr_get_prec(x) + n_prec/64);
         else
-            mpf_init2(temp, mpf_get_prec(y) + n_prec/64);
+            mpfr_init2(temp, mpfr_get_prec(y) + n_prec/64);
 
-        mpf_init2(delta_x, mpf_get_prec(w));
-        mpf_init2(delta_y, mpf_get_prec(h));
+        mpfr_init2(delta_x, mpfr_get_prec(w));
+        mpfr_init2(delta_y, mpfr_get_prec(h));
 
         //initialise chacun des elements du tableau avant de pouvoir s'en servir
         for (int init = 0; init < divs.at(i); init++)
         {
-                mpf_init2(tab_x[init], mpf_get_prec(x) + n_prec/64);
-                mpf_init2(tab_y[init], mpf_get_prec(y) + n_prec/64);
+                mpfr_init2(tab_x[init], mpfr_get_prec(x) + n_prec/64);
+                mpfr_init2(tab_y[init], mpfr_get_prec(y) + n_prec/64);
         }
 
         n_prec %= 64;
 
 
         //calcul de delta_x, la distance entre de nouveaux points en x
-        mpf_div_ui(delta_x, w, divs.at(i));
+        mpfr_div_ui(delta_x, w, divs.at(i), MPFR_RNDN);
         //calcul de delta_y, la distance entre de nouveaux points en y
-        mpf_div_ui(delta_y, h, divs.at(i));
+        mpfr_div_ui(delta_y, h, divs.at(i), MPFR_RNDN);
 
 
         //tab_x[0] = pos_x - width/2 + width/2*divs.at(i)
-        mpf_div_ui(temp, w, 2*divs.at(i));
-        mpf_add(tab_x[0], x, temp);
-        mpf_div_ui(temp, w, 2);
-        mpf_sub(tab_x[0], tab_x[0], temp);
+        mpfr_div_ui(temp, w, 2*divs.at(i), MPFR_RNDN);
+        mpfr_add(tab_x[0], x, temp, MPFR_RNDN);
+        mpfr_div_ui(temp, w, 2, MPFR_RNDN);
+        mpfr_sub(tab_x[0], tab_x[0], temp, MPFR_RNDN);
 
         //tab_y[0] = pos_y - height/2 + height/2*divs.at(i)
-        mpf_div_ui(temp, h, 2*divs.at(i));
-        mpf_add(tab_y[0], y, temp);
-        mpf_div_ui(temp, h, 2);
-        mpf_sub(tab_y[0], tab_y[0], temp);
+        mpfr_div_ui(temp, h, 2*divs.at(i), MPFR_RNDN);
+        mpfr_add(tab_y[0], y, temp, MPFR_RNDN);
+        mpfr_div_ui(temp, h, 2, MPFR_RNDN);
+        mpfr_sub(tab_y[0], tab_y[0], temp, MPFR_RNDN);
 
         for (int c = 1; c < divs.at(i); c++)
         {
             //tab_x[c] = tab_x[0] + c*delta_x
-            mpf_mul_ui(temp, delta_x, c);
-            mpf_add(tab_x[c], tab_x[0], temp);
+            mpfr_mul_ui(temp, delta_x, c, MPFR_RNDN);
+            mpfr_add(tab_x[c], tab_x[0], temp, MPFR_RNDN);
             
             
-            mpf_set_prec(equalz, mpf_get_prec(tab_y[c]));
+            mpfr_set_prec(equalz, mpfr_get_prec(tab_y[c]));
             //tab_y[c] = tab_y[0] + c*delta_y
-            mpf_mul_ui(temp, delta_y, c);
-            mpf_add(tab_y[c], tab_y[0], temp);
+            mpfr_mul_ui(temp, delta_y, c, MPFR_RNDN);
+            mpfr_add(tab_y[c], tab_y[0], temp, MPFR_RNDN);
 
-            mpf_abs(equalz, tab_y[c]);
-            mpf_div(equalz, equalz, h);
-            if(mpf_cmp_d(equalz, 0.00001) < 0)
-                mpf_set_ui(tab_y[c], 0);
+            mpfr_abs(equalz, tab_y[c], MPFR_RNDN);
+            mpfr_div(equalz, equalz, h, MPFR_RNDN);
+            if(mpfr_cmp_d(equalz, 0.00001) < 0)
+                mpfr_set_ui(tab_y[c], 0, MPFR_RNDN);
         }
 
         for (int x = 0; x < divs.at(i); x++)
         {
             for (int y = 0; y < divs.at(i); y++)
             {
-                if(mpf_cmp_ui(tab_y[y], 0) <= 0)
+                if(mpfr_cmp_ui(tab_y[y], 0) <= 0)
                 {
                     if(depth == 0)
                     {
@@ -486,19 +486,19 @@ void fill_work(std::queue<char*> *work, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int 
         //delete chacun des element du tableau avant pour pouvoir virer le tableau
         for (int del = 0; del < divs.at(i); del++)
         {
-            mpf_clear(tab_x[del]);
-            mpf_clear(tab_y[del]);
+            mpfr_clear(tab_x[del]);
+            mpfr_clear(tab_y[del]);
         }
 
         delete [] tab_x;
         delete [] tab_y;
-        mpf_clears(temp, delta_x, delta_y, NULL);
+        mpfr_clears(temp, delta_x, delta_y, NULL);
 
         divs_cpy.pop_back();
     }
 }
 
-void init_work(std::queue<char*> *work, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int enough, std::vector<int> divs, int size)
+void init_work(std::queue<char*> *work, mpfr_t x, mpfr_t y, mpfr_t w, mpfr_t h, int enough, std::vector<int> divs, int size)
 {
 	char* buf;
 	/*buf = create_work(enough, x, y, w, h, divs);
@@ -556,13 +556,13 @@ void handler(int argc, char** argv)
 	int enough = 1;
 	bool verbose = false;
 
-	mpf_t x, y, w, h;
-	mpf_inits( x, y, w, h, NULL);
+	mpfr_t x, y, w, h;
+	mpfr_inits( x, y, w, h, NULL);
 
-	mpf_set_d( x, -0.5);
-	mpf_set_d( y, 0.0);
-	mpf_set_d( w, 3);
-	mpf_set_d( h, 2);
+	mpfr_set_d( x, -0.5, MPFR_RNDN);
+	mpfr_set_d( y, 0.0, MPFR_RNDN);
+	mpfr_set_d( w, 3, MPFR_RNDN);
+	mpfr_set_d( h, 2, MPFR_RNDN);
 
 
 	if(!getExploOptions( argc, argv, default_param, x, y, w, h, enough, verbose, size))
@@ -772,7 +772,7 @@ void worker(int argc, char** argv)
     MPI_Send(list.str().c_str(), list.str().size(), MPI_CHAR, 0, LIST_SEND, MPI_COMM_WORLD);
 }
 
-char* create_work(int enough, mpf_t x, mpf_t y, mpf_t w, mpf_t h, std::vector<int> divs)
+char* create_work(int enough, mpfr_t x, mpfr_t y, mpfr_t w, mpfr_t h, std::vector<int> divs)
 {
     std::stringstream r("");
     
@@ -781,14 +781,14 @@ char* create_work(int enough, mpf_t x, mpf_t y, mpf_t w, mpf_t h, std::vector<in
     char tmpx[3] = {'0','.','\0'}, tmpy[3] = {'0','.','\0'};
 
 
-    char_x = mpf_get_str( NULL, &e1, 10, 1000, x);
+    char_x = mpfr_get_str( NULL, &e1, 10, 1000, x, MPFR_RNDN);
     if(char_x[0] == '-')
     {
         char_x[0] = '.';
 	tmpx[0] = '-';
 	tmpx[1] = '0';
     }
-    char_y = mpf_get_str( NULL, &e2, 10, 1000, y);
+    char_y = mpfr_get_str( NULL, &e2, 10, 1000, y, MPFR_RNDN);
     if(char_y[0] == '-')
     {
 	char_y[0] = '.';
@@ -796,8 +796,8 @@ char* create_work(int enough, mpf_t x, mpf_t y, mpf_t w, mpf_t h, std::vector<in
 	tmpy[1] = '0';
     }
 
-    char_width = mpf_get_str( NULL, &e3, 10, 1000, w);
-    char_height = mpf_get_str( NULL, &e4, 10, 1000, h);
+    char_width = mpfr_get_str( NULL, &e3, 10, 1000, w, MPFR_RNDN);
+    char_height = mpfr_get_str( NULL, &e4, 10, 1000, h, MPFR_RNDN);
     
     r.str("");
     r << enough << ":" << tmpx << char_x << "e" << e1 << ":" << tmpy << char_y << "e" << e2 << ":" << "0." << char_width << "e" << e3 << ":" << "0." << char_height << "e" << e4;
@@ -812,7 +812,7 @@ char* create_work(int enough, mpf_t x, mpf_t y, mpf_t w, mpf_t h, std::vector<in
     return res;
 }
 
-char* create_work2(mpf_t x, mpf_t y, mpf_t w, mpf_t h)
+char* create_work2(mpfr_t x, mpfr_t y, mpfr_t w, mpfr_t h)
 {
     std::stringstream r("");
     
@@ -821,14 +821,14 @@ char* create_work2(mpf_t x, mpf_t y, mpf_t w, mpf_t h)
     char tmpx[3] = {'0','.','\0'}, tmpy[3] = {'0','.','\0'};
 
 
-    char_x = mpf_get_str( NULL, &e1, 10, 1000, x);
+    char_x = mpfr_get_str( NULL, &e1, 10, 1000, x, MPFR_RNDN);
     if(char_x[0] == '-')
     {
         char_x[0] = '.';
 	tmpx[0] = '-';
 	tmpx[1] = '0';
     }
-    char_y = mpf_get_str( NULL, &e2, 10, 1000, y);
+    char_y = mpfr_get_str( NULL, &e2, 10, 1000, y, MPFR_RNDN);
     if(char_y[0] == '-')
     {
 	char_y[0] = '.';
@@ -836,8 +836,8 @@ char* create_work2(mpf_t x, mpf_t y, mpf_t w, mpf_t h)
 	tmpy[1] = '0';
     }
 
-    char_width = mpf_get_str( NULL, &e3, 10, 1000, w);
-    char_height = mpf_get_str( NULL, &e4, 10, 1000, h);
+    char_width = mpfr_get_str( NULL, &e3, 10, 1000, w, MPFR_RNDN);
+    char_height = mpfr_get_str( NULL, &e4, 10, 1000, h, MPFR_RNDN);
     
     r.str("");
     r << tmpx << char_x << "e" << e1 << ":" << tmpy << char_y << "e" << e2 << ":" << "0." << char_width << "e" << e3 << ":" << "0." << char_height << "e" << e4;
@@ -1076,7 +1076,7 @@ bool receiveGenOptions()
     return true;
 }
 
-void decomposeWork(char* buf, mpf_t x, mpf_t y, mpf_t w, mpf_t h)
+void decomposeWork(char* buf, mpfr_t x, mpfr_t y, mpfr_t w, mpfr_t h)
 {
     int prec;
     char* tmp;
@@ -1088,8 +1088,8 @@ void decomposeWork(char* buf, mpf_t x, mpf_t y, mpf_t w, mpf_t h)
     prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
     prec = (prec < 64)?64:prec;
 
-    mpf_init2( x, prec);
-    mpf_set_str( x, tmp, 10);
+    mpfr_init2( x, prec);
+    mpfr_set_str( x, tmp, 10, MPFR_RNDN);
 
 
     tmp = strtok(NULL, ":");
@@ -1097,8 +1097,8 @@ void decomposeWork(char* buf, mpf_t x, mpf_t y, mpf_t w, mpf_t h)
     prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
     prec = (prec < 64)?64:prec;
 
-    mpf_init2( y, prec);
-    mpf_set_str( y, tmp, 10);
+    mpfr_init2( y, prec);
+    mpfr_set_str( y, tmp, 10, MPFR_RNDN);
 
 
     tmp = strtok(NULL, ":");
@@ -1106,8 +1106,8 @@ void decomposeWork(char* buf, mpf_t x, mpf_t y, mpf_t w, mpf_t h)
     prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
     prec = (prec < 64)?64:prec;
 
-    mpf_init2( w, prec);
-    mpf_set_str( w, tmp, 10);
+    mpfr_init2( w, prec);
+    mpfr_set_str( w, tmp, 10, MPFR_RNDN);
 
 
     tmp = strtok(NULL, ":");
@@ -1115,28 +1115,28 @@ void decomposeWork(char* buf, mpf_t x, mpf_t y, mpf_t w, mpf_t h)
     prec = (prec%64 != 0)?(prec/64)*64+64:(prec/64)*64;
     prec = (prec < 64)?64:prec;
 
-    mpf_init2( h, prec);
-    mpf_set_str( h, tmp, 10);
+    mpfr_init2( h, prec);
+    mpfr_set_str( h, tmp, 10, MPFR_RNDN);
 }
 
-void getSubImages(std::queue<char*> *work, mpf_t x, mpf_t y, mpf_t w, mpf_t h, int imgHeight, int imWidth, int blocHeight)
+void getSubImages(std::queue<char*> *work, mpfr_t x, mpfr_t y, mpfr_t w, mpfr_t h, int imgHeight, int imWidth, int blocHeight)
 {
     static int img_num = 0;
 
     std::vector<int> divs;
     divs.push_back(2);
 
-    mpf_t nh,ny;
-    mpf_init2(nh,mpf_get_prec(h));
-    mpf_init2(ny,mpf_get_prec(y));
+    mpfr_t nh,ny;
+    mpfr_init2(nh,mpfr_get_prec(h));
+    mpfr_init2(ny,mpfr_get_prec(y));
 
     int N = imgHeight / blocHeight;
 
-    mpf_div_ui( nh, h, N); 
-    mpf_sub( ny, h, nh);
-    mpf_div_ui(ny,ny,2);
+    mpfr_div_ui( nh, h, N, MPFR_RNDN); 
+    mpfr_sub( ny, h, nh, MPFR_RNDN);
+    mpfr_div_ui(ny,ny,2, MPFR_RNDN);
 
-    mpf_add(ny,y,ny);
+    mpfr_add(ny,y,ny, MPFR_RNDN);
 
     std::stringstream info;
     std::stringstream header;
@@ -1158,7 +1158,7 @@ void getSubImages(std::queue<char*> *work, mpf_t x, mpf_t y, mpf_t w, mpf_t h, i
 
         work->push(buf);
 
-        mpf_sub(ny,ny,nh);
+        mpfr_sub(ny,ny,nh, MPFR_RNDN);
         info.str("");
     }
 
@@ -1216,7 +1216,7 @@ void handler2(int argc, char** argv)
     }
     buf = new char[2049];
 
-    mpf_t x, y, w, h;
+    mpfr_t x, y, w, h;
 
     int nbr_img = 0;
     while(fgets(buf, 2048, f))
@@ -1229,7 +1229,7 @@ void handler2(int argc, char** argv)
         getSubImages(work, x, y, w, h, default_param[1], default_param[0], blocHeight);
     }
     free(buf);
-    mpf_clears( x, y, w, h, NULL);
+    mpfr_clears( x, y, w, h, NULL);
     
     fclose(f);
 

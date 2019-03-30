@@ -9,6 +9,8 @@
 #include <vector>
 #include <ctime>
 #include <fstream>
+#include <mpfr.h>
+#include <mpf2mpfr.h>
 #include <gmp.h>
 #include <string>
 #include <stdio.h>
@@ -34,9 +36,9 @@ typedef struct
 class Mandelbrot
 {
 	private:
-		mpf_t pos_x, pos_y;
-		mpf_t width,height;
-		mpf_t atomic_w, atomic_h;
+		mpfr_t pos_x, pos_y;
+		mpfr_t width,height;
+		mpfr_t atomic_w, atomic_h;
 		int iterations, enough;
                 double ThresholdCont, ThresholdSave;
                 std::vector<int> divs;
@@ -44,10 +46,10 @@ class Mandelbrot
                 
                 cv::Mat *divMat, *img, *sEMat;
                 
-		void calcSeq(mpf_t* x, mpf_t* y);
-		void calcPar(mpf_t* x, mpf_t* y);
+		void calcSeq(mpfr_t* x, mpfr_t* y);
+		void calcPar(mpfr_t* x, mpfr_t* y);
 	public:
-		Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int _enough, std::vector<int> divs);
+		Mandelbrot(mpfr_t x, mpfr_t y, mpfr_t w, mpfr_t h, int _enough, std::vector<int> divs);
                 Mandelbrot(char* buf);
 		~Mandelbrot();
 		void del_mem();

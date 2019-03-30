@@ -8,3 +8,4 @@ Img/
 video/
 *.swp
 *.json
+.vscode/

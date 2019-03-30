@@ -12,6 +12,16 @@
 #define MPMC_SIZE 50000
 
 
+int Mandelbrot::surEchantillonage;
+int Mandelbrot::im_width;
+int Mandelbrot::im_height;
+int Mandelbrot::color;
+char* Mandelbrot::rep;
+keyed_char* Mandelbrot::top10 = new keyed_char[11];
+Mpmc* Mandelbrot::mpmc;
+
+
+
 void getExploOptions(int argc, char** argv, Mpmc* mpmc, bool& verbose)
 {
     // default exploration options
@@ -275,21 +285,20 @@ int main(int argc, char** argv)
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
 
-    Mpmc* mpmc = new Mpmc(MPMC_SIZE);
+    Mandelbrot::mpmc = new Mpmc(MPMC_SIZE);
 
 
     bool verbose;
     
     if(rank == 0)
-        getExploOptions(argc, argv, mpmc, verbose);
+        getExploOptions(argc, argv, Mandelbrot::mpmc, verbose);
     else
         receiveExploOptions();
     
     uint64_t tick = rdtsc();
 
 
-
-
+    
 
 
     if(rank == 0 && verbose)

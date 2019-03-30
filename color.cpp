@@ -36,7 +36,7 @@ void coloration2(Vec3b &bgr,int n, int iterations)
 	{
 		n = n % (4 * speed);
 
-		switch(n/speed)
+		switch(n / speed)
 		{
 			case 0:
 			{
@@ -72,8 +72,8 @@ void coloration2(Vec3b &bgr,int n, int iterations)
 				exit(2);
 			}
 		}
+		bgr = HSBtoRGB( h, s, v);
 	}
-	bgr = HSBtoRGB( h, s, v);
 }
 
 void coloration3(Vec3b &bgr,int n, int iterations)

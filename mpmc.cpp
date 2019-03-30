@@ -1,14 +1,6 @@
 #include "mpmc.hpp"
 
-//buf : last_write;
-// buf + sizeof(size_t) : write_ok;
-// buf + 2*sizeof(size_t) : last_read;
-// buf + 3*sizeof(size_t) : read_ok;
-
-// #define last_write (*((size_t*)buf))
-// #define write_ok (*((size_t*)buf + sizeof(size_t)))
-// #define last_read (*((size_t*)buf + 2 * sizeof(size_t)))
-// #define read_ok (*((size_t*)buf + 3 * sizeof(size_t)))
+#include <string.h>
 
 #define last_write 0
 #define write_ok sizeof(size_t)
@@ -112,7 +104,7 @@ int Mpmc::pop(size_t target, char* work)
 	} while(loop);
 	return true;*/
 
-	size_t current, next, result, size, w_ok, l_r, r_ok;
+	size_t current, next, result, size, w_ok;
 	bool loop = true;
 
 	do {
@@ -125,7 +117,7 @@ int Mpmc::pop(size_t target, char* work)
 		if( (current < next && !( w_ok > current && w_ok < next ) ) || ( current > next && w_ok < current && w_ok > next ) )
 		{*/
 			MPI_Compare_and_swap(&next, &current, &result, MPI_UNSIGNED_LONG, target, last_read, window);
-			if( result == next);
+			if( result == next)
 			{
 				work = new char[size];
 				MPI_Get(work, size, MPI_CHAR, target, current + sizeof(size_t), size, MPI_CHAR, window);

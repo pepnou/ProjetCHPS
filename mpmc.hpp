@@ -1,17 +1,21 @@
 #ifndef __MPMC__
 #define __MPMC__
 
+#define SUCCES 0
+#define FULL 1
+#define EMPTY 2
+
 #include <cstddef>
-#include <atomic>
+//#include <atomic>
 #include <iostream>
-#include <thread>
+//#include <thread>
+#include <mpi.h>
 
 #include "mandelbrot.hpp"
 class Mandelbrot;
 
-#define offset_t size_t
 
-typedef struct 
+/*typedef struct 
 {
 	void* arg;
 	void (*f)(void*);
@@ -23,26 +27,29 @@ typedef struct
 	mpf_t *y;
 	int deb, fin;
 	Mandelbrot* M;
-}threadDraw;
+}threadDraw;*/
 
 class Mpmc
 {
 	private:
+		int mpi_rank, mpi_size;
 		size_t size;
-		work* buf;
-		std::atomic<offset_t> last_write;
-		std::atomic<offset_t> write_ok;
-		std::atomic<offset_t> last_read;
-		std::atomic<offset_t> read_ok;
+		MPI_Info info;
+		MPI_Win window;
+		char* buf;
+		// buf : last_write;
+		// buf + sizeof(size_t) : write_ok;
+		// buf + 2*sizeof(size_t) : last_read;
+		// buf + 3*sizeof(size_t) : read_ok;
 
 	public:
 		Mpmc(size_t size);
 		~Mpmc();
-		void push(work arg);
-		bool pop();
+		int push(char* work);
+		int pop(size_t target, char* work);
 };
 
-class MyThreads
+/*class MyThreads
 {
 	private:
 		std::thread* threads;
@@ -55,6 +62,6 @@ class MyThreads
 		Mpmc* getMpmc();
 };
 
-void mainThread(void* arg);
+void mainThread(void* arg);*/
 
 #endif

@@ -6,11 +6,11 @@ project (Fractale 	VERSION 1.0
 set ( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 set ( CMAKE_CXX_COMPILER /usr/bin/mpicxx )
 
-set (EXP_SRC Explo.cpp mandelbrot.cpp color.cpp rdtsc.cpp matOp.cpp workHandler.cpp )
-set (GEN_SRC Gen.cpp mandelbrot.cpp color.cpp rdtsc.cpp matOp.cpp workHandler.cpp )
-set (GMP_INCLUDE /usr/local/include/ )
-set (THREAD_INCLUDE /usr/include/c++/7.2.0/thread )
-set (COMPILATION_OPTION "-O3" "-Wall" "-g")
+set ( EXP_SRC Explo.cpp mandelbrot.cpp color.cpp rdtsc.cpp matOp.cpp workHandler.cpp mpmc.cpp )
+set ( GEN_SRC Gen.cpp mandelbrot.cpp color.cpp rdtsc.cpp matOp.cpp workHandler.cpp mpmc.cpp )
+set ( GMP_INCLUDE /usr/local/include/ )
+set ( THREAD_INCLUDE /usr/include/c++/7.2.0/thread )
+set ( COMPILATION_OPTION "-O3" "-Wall" "-g")
 
 
 add_executable(Explo ${EXP_SRC})

@@ -1,6 +1,8 @@
 #include "mandelbrot.hpp"
 #include "workHandler.hpp"
 #include <string.h>
+#include <omp.h>
+#include <pthread.h>
 
 using namespace cv;
 using namespace std;
@@ -177,10 +179,6 @@ void Mandelbrot::escapeSpeedCalcSeq()
     mpf_clears( tmp1, tmp2, NULL);
 
 
-
-
-
-
     *(this->sEMat) = 1;
     *(this->divMat) = -1;
     
@@ -228,7 +226,6 @@ void Mandelbrot::calcSeq(mpf_t* x, mpf_t* y)
     mpf_t xn, yn, xnp1, ynp1, mod, xsqr, ysqr, tmp;
     mpf_inits( xn, yn, xnp1, ynp1, mod, tmp, xsqr, ysqr, NULL);
 
-    //#pragma omp parrallel for schedule(dynamic, )
     for(int j = 0; j < im_height; j++)
     {
         for (int i = 0; i < im_width; i++)
@@ -292,15 +289,100 @@ void Mandelbrot::calcSeq(mpf_t* x, mpf_t* y)
 
 }
 
+void Mandelbrot::escapeSpeedCalcPar()
+{
+
+    // initialisation des coordonnées
+    mpf_t tmp1, tmp2;
+    mpf_t *x, *y;
+    x = new mpf_t[this->im_width*this->surEchantillonage];
+    y = new mpf_t[this->im_height*this->surEchantillonage];
+
+    if(!x || !y)
+	exit(2);
+
+    mpf_inits( tmp1, tmp2, NULL);
+
+    mpf_div_ui(tmp1, this->width, 2); //  tmp1 = width/2
+    mpf_set_ui( tmp2, 0);
+    for(int i = 0; i < this->im_width*this->surEchantillonage; ++i)
+    {
+	mpf_init(x[i]);
+
+	//  xc = pos_x - width/2 + i*atomic_w
+	mpf_sub(x[i], this->pos_x, tmp1); //  xc = pos_x - tmp = pos_x - width/2
+	//mpf_mul_ui(tmp, this->atomic_w, i); //  tmp = atomic_w * i
+	mpf_add( tmp2, tmp2, atomic_w);
+	mpf_add(x[i], x[i], tmp2); //  xc = xc + tmp = pos_x - width/2 + atomic_w * i
+
+    }
+
+    mpf_div_ui(tmp1, this->height, 2); //  tmp1 = height/2
+    mpf_set_ui( tmp2, 0);
+    for(int i = 0; i < this->im_height*this->surEchantillonage; ++i)
+    {
+	mpf_init(y[i]);
+
+	//  yc = pos_y - height/2 + i*atomic_h
+	mpf_sub(y[i], this->pos_y, tmp1); //  yc = pos_y - tmp = pos_y - height/2
+	//mpf_mul_ui(tmp, atomic_h, j); //  tmp = atomic_h * j
+	mpf_add( tmp2, tmp2, atomic_h);
+	mpf_add(y[i], y[i], tmp2); //  yc = yc + tmp = pos_y - height/2 + atomic_h * j
+    }
+
+    mpf_clears( tmp1, tmp2, NULL);
+
+
+    *(this->sEMat) = 1;
+    *(this->divMat) = -1;
+    
+
+    // calcul de l image
+    calcPar( x, y);	
+	
+	
+	
+    // on detecte les zones nécessitant dur sur echantillonage
+    this->draw();
+    Mat kernel = Mat::ones( 7, 7, CV_8UC1 );
+
+    int lowThreshold = 10;
+    int ratio = 3;
+    int kernel_size = 3;
+
+    cvtColor( *(this->img), *(this->sEMat), CV_BGR2GRAY );
+    blur( *(this->sEMat), *(this->sEMat), Size(3,3) );
+    Canny( *(this->sEMat), *(this->sEMat), lowThreshold, lowThreshold*ratio, kernel_size);
+    filter2D( *(this->sEMat), *(this->sEMat), -1 , kernel, Point( -1, -1 ), 0, BORDER_DEFAULT);
+
+    *(this->sEMat) = *(this->sEMat)*this->surEchantillonage/255;
+
+    // on recalcul l image avec le sur echantillonage
+    calcPar( x, y);
+
+    // on libere tout
+    for(int i = 0; i < this->im_width*this->surEchantillonage; ++i)
+    {
+	    mpf_clear(x[i]);
+    }
+    for(int i = 0; i < this->im_height*this->surEchantillonage; ++i)
+    {
+	    mpf_clear(y[i]);
+    }
+
+    delete [] x;
+    delete [] y;
+}
+
 void Mandelbrot::calcPar(mpf_t* x, mpf_t* y)
 {
     mpf_t xn, yn, xnp1, ynp1, mod, xsqr, ysqr, tmp;
     mpf_inits( xn, yn, xnp1, ynp1, mod, tmp, xsqr, ysqr, NULL);
 
-    //#pragma omp parrallel for schedule(dynamic, )
-    for(int j = 0; j < im_height; j++)
+    #pragma omp parrallel for schedule(guided)
+    for (int i = 0; i < im_width; i++)
     {
-        for (int i = 0; i < im_width; i++)
+        for(int j = 0; j < im_height; j++)
         {
             int sE = sEMat->at<char>( j, i);
 

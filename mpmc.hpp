@@ -1,9 +1,9 @@
 #ifndef __MPMC__
 #define __MPMC__
 
-#define SUCCES 0
-#define FULL 1
-#define EMPTY 2
+#define MPMC_SUCCES 0
+#define MPMC_FULL 1
+#define MPMC_EMPTY 2
 
 #include <cstddef>
 #include <iostream>

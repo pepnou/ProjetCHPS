@@ -7,7 +7,7 @@
 using namespace cv;
 using namespace std;
 
-#define MPMC_SIZE 50000
+//#define MPMC_SIZE 50000
 
 Mandelbrot::Mandelbrot(mpf_t x, mpf_t y, mpf_t w, mpf_t h, int enough, std::vector<int> divs) 
 	: enough(enough) ,
@@ -759,7 +759,7 @@ void Mandelbrot::dichotomie3()
                     if(mpf_cmp_ui(tab_y[y], 0) <= 0)
                     {
                         char* buf = create_work(enough - 1, tab_x[x], tab_y[y], delta_x, delta_y, divs_cpy);
-                        if(mpmc->push(buf) != SUCCES)
+                        if(mpmc->push(buf) != MPMC_SUCCES)
                         {
                             Mandelbrot* M = new Mandelbrot(tab_x[x], tab_y[y], delta_x, delta_y , enough - 1, divs_cpy);
                             M->dichotomie3();

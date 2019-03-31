@@ -51,7 +51,7 @@ int Mpmc::push(char* work)
 		current = *((size_t*)buf + last_write);
 		next = (current + msg_size) % this->size;
 		
-		if( (current < next && !( *((size_t*)buf + read_ok) > current && *((size_t*)buf + read_ok) < next ) ) || ( current > next && *((size_t*)buf + read_ok) < current && *((size_t*)buf + read_ok) > next ) )
+		if( (current < next && !( *((size_t*)buf + read_ok) >= current && *((size_t*)buf + read_ok) < next ) ) || ( current > next && *((size_t*)buf + read_ok) <= current && *((size_t*)buf + read_ok) > next ) )
 		{
 			MPI_Compare_and_swap(&next, &current, &result, MPI_UNSIGNED_LONG, mpi_rank, last_write, window);
 			if(result == next)
@@ -69,11 +69,11 @@ int Mpmc::push(char* work)
 		}
 		else
 		{
-			return FULL;
+			return MPMC_FULL;
 		}
 	} while(loop);
 	
-	return SUCCES;
+	return MPMC_SUCCES;
 }
 
 int Mpmc::pop(size_t target, char* work)
@@ -136,9 +136,9 @@ int Mpmc::pop(size_t target, char* work)
 		/*}
 		else
 		{
-			return EMPTY
+			return MPMC_EMPTY
 		}*/
 		
 	} while(loop);
-	return true;
+	return MPMC_SUCCES;
 }

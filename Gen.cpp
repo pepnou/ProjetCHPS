@@ -3,7 +3,15 @@
 #include <iostream>
 
 #include "workHandler.hpp"
+#include "mandelbrot.hpp"
 
+int Mandelbrot::surEchantillonage;
+int Mandelbrot::im_width;
+int Mandelbrot::im_height;
+int Mandelbrot::color;
+char* Mandelbrot::rep;
+keyed_char* Mandelbrot::top10 = new keyed_char[11];
+Mpmc* Mandelbrot::mpmc;
 
 int main(int argc, char** argv)
 {

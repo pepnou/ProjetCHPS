@@ -34,12 +34,7 @@
 #define DELLI "\e[K"
 
 
-int Mandelbrot::surEchantillonage;
-int Mandelbrot::im_width;
-int Mandelbrot::im_height;
-int Mandelbrot::color;
-char* Mandelbrot::rep;
-keyed_char* Mandelbrot::top10 = new keyed_char[11];
+
 
 void init_top10()
 {
@@ -81,257 +76,257 @@ void insert_top10(double key, char* val)
     }
 }
 
-void handler(int argc, char** argv)
-{
-	init_top10();
+// void handler(int argc, char** argv)
+// {
+// 	init_top10();
 
-	MPI_Status status;
-	int size, rank, count;
-	char* buf;
+// 	MPI_Status status;
+// 	int size, rank, count;
+// 	char* buf;
 
-	std::queue<int> *waiting = new std::queue<int>();
-	std::queue<char*> *work = new std::queue<char*>();
-
-
-	MPI_Comm_size(MPI_COMM_WORLD, &size);
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+// 	std::queue<int> *waiting = new std::queue<int>();
+// 	std::queue<char*> *work = new std::queue<char*>();
 
 
-	std::vector<int> divs;
-	divs.push_back(2);
-	divs.push_back(3);
-
-	int default_param[4];
-	//PARAMETRES PAR DEFAULT, A NE PAS CHANGER
-	// largeur
-	default_param[0] = 48;
-	// hauteur
-	default_param[1] = 27;
-	// sur echantillonage
-	default_param[2] = 1;
-	// couleur
-	default_param[3] = RAINBOW;
+// 	MPI_Comm_size(MPI_COMM_WORLD, &size);
+// 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
 
+// 	std::vector<int> divs;
+// 	divs.push_back(2);
+// 	divs.push_back(3);
 
-	int enough = 1;
-	bool verbose = false;
+// 	int default_param[4];
+// 	//PARAMETRES PAR DEFAULT, A NE PAS CHANGER
+// 	// largeur
+// 	default_param[0] = 48;
+// 	// hauteur
+// 	default_param[1] = 27;
+// 	// sur echantillonage
+// 	default_param[2] = 1;
+// 	// couleur
+// 	default_param[3] = RAINBOW;
 
-	mpf_t x, y, w, h;
-	mpf_inits( x, y, w, h, NULL);
-
-	mpf_set_d( x, -0.5);
-	mpf_set_d( y, 0.0);
-	mpf_set_d( w, 3);
-	mpf_set_d( h, 2);
 
 
-	if(!getExploOptions( argc, argv, default_param, x, y, w, h, enough, verbose, size))
-		return;
+// 	int enough = 1;
+// 	bool verbose = false;
+
+// 	mpf_t x, y, w, h;
+// 	mpf_inits( x, y, w, h, NULL);
+
+// 	mpf_set_d( x, -0.5);
+// 	mpf_set_d( y, 0.0);
+// 	mpf_set_d( w, 3);
+// 	mpf_set_d( h, 2);
+
+
+// 	if(!getExploOptions( argc, argv, default_param, x, y, w, h, enough, verbose, size))
+// 		return;
     
 
-    std::stringstream cmd("");
-    cmd << "mkdir -p " << Mandelbrot::rep;
-    int ret = system(cmd.str().c_str());
-    if(ret == -1 || ret == 127)
-    {
-        perror("system");
-        MPI_Abort(MPI_COMM_WORLD, 43);
-    }
+//     std::stringstream cmd("");
+//     cmd << "mkdir -p " << Mandelbrot::rep;
+//     int ret = system(cmd.str().c_str());
+//     if(ret == -1 || ret == 127)
+//     {
+//         perror("system");
+//         MPI_Abort(MPI_COMM_WORLD, 43);
+//     }
 
 
-    init_work(work, x, y, w, h, enough, divs, size);
+//     init_work(work, x, y, w, h, enough, divs, size);
     
 
 
 
-    int img_count = 0, info[2];
-    int flag;
+//     int img_count = 0, info[2];
+//     int flag;
 
 
-    unsigned long images_a_faire = 0, images_faites = 0, images_faites_recv;
-    double pourcentage_images_faites;
-    for(int k = 0; k <= enough; k++)
-    {
-        for(int j = 0; j <= k; j++)
-        {
-            images_a_faire += pow(4, j) * pow(9, k-j);
-        }
-    }
+//     unsigned long images_a_faire = 0, images_faites = 0, images_faites_recv;
+//     double pourcentage_images_faites;
+//     for(int k = 0; k <= enough; k++)
+//     {
+//         for(int j = 0; j <= k; j++)
+//         {
+//             images_a_faire += pow(4, j) * pow(9, k-j);
+//         }
+//     }
 
-    std::cout << std::endl << SAVEC;
+//     std::cout << std::endl << SAVEC;
 
-    uint64_t tick = rdtsc();
-    while(1)
-    {
-        while(1)
-        {
-            MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status);
-            if(flag)
-                break;
-            else
-                usleep(100);
-        }
+//     uint64_t tick = rdtsc();
+//     while(1)
+//     {
+//         while(1)
+//         {
+//             MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &flag, &status);
+//             if(flag)
+//                 break;
+//             else
+//                 usleep(100);
+//         }
 
-        if (status.MPI_TAG == INFO_RQST)
-        {
-            MPI_Recv(&images_faites_recv, 1, MPI_LONG, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            info[0] = (int)work->size();
-            info[1] = img_count;
-            MPI_Send(info, 2, MPI_INT, status.MPI_SOURCE, INFO_RQST, MPI_COMM_WORLD);
-            img_count++;
+//         if (status.MPI_TAG == INFO_RQST)
+//         {
+//             MPI_Recv(&images_faites_recv, 1, MPI_LONG, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+//             info[0] = (int)work->size();
+//             info[1] = img_count;
+//             MPI_Send(info, 2, MPI_INT, status.MPI_SOURCE, INFO_RQST, MPI_COMM_WORLD);
+//             img_count++;
             
              
-            images_faites += images_faites_recv;
-            pourcentage_images_faites = (double)images_faites / images_a_faire;
-            printf( RESTC DELLI "% 3.15lf%%", pourcentage_images_faites*100);
-            fflush(stdout);
-        } 
-        else if (status.MPI_TAG == WORK_SEND) 
-        {
-            MPI_Get_count(&status, MPI_CHAR, &count);
-            buf = new char[count+1]();
-            MPI_Recv(buf, count, MPI_CHAR, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            buf[count] = '\0';
-            // TODO meh ... tout sauf efficace .... a changer ...
+//             images_faites += images_faites_recv;
+//             pourcentage_images_faites = (double)images_faites / images_a_faire;
+//             printf( RESTC DELLI "% 3.15lf%%", pourcentage_images_faites*100);
+//             fflush(stdout);
+//         } 
+//         else if (status.MPI_TAG == WORK_SEND) 
+//         {
+//             MPI_Get_count(&status, MPI_CHAR, &count);
+//             buf = new char[count+1]();
+//             MPI_Recv(buf, count, MPI_CHAR, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+//             buf[count] = '\0';
+//             // TODO meh ... tout sauf efficace .... a changer ...
             
-            if(waiting->size() > 0)
-            {
+//             if(waiting->size() > 0)
+//             {
 
-                MPI_Send(buf, count, MPI_CHAR, waiting->front(), WORK_SEND, MPI_COMM_WORLD);
-                waiting->pop();
-            }
-            else
-                work->push(buf);
-        }
-        else if (status.MPI_TAG == WORK_RQST)
-        {
-            MPI_Recv(NULL, 0, MPI_INT, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            if(work->size() > 0)
-            {
-                char* msg = work->front();
-                MPI_Send(msg, strlen(msg), MPI_CHAR, status.MPI_SOURCE, WORK_SEND, MPI_COMM_WORLD);
-                work->pop();
-            }
-            else
-            {
-                waiting->push(status.MPI_SOURCE);
-                if(waiting->size() == (unsigned int)size - 1)
-                {
-                    for(int i = 1; i < size; i++)
-                        MPI_Send(NULL, 0, MPI_INT, i, END, MPI_COMM_WORLD);
+//                 MPI_Send(buf, count, MPI_CHAR, waiting->front(), WORK_SEND, MPI_COMM_WORLD);
+//                 waiting->pop();
+//             }
+//             else
+//                 work->push(buf);
+//         }
+//         else if (status.MPI_TAG == WORK_RQST)
+//         {
+//             MPI_Recv(NULL, 0, MPI_INT, status.MPI_SOURCE, status.MPI_TAG, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+//             if(work->size() > 0)
+//             {
+//                 char* msg = work->front();
+//                 MPI_Send(msg, strlen(msg), MPI_CHAR, status.MPI_SOURCE, WORK_SEND, MPI_COMM_WORLD);
+//                 work->pop();
+//             }
+//             else
+//             {
+//                 waiting->push(status.MPI_SOURCE);
+//                 if(waiting->size() == (unsigned int)size - 1)
+//                 {
+//                     for(int i = 1; i < size; i++)
+//                         MPI_Send(NULL, 0, MPI_INT, i, END, MPI_COMM_WORLD);
 
-                    delete work;
-                    delete waiting;
+//                     delete work;
+//                     delete waiting;
 
-                    break;
-                }
-            }
-        }
-    }
+//                     break;
+//                 }
+//             }
+//         }
+//     }
 
-    double key;
-    char *val, *tmp;
+//     double key;
+//     char *val, *tmp;
 
-    for(int i = 1; i < size; i++)
-    {
-        MPI_Probe(i, LIST_SEND, MPI_COMM_WORLD, &status);
-        MPI_Get_count(&status, MPI_CHAR, &count);
-        buf = new char[count+1]();
-        MPI_Recv(buf, count, MPI_CHAR, status.MPI_SOURCE, LIST_SEND, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        buf[count] = '\0';
+//     for(int i = 1; i < size; i++)
+//     {
+//         MPI_Probe(i, LIST_SEND, MPI_COMM_WORLD, &status);
+//         MPI_Get_count(&status, MPI_CHAR, &count);
+//         buf = new char[count+1]();
+//         MPI_Recv(buf, count, MPI_CHAR, status.MPI_SOURCE, LIST_SEND, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+//         buf[count] = '\0';
 
-        tmp = strtok(buf, "|");
-        while(tmp)
-        {
-            key = atof(tmp);
+//         tmp = strtok(buf, "|");
+//         while(tmp)
+//         {
+//             key = atof(tmp);
 
-            tmp = strtok(NULL, "|");
-            val = new char[strlen(tmp) + 1]();
-            strcpy(val, tmp);
-            val[strlen(tmp)] = '\0';
+//             tmp = strtok(NULL, "|");
+//             val = new char[strlen(tmp) + 1]();
+//             strcpy(val, tmp);
+//             val[strlen(tmp)] = '\0';
         
-            insert_top10(key, val);
+//             insert_top10(key, val);
 
-            tmp = strtok(NULL, "|");
-        }
-    }
+//             tmp = strtok(NULL, "|");
+//         }
+//     }
 
-    std::stringstream file_name("");
-    file_name << Mandelbrot::rep << "/Coordinates.txt";
+//     std::stringstream file_name("");
+//     file_name << Mandelbrot::rep << "/Coordinates.txt";
     
-    FILE* f2 = fopen(file_name.str().c_str(), "w+");
-    for(int i = 0; i < 10 && Mandelbrot::top10[i].val != NULL; i++)
-    {
-        fprintf(f2, "0:%s:2\n", Mandelbrot::top10[i].val);
-    }
-    fclose(f2);
+//     FILE* f2 = fopen(file_name.str().c_str(), "w+");
+//     for(int i = 0; i < 10 && Mandelbrot::top10[i].val != NULL; i++)
+//     {
+//         fprintf(f2, "0:%s:2\n", Mandelbrot::top10[i].val);
+//     }
+//     fclose(f2);
 
 
-    std::cout << std::endl;
+//     std::cout << std::endl;
 
-    if(verbose)
-    {
-        std::cout <<"Time spend in cycle : "<< rdtsc() - tick << std::endl;
-        FILE* f = fopen("log.txt", "a");
-        fprintf(f, "%d %lu\n", size, rdtsc() - tick);
-        fclose(f);
-    }
-}
+//     if(verbose)
+//     {
+//         std::cout <<"Time spend in cycle : "<< rdtsc() - tick << std::endl;
+//         FILE* f = fopen("log.txt", "a");
+//         fprintf(f, "%d %lu\n", size, rdtsc() - tick);
+//         fclose(f);
+//     }
+// }
 
-void worker(int argc, char** argv)
-{
-    init_top10();
+// void worker(int argc, char** argv)
+// {
+//     init_top10();
 
-    MPI_Status status;
-    int count;
-    char* buf;
+//     MPI_Status status;
+//     int count;
+//     char* buf;
 
-    if(!receiveExploOptions())
-    	return;
+//     if(!receiveExploOptions())
+//     	return;
 
-    while(1)
-    {
-        MPI_Send(NULL, 0, MPI_INT, 0, WORK_RQST, MPI_COMM_WORLD);
-        MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
+//     while(1)
+//     {
+//         MPI_Send(NULL, 0, MPI_INT, 0, WORK_RQST, MPI_COMM_WORLD);
+//         MPI_Probe(0, MPI_ANY_TAG, MPI_COMM_WORLD, &status);
 
-        if(status.MPI_TAG == WORK_SEND)
-        {
-            MPI_Get_count(&status, MPI_CHAR, &count);
-            buf = new char[count + 1]();
+//         if(status.MPI_TAG == WORK_SEND)
+//         {
+//             MPI_Get_count(&status, MPI_CHAR, &count);
+//             buf = new char[count + 1]();
             
-            MPI_Recv(buf, count, MPI_CHAR, 0, WORK_SEND, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+//             MPI_Recv(buf, count, MPI_CHAR, 0, WORK_SEND, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-            buf[count] = '\0';
+//             buf[count] = '\0';
 
-            Mandelbrot* m = new Mandelbrot(buf);
+//             Mandelbrot* m = new Mandelbrot(buf);
 
-            delete [] buf;
+//             delete [] buf;
 
-            m->dichotomie3();
+//             m->dichotomie3();
 
-            delete m;
+//             delete m;
 
-        }
-        else if(status.MPI_TAG == END)
-        {
-            break;
-        }
-    }
+//         }
+//         else if(status.MPI_TAG == END)
+//         {
+//             break;
+//         }
+//     }
 
-    std::stringstream list("");
-    for( int i = 0;i < 10 && Mandelbrot::top10[i].val != NULL; i++)
-    {
-        if(i == 0)
-            list << Mandelbrot::top10[i].key << "|" << Mandelbrot::top10[i].val;
-        else
-            list << "|" << Mandelbrot::top10[i].key << "|" << Mandelbrot::top10[i].val;
-    }
+//     std::stringstream list("");
+//     for( int i = 0;i < 10 && Mandelbrot::top10[i].val != NULL; i++)
+//     {
+//         if(i == 0)
+//             list << Mandelbrot::top10[i].key << "|" << Mandelbrot::top10[i].val;
+//         else
+//             list << "|" << Mandelbrot::top10[i].key << "|" << Mandelbrot::top10[i].val;
+//     }
 
 
 
-    MPI_Send(list.str().c_str(), list.str().size(), MPI_CHAR, 0, LIST_SEND, MPI_COMM_WORLD);
-}
+//     MPI_Send(list.str().c_str(), list.str().size(), MPI_CHAR, 0, LIST_SEND, MPI_COMM_WORLD);
+// }
 
 char* create_work(int enough, mpf_t x, mpf_t y, mpf_t w, mpf_t h, std::vector<int> divs)
 {

@@ -273,7 +273,21 @@ void receiveExploOptions()
 }
 
 
+char* getWork()
+{
+	int rank, pere, fd, fg;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
+
+	char* work = NULL;
+
+	if(Mandelbrot::mpmc->pop(rank, work) == MPMC_SUCCES);
+	else if (Mandelbrot::mpmc->pop(fg, work) == MPMC_SUCCES);
+	else if (Mandelbrot::mpmc->pop(pere, work) == MPMC_SUCCES);
+	else if (Mandelbrot::mpmc->pop(fd, work) == MPMC_SUCCES);
+	
+	return work;
+}
 
 
 int main(int argc, char** argv)
@@ -297,13 +311,28 @@ int main(int argc, char** argv)
     
     uint64_t tick = rdtsc();
 
+	Mandelbrot* M;
+    char* work;
+	
+	while(1)
+	{
+		work = NULL;
+		while((work = getWork()))
+		{
+			M = new Mandelbrot(work);
+			M->dichotomie3();
+			delete M;
+			delete [] work;
+		}
 
-    
+
+	}
 
 
-    if(rank == 0 && verbose)
-        std::cout <<"Time spend in cycle : "<< rdtsc() - tick << std::endl;
-
+	if(rank == 0 && verbose == true)
+		std::cout << "Time spend in cycle : " << rdtsc() - tick << std::endl;
+	
+	delete Mandelbrot::mpmc;
 
     MPI_Finalize();
 

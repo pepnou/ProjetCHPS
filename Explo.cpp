@@ -8,7 +8,7 @@
 #include "mpmc.hpp"
 #include "mandelbrot.hpp"
 
-
+#define KILL 69
 #define MPMC_SIZE 50000
 
 
@@ -347,26 +347,71 @@ int main(int argc, char** argv)
 		if(voisin[0] == -1 && getState(rank) == 's')
 			for (int i = 0; voisin[i] != -1; ++i)
 			{
-				MPI_Send(KILL, 1, MPI_CHAR, voisin[i], 0, MPI_COMM_WORLD);
+				MPI_Send(0, 0, MPI_BYTE, voisin[i], KILL, MPI_COMM_WORLD);
 				break;
 			}
 		//usleep(100);
 	}
 
-	MPI_Recv(KILL, 1, MPI_CHAR, voisin[0], 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	MPI_Recv(0, 0, MPI_BYTE, voisin[0], KILL, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
 	if(voisin[1] == -1 && voisin[2] == -1)
-		MPI_Send(TOP_10, 1, MPI_CHAR, voisin[0], 0, MPI_COMM_WORLD);
+		//send top 10 to daddy
+		{
+	    std::stringstream list("");
+	    for( int i = 0;i < 10 && Mandelbrot::top10[i].val != NULL; i++)
+	    {
+	        if(i == 0)
+	            list << Mandelbrot::top10[i].key << "|" << Mandelbrot::top10[i].val;
+	        else
+	            list << "|" << Mandelbrot::top10[i].key << "|" << Mandelbrot::top10[i].val;
+	    }
+	    MPI_Send(list.str().c_str(), list.str().size(), MPI_CHAR, 0, LIST_SEND, MPI_COMM_WORLD);
+	    }
+
+		//MPI_Send(Mandelbrot::top10, 1, MPI_CHAR, voisin[0], 0, MPI_COMM_WORLD);
 	else
 		for (int i = 1; voisin[i] != -1; ++i)
 		{
-			MPI_Recv(TOP_10, 1, MPI_CHAR, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			//INSERT IN LIST TO COMBINE THE TOP 10
+			for(int i = 1; i < size; i++)
+		    {
+		    	//receive top 10 from child
+		        MPI_Probe(i, LIST_SEND, MPI_COMM_WORLD, &status);
+		        MPI_Get_count(&status, MPI_CHAR, &count);
+		        buf = new char[count+1]();
+		        MPI_Recv(buf, count, MPI_CHAR, status.MPI_SOURCE, LIST_SEND, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		        buf[count] = '\0';
+
+		        tmp = strtok(buf, "|");
+		        while(tmp)
+		        {
+		            key = atof(tmp);
+
+		            tmp = strtok(NULL, "|");
+		            val = new char[strlen(tmp) + 1]();
+		            strcpy(val, tmp);
+		            val[strlen(tmp)] = '\0';
+		        
+		            insert_top10(key, val);
+
+		            tmp = strtok(NULL, "|");
+		        }
+		    }
 		}
 		if(voisin[0] == -1)
-			//save
+		{
+			std::stringstream file_name("");
+		    file_name << Mandelbrot::rep << "/Coordinates.txt";
+		    
+		    FILE* f2 = fopen(file_name.str().c_str(), "w+");
+		    for(int i = 0; i < 10 && Mandelbrot::top10[i].val != NULL; i++)
+		    {
+		         fprintf(f2, "0:%s:2\n", Mandelbrot::top10[i].val);
+		    }
+		    fclose(f2);
+		}
 		else   
-			MPI_Send(TOP_10, 1, MPI_CHAR, voisin[0], 0, MPI_COMM_WORLD);
+			MPI_Send(Mandelbrot::top10, 1, MPI_CHAR, voisin[0], 0, MPI_COMM_WORLD);
 
 	if(rank == 0 && verbose == true)
 		std::cout << "Time spend in cycle : " << rdtsc() - tick << std::endl;

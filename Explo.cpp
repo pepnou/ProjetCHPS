@@ -8,7 +8,7 @@
 #include "mpmc.hpp"
 #include "mandelbrot.hpp"
 
-
+#define KILL 69
 #define MPMC_SIZE 50000
 
 
@@ -24,19 +24,19 @@ Mpmc* Mandelbrot::mpmc;
 
 void getExploOptions(int argc, char** argv, Mpmc* mpmc, bool& verbose)
 {
-    // default exploration options
-        std::string x("-0.5"), y("0"), w("3"), h("2");
-        int enough = 5;
+	// default exploration options
+		std::string x("-0.5"), y("0"), w("3"), h("2");
+		int enough = 5;
 
-        int default_param[5];
-        // largeur
-        default_param[0] = 48;
-        // hauteur
-        default_param[1] = 27;
-        // sur echantillonage
-        default_param[2] = 1;
-        // couleur
-        default_param[3] = RAINBOW;
+		int default_param[5];
+		// largeur
+		default_param[0] = 48;
+		// hauteur
+		default_param[1] = 27;
+		// sur echantillonage
+		default_param[2] = 1;
+		// couleur
+		default_param[3] = RAINBOW;
 
 	try
 	{
@@ -97,10 +97,10 @@ void getExploOptions(int argc, char** argv, Mpmc* mpmc, bool& verbose)
 		{
 			default_param[1] = vm["im-height"].as<int>();
 		}
-        if (vm.count("width"))
-        {
-            w = vm.count("width");
-        }
+		if (vm.count("width"))
+		{
+			w = vm.count("width");
+		}
 		
 		if (vm.count("height"))
 		{
@@ -139,7 +139,7 @@ void getExploOptions(int argc, char** argv, Mpmc* mpmc, bool& verbose)
 			exit(0);
 		}
 		
-        if (vm2.count("Xposition"))
+		if (vm2.count("Xposition"))
 		{
 			x = vm2.count("Xposition");
 		}
@@ -189,7 +189,7 @@ void getExploOptions(int argc, char** argv, Mpmc* mpmc, bool& verbose)
 			verbose = true;
 		}
 		
-        if (vm2.count("help-color"))
+		if (vm2.count("help-color"))
 		{
 			std::cout<< "This option allows you to choose from the three currently implemented coloring algorithm, it should only take a number between 1 et 3" << std::endl
 				<< "\t1: This algorithm take the escape speed time of a point (or multiple if you are using the super sampling), reduce it between 0 et 360 using a modulo and then use it as hue in the hsb color representation" << std::endl
@@ -236,40 +236,40 @@ void getExploOptions(int argc, char** argv, Mpmc* mpmc, bool& verbose)
 	catch(std::exception& E)
 	{
 		std::cout << E.what() << std::endl;
-        MPI_Abort(MPI_COMM_WORLD, 1);
+		MPI_Abort(MPI_COMM_WORLD, 1);
 	}
 
 
 	std::stringstream r;
-    r.str("");
-    std::time_t t = std::time(0);
-    std::tm* now = std::localtime(&t);
-    
-    r << std::setfill('0') << std::right << "../Img/" << now->tm_year + 1900 << "-" << std::setw(2) << now->tm_mon + 1 << "-" << std::setw(2) << now->tm_mday << "_" << std::setw(2) << now->tm_hour << ":" << std::setw(2) << now->tm_min << ":" << std::setw(2) << now->tm_sec;
+	r.str("");
+	std::time_t t = std::time(0);
+	std::tm* now = std::localtime(&t);
+	
+	r << std::setfill('0') << std::right << "../Img/" << now->tm_year + 1900 << "-" << std::setw(2) << now->tm_mon + 1 << "-" << std::setw(2) << now->tm_mday << "_" << std::setw(2) << now->tm_hour << ":" << std::setw(2) << now->tm_min << ":" << std::setw(2) << now->tm_sec;
 
-    Mandelbrot::rep = new char[r.str().size() + 1]();
-    strcpy(Mandelbrot::rep, r.str().c_str());
-    Mandelbrot::rep[r.str().size()] = '\0';
+	Mandelbrot::rep = new char[r.str().size() + 1]();
+	strcpy(Mandelbrot::rep, r.str().c_str());
+	Mandelbrot::rep[r.str().size()] = '\0';
 
-    default_param[4] = r.str().size() + 1;
+	default_param[4] = r.str().size() + 1;
 
 
-    MPI_Bcast(default_param, 5, MPI_INT, 0, MPI_COMM_WORLD);
-    MPI_Bcast(Mandelbrot::rep, default_param[4], MPI_CHAR, 0, MPI_COMM_WORLD);
+	MPI_Bcast(default_param, 5, MPI_INT, 0, MPI_COMM_WORLD);
+	MPI_Bcast(Mandelbrot::rep, default_param[4], MPI_CHAR, 0, MPI_COMM_WORLD);
 }
 
 void receiveExploOptions()
 {
-    int default_param[5];
-    MPI_Bcast(default_param, 5, MPI_INT, 0, MPI_COMM_WORLD);
+	int default_param[5];
+	MPI_Bcast(default_param, 5, MPI_INT, 0, MPI_COMM_WORLD);
 
-    Mandelbrot::im_width = default_param[0];
-    Mandelbrot::im_height = default_param[1];
-    Mandelbrot::surEchantillonage = default_param[2];
-    Mandelbrot::color = default_param[3];
-    Mandelbrot::rep = new char[default_param[4]];
+	Mandelbrot::im_width = default_param[0];
+	Mandelbrot::im_height = default_param[1];
+	Mandelbrot::surEchantillonage = default_param[2];
+	Mandelbrot::color = default_param[3];
+	Mandelbrot::rep = new char[default_param[4]];
 
-    MPI_Bcast(Mandelbrot::rep, default_param[4], MPI_CHAR, 0, MPI_COMM_WORLD);
+	MPI_Bcast(Mandelbrot::rep, default_param[4], MPI_CHAR, 0, MPI_COMM_WORLD);
 }
 
 
@@ -292,27 +292,30 @@ char* getWork()
 
 int main(int argc, char** argv)
 {
-    MPI_Init(&argc, &argv);
-    
-    int rank, size;
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
+	MPI_Init(&argc, &argv);
+	
+	int rank, size;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
 
-    Mandelbrot::mpmc = new Mpmc(MPMC_SIZE);
+	Mandelbrot::mpmc = new Mpmc(MPMC_SIZE);
 
 
-    bool verbose;
-    
-    if(rank == 0)
-        getExploOptions(argc, argv, Mandelbrot::mpmc, verbose);
-    else
-        receiveExploOptions();
-    
-    uint64_t tick = rdtsc();
+	bool verbose;
+	
+	if(rank == 0)
+		getExploOptions(argc, argv, Mandelbrot::mpmc, verbose);
+	else
+		receiveExploOptions();
+	
+	uint64_t tick = rdtsc();
 
 	Mandelbrot* M;
-    char* work;
+	char* work;
+
+	//ALORS OUI MAIS NON HEIN
+	int* voisin;
 	
 	while(1)
 	{
@@ -324,17 +327,100 @@ int main(int argc, char** argv)
 			delete M;
 			delete [] work;
 		}
+
+		//si on a pas de fils
+		if(voisin[1] == -1)
+			setState('s');
+		//si on a juste 1 fils et qu'il dort (gauche)
+		if(voisin[2] == -1)
+			if(getState(voisin[1]) == 's')
+				setState('s');
+
+		//si on a juste 1 fils et qu'il dort (droite)
+		if(voisin[2] == -1)
+			if(getState(voisin[1]) == 's')
+				setState('s');
+
+		//si on a 2 fils et qu'ils dorment tout les 2
+		if(getState(voisin[1]) == 's' && getState(voisin[2] == 's'))
+			setState('s');
+		if(voisin[0] == -1 && getState(rank) == 's')
+			for (int i = 0; voisin[i] != -1; ++i)
+			{
+				MPI_Send(0, 0, MPI_BYTE, voisin[i], KILL, MPI_COMM_WORLD);
+				break;
+			}
+		//usleep(100);
 	}
 
+	MPI_Recv(0, 0, MPI_BYTE, voisin[0], KILL, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+	if(voisin[1] == -1 && voisin[2] == -1)
+		//send top 10 to daddy
+		{
+	    std::stringstream list("");
+	    for( int i = 0;i < 10 && Mandelbrot::top10[i].val != NULL; i++)
+	    {
+	        if(i == 0)
+	            list << Mandelbrot::top10[i].key << "|" << Mandelbrot::top10[i].val;
+	        else
+	            list << "|" << Mandelbrot::top10[i].key << "|" << Mandelbrot::top10[i].val;
+	    }
+	    MPI_Send(list.str().c_str(), list.str().size(), MPI_CHAR, 0, LIST_SEND, MPI_COMM_WORLD);
+	    }
+
+		//MPI_Send(Mandelbrot::top10, 1, MPI_CHAR, voisin[0], 0, MPI_COMM_WORLD);
+	else
+		for (int i = 1; voisin[i] != -1; ++i)
+		{
+			for(int i = 1; i < size; i++)
+		    {
+		    	//receive top 10 from child
+		        MPI_Probe(i, LIST_SEND, MPI_COMM_WORLD, &status);
+		        MPI_Get_count(&status, MPI_CHAR, &count);
+		        buf = new char[count+1]();
+		        MPI_Recv(buf, count, MPI_CHAR, status.MPI_SOURCE, LIST_SEND, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		        buf[count] = '\0';
+
+		        tmp = strtok(buf, "|");
+		        while(tmp)
+		        {
+		            key = atof(tmp);
+
+		            tmp = strtok(NULL, "|");
+		            val = new char[strlen(tmp) + 1]();
+		            strcpy(val, tmp);
+		            val[strlen(tmp)] = '\0';
+		        
+		            insert_top10(key, val);
+
+		            tmp = strtok(NULL, "|");
+		        }
+		    }
+		}
+		if(voisin[0] == -1)
+		{
+			std::stringstream file_name("");
+		    file_name << Mandelbrot::rep << "/Coordinates.txt";
+		    
+		    FILE* f2 = fopen(file_name.str().c_str(), "w+");
+		    for(int i = 0; i < 10 && Mandelbrot::top10[i].val != NULL; i++)
+		    {
+		         fprintf(f2, "0:%s:2\n", Mandelbrot::top10[i].val);
+		    }
+		    fclose(f2);
+		}
+		else   
+			MPI_Send(Mandelbrot::top10, 1, MPI_CHAR, voisin[0], 0, MPI_COMM_WORLD);
 
 	if(rank == 0 && verbose == true)
 		std::cout << "Time spend in cycle : " << rdtsc() - tick << std::endl;
 	
 	delete Mandelbrot::mpmc;
 
-    MPI_Finalize();
+	MPI_Finalize();
 
-    std::exit(0);
+	std::exit(0);
 }
 
 

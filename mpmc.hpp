@@ -14,7 +14,7 @@ class Mpmc
 	private:
 		int mpi_rank, mpi_size;
 		size_t size;
-		MPI_Info info;
+		//MPI_Info info;
 		MPI_Win window;
 		char* buf;
 

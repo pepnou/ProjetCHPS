@@ -10,7 +10,7 @@
 
 Mpmc::Mpmc(size_t size) : size(size)
 {
-	MPI_Win_allocate(size, 0, info, MPI_COMM_WORLD, buf, &window);
+	MPI_Win_allocate(size, 0, /*info*/MPI_INFO_NULL, MPI_COMM_WORLD, buf, &window);
 	MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 	

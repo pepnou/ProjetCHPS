@@ -1158,6 +1158,8 @@ void getSubImages(std::queue<char*> *work, mpf_t x, mpf_t y, mpf_t w, mpf_t h, i
 
         work->push(buf);
 
+//changement de head et branche ici si jamais ca marche pas un jour chepa, inchallah ca marche
+
         mpf_sub(ny,ny,nh);
         info.str("");
     }

@@ -10,7 +10,8 @@
 
 Mpmc::Mpmc(size_t size) : size(size)
 {
-	MPI_Win_allocate(size, 0, /*info*/MPI_INFO_NULL, MPI_COMM_WORLD, buf, &window);
+	buf = (char*)malloc(size);
+	MPI_Win_allocate(size, 1, /*info*/MPI_INFO_NULL, MPI_COMM_WORLD, buf, &window);
 	MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 	
@@ -94,6 +95,7 @@ int Mpmc::push(char* work)
 
 int Mpmc::pop(size_t target, char* work)
 {
+	std::cerr << target << std::endl;
 	if(work)
 		delete [] work;
 	
@@ -127,12 +129,17 @@ int Mpmc::pop(size_t target, char* work)
 
 	do
 	{
+		std::cerr << 0 << std::endl;
 		MPI_Get(&current, 1, MPI_UNSIGNED_LONG, target, last_read, 1, MPI_UNSIGNED_LONG, window);
+		std::cerr << 1 << std::endl;
 		MPI_Get(&w_ok, 1, MPI_UNSIGNED_LONG, target, sizeof(size_t), 1, MPI_UNSIGNED_LONG, window);
+		std::cerr << 2 << std::endl;
 
 		if((w_ok - current + size) % size > 0)
 		{
+			std::cerr << 3 << std::endl;
 			MPI_Get(&size, 1, MPI_UNSIGNED_LONG, target, current, 1, MPI_UNSIGNED_LONG, window);
+			std::cerr << 4 << std::endl;
 			next = (current - header_size + size + sizeof(size_t)) % (size - header_size) + header_size;
 
 			if(size != 0)

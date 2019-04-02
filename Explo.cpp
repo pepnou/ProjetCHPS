@@ -11,7 +11,7 @@
 
 #define KILL 69
 #define LIST_SEND 70
-#define MPMC_SIZE 50000
+#define MPMC_SIZE 65536
 
 
 int Mandelbrot::surEchantillonage;
@@ -282,10 +282,10 @@ char* getWork(int* voisin)
 
 	char* work = NULL;
 
-	if(Mandelbrot::mpmc->pop(rank, work) == MPMC_SUCCES);
-	else if (voisin[0] != -1 && Mandelbrot::mpmc->pop(voisin[0], work) == MPMC_SUCCES);
-	else if (voisin[1] != -1 && Mandelbrot::mpmc->pop(voisin[1], work) == MPMC_SUCCES);
-	else if (voisin[2] != -1 && Mandelbrot::mpmc->pop(voisin[2], work) == MPMC_SUCCES);
+	if(Mandelbrot::mpmc->pop(rank, work) != MPMC_SUCCES)
+		if (voisin[0] != -1 && Mandelbrot::mpmc->pop(voisin[0], work) != MPMC_SUCCES)
+			if (voisin[1] != -1 && Mandelbrot::mpmc->pop(voisin[1], work) != MPMC_SUCCES)
+				if (voisin[2] != -1 && Mandelbrot::mpmc->pop(voisin[2], work) != MPMC_SUCCES);
 	
 	return work;
 }
@@ -299,16 +299,16 @@ int main(int argc, char** argv)
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-
-	Mandelbrot::mpmc = new Mpmc(MPMC_SIZE);
-
-
 	bool verbose;
 	
 	if(rank == 0)
 		getExploOptions(argc, argv, Mandelbrot::mpmc, verbose);
 	else
 		receiveExploOptions();
+
+
+	Mandelbrot::mpmc = new Mpmc(MPMC_SIZE);
+
 	
 	uint64_t tick = rdtsc();
 
@@ -328,6 +328,8 @@ int main(int argc, char** argv)
 	
 	while(1)
 	{
+		Mandelbrot::mpmc->setState('w');
+
 		work = NULL;
 		while((work = getWork(voisin)))
 		{

@@ -7,6 +7,7 @@
 #include "workHandler.hpp"
 #include "mpmc.hpp"
 #include "mandelbrot.hpp"
+#include "arbre.hpp"
 
 #define KILL 69
 #define LIST_SEND 70
@@ -314,8 +315,7 @@ int main(int argc, char** argv)
 	Mandelbrot* M;
 	char* work;
 
-	//ALORS OUI MAIS NON HEIN
-	int* voisin;
+	int* voisin = getNeighbors();
 
 	MPI_Request rqst;
 	MPI_Irecv(NULL, 0, MPI_BYTE, MPI_ANY_SOURCE, KILL, MPI_COMM_WORLD, &rqst);

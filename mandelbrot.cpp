@@ -627,8 +627,8 @@ void Mandelbrot::dichotomie3()
     escapeSpeedCalcSeq();
     draw();
 
-    bool filtre, needwork;
-    int img_num;
+    bool filtre/*, needwork*/;
+    //int img_num;
     double res;
     
 
@@ -688,7 +688,7 @@ void Mandelbrot::dichotomie3()
         mpf_init(equalz);
 
         std::vector<int> divs_cpy = divs;
-        bool first = true;
+        //bool first = true;
 
         for(int i = divs.size() - 1; i >= 0; i--)
         {

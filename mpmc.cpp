@@ -29,9 +29,9 @@ char Mpmc::getState(size_t target)
 	return result;
 }
 
-void setState(char goal)
+void Mpmc::setState(char goal)
 {
-
+	MPI_Put(&goal, 1, MPI_CHAR, mpi_rank, state, 1, MPI_CHAR, window);
 }
 
 int Mpmc::push(char* work)
@@ -63,9 +63,6 @@ int Mpmc::push(char* work)
 
 	do 
 	{
-		//current = *((size_t*)buf + last_write);
-		//next = (current + msg_size) % this->size;
-
 		MPI_Get(&current, 1, MPI_UNSIGNED_LONG, mpi_rank, last_write, 1, MPI_UNSIGNED_LONG, window);
 		next = ((current + msg_size - header_size) % (size - header_size)) + header_size;
 		
@@ -75,8 +72,8 @@ int Mpmc::push(char* work)
 			MPI_Compare_and_swap(&next, &current, &result, MPI_UNSIGNED_LONG, mpi_rank, last_write, window);
 			if(result == next)
 			{
-				memcpy(&buf[current], &length, sizeof(size_t));
-				memcpy(&buf[current + sizeof(size_t)], work, length);
+				MPI_Put(&length, 1, MPI_UNSIGNED_LONG, mpi_rank, current, 1, MPI_UNSIGNED_LONG, window);
+				MPI_Put(work, 1, MPI_UNSIGNED_LONG, mpi_rank, current + sizeof(size_t), 1, MPI_UNSIGNED_LONG, window);
 				
 				do
 				{
@@ -123,34 +120,40 @@ int Mpmc::pop(size_t target, char* work)
 	} while(loop);
 	return true;*/
 
+	size_t header_size = sizeof(char) + 4 * sizeof(size_t);
+
 	size_t current, next, result, size, w_ok;
 	bool loop = true;
 
-	do {
-		MPI_Get(&current, 1, MPI_UNSIGNED_LONG, target, 2 * sizeof(size_t), 1, MPI_UNSIGNED_LONG, window);
-		MPI_Get(&size, 1, MPI_UNSIGNED_LONG, target, current, 1, MPI_UNSIGNED_LONG, window);
-		next = (current + size + sizeof(size_t)) % size;
-		
+	do
+	{
+		MPI_Get(&current, 1, MPI_UNSIGNED_LONG, target, last_read, 1, MPI_UNSIGNED_LONG, window);
 		MPI_Get(&w_ok, 1, MPI_UNSIGNED_LONG, target, sizeof(size_t), 1, MPI_UNSIGNED_LONG, window);
 
 		if((w_ok - current + size) % size > 0)
 		{
-			MPI_Compare_and_swap(&next, &current, &result, MPI_UNSIGNED_LONG, target, last_read, window);
-			if( result == next)
+			MPI_Get(&size, 1, MPI_UNSIGNED_LONG, target, current, 1, MPI_UNSIGNED_LONG, window);
+			next = (current - header_size + size + sizeof(size_t)) % (size - header_size) + header_size;
+
+			if(size != 0)
 			{
-				work = new char[size];
-				MPI_Get(work, size, MPI_CHAR, target, current + sizeof(size_t), size, MPI_CHAR, window);
-
-				char* empty = (char*)calloc(size+sizeof(size_t), sizeof(char));
-				MPI_Put(empty, size + sizeof(size_t), MPI_CHAR, target, current, size + sizeof(size_t), MPI_CHAR, window);
-				free(empty);
-
-				do
+				MPI_Compare_and_swap(&next, &current, &result, MPI_UNSIGNED_LONG, target, last_read, window);
+				if( result == next)
 				{
-					MPI_Compare_and_swap(&next, &current, &result, MPI_UNSIGNED_LONG, target, read_ok, window);
-				} while (result != next);
-				
-				loop = false;
+					work = new char[size];
+					MPI_Get(work, size, MPI_CHAR, target, current + sizeof(size_t), size, MPI_CHAR, window);
+
+					char* empty = (char*)calloc(size+sizeof(size_t), sizeof(char));
+					MPI_Put(empty, size + sizeof(size_t), MPI_CHAR, target, current, size + sizeof(size_t), MPI_CHAR, window);
+					free(empty);
+
+					do
+					{
+						MPI_Compare_and_swap(&next, &current, &result, MPI_UNSIGNED_LONG, target, read_ok, window);
+					} while (result != next);
+					
+					loop = false;
+				}
 			}
 		}
 		else

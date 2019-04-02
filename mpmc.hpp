@@ -23,7 +23,8 @@ class Mpmc
 		~Mpmc();
 		int push(char* work);
 		int pop(size_t target, char* work);
-
+		char getState(size_t target);
+		void setState(char goal);
 };
 
 #endif

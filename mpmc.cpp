@@ -2,10 +2,11 @@
 
 #include <string.h>
 
-#define last_write 0
-#define write_ok sizeof(size_t)
-#define last_read 2*sizeof(size_t)
-#define read_ok 3*sizeof(size_t)
+#define state 0
+#define last_write sizeof(char)+0*sizeof(size_t)
+#define write_ok sizeof(char)+1*sizeof(size_t)
+#define last_read sizeof(char)+2*sizeof(size_t)
+#define read_ok sizeof(char)+3*sizeof(size_t)
 
 Mpmc::Mpmc(size_t size) : size(size)
 {
@@ -19,6 +20,18 @@ Mpmc::Mpmc(size_t size) : size(size)
 Mpmc::~Mpmc()
 {
 	MPI_Win_free( &window );
+}
+
+char Mpmc::getState(size_t target)
+{
+	char result;
+	MPI_Get(&result, 1, MPI_CHAR, target, state, 1, MPI_CHAR, window);
+	return result;
+}
+
+void setState(char goal)
+{
+
 }
 
 int Mpmc::push(char* work)
@@ -46,10 +59,15 @@ int Mpmc::push(char* work)
 	size_t length = strlen(work) + 1;
 	size_t msg_size = sizeof(size_t) + length;
 
+	size_t header_size = sizeof(char) + 4 * sizeof(size_t);
+
 	do 
 	{
-		current = *((size_t*)buf + last_write);
-		next = (current + msg_size) % this->size;
+		//current = *((size_t*)buf + last_write);
+		//next = (current + msg_size) % this->size;
+
+		MPI_Get(&current, 1, MPI_UNSIGNED_LONG, mpi_rank, last_write, 1, MPI_UNSIGNED_LONG, window);
+		next = ((current + msg_size - header_size) % (size - header_size)) + header_size;
 		
 		if( (current < next && !( *((size_t*)buf + read_ok) > current && *((size_t*)buf + read_ok) < next ) ) 
 			|| ( current > next && *((size_t*)buf + read_ok) <= current && *((size_t*)buf + read_ok) > next ) )

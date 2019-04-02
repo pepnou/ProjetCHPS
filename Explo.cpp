@@ -324,8 +324,6 @@ int main(int argc, char** argv)
 			delete M;
 			delete [] work;
 		}
-
-
 	}
 
 

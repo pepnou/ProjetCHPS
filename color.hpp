@@ -4,7 +4,7 @@
 #include <iostream>
 #include <iomanip>
 
-#include <opencv2/core.hpp>
+#include <opencv2/core/core.hpp>
 #include <cmath>
 
 void RGBtoHSB();

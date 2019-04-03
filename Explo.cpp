@@ -85,11 +85,11 @@ void getExploOptions(int argc, char** argv, Mpmc* mpmc, bool& verbose)
 
 		if (vm.count("Xposition"))
 		{
-			x = vm.count("Xposition");
+			x = vm["Xposition"].as<std::string>();
 		}
 		if (vm.count("Yposition"))
 		{
-			y = vm.count("Yposition");
+			y = vm["Yposition"].as<std::string>();
 		}
 		
 		if (vm.count("im-width"))
@@ -103,12 +103,12 @@ void getExploOptions(int argc, char** argv, Mpmc* mpmc, bool& verbose)
 		}
 		if (vm.count("width"))
 		{
-			w = vm.count("width");
+			w = vm["width"].as<std::string>();
 		}
 		
 		if (vm.count("height"))
 		{
-			h = vm.count("height");
+			h = vm["height"].as<std::string>();
 		}
 		
 		if (vm.count("color"))
@@ -145,12 +145,12 @@ void getExploOptions(int argc, char** argv, Mpmc* mpmc, bool& verbose)
 		
 		if (vm2.count("Xposition"))
 		{
-			x = vm2.count("Xposition");
+			x = vm2["Xposition"].as<std::string>();
 		}
 
 		if (vm2.count("Yposition"))
 		{
-			y = vm2.count("Yposition");
+			y = vm2["Yposition"].as<std::string>();
 		}
 		
 		if (vm2.count("im-width"))
@@ -165,12 +165,12 @@ void getExploOptions(int argc, char** argv, Mpmc* mpmc, bool& verbose)
 
 		if (vm2.count("width"))
 		{
-			w = vm2.count("width");
+			w = vm2["width"].as<std::string>();
 		}
 		
 		if (vm2.count("height"))
 		{
-			w = vm2.count("height");
+			h = vm2["height"].as<std::string>();
 		}
 		
 		if (vm2.count("color"))
@@ -260,6 +260,19 @@ void getExploOptions(int argc, char** argv, Mpmc* mpmc, bool& verbose)
 
 	MPI_Bcast(default_param, 5, MPI_INT, 0, MPI_COMM_WORLD);
 	MPI_Bcast(Mandelbrot::rep, default_param[4], MPI_CHAR, 0, MPI_COMM_WORLD);
+
+
+	std::stringstream w_ss;
+	w_ss << enough << ":" << x << ":" << y << ":" << w << ":" << h << ":2:3";
+	char* work = new char[w_ss.str().size() + 1]();
+	strcpy(work, w_ss.str().c_str());
+	work[w_ss.str().size()] = '\0';
+
+	if(mpmc->push(work) != MPMC_SUCCES)
+	{
+		MPI_Abort(MPI_COMM_WORLD, 42);
+	}
+	delete [] work;
 }
 
 void receiveExploOptions()
@@ -317,10 +330,28 @@ int main(int argc, char** argv)
 
 
 
+	//initialisation des variables
+	Mandelbrot* M = NULL;
+	char* work = NULL;
+
+	init_top10();
+	Mandelbrot::mpmc = new Mpmc(MPMC_SIZE);
+
+
+	//creation de l'arbre de communication
+	int* voisin = getNeighbors();
+
+	/*{
+		std::stringstream r("");
+		r << rank << " : " << voisin[0] << " , " << voisin[1] << " , " << voisin[2] << std::endl;
+		std::cerr << r.str();
+	}*/
+
 
 	//recuperation des options
 	bool verbose;
 	
+
 	if(rank == 0)
 	{
 		getExploOptions(argc, argv, Mandelbrot::mpmc, verbose);
@@ -338,35 +369,11 @@ int main(int argc, char** argv)
 		receiveExploOptions();
 
 
-	//initialisation des variables
-	Mandelbrot* M = NULL;
-	char* work = NULL;
-
-	init_top10();
-	Mandelbrot::mpmc = new Mpmc(MPMC_SIZE);
-
-
-
-	//creation de l'arbre de communication
-	int* voisin = getNeighbors();
-
-	/*{
-		std::stringstream r("");
-		r << rank << " : " << voisin[0] << " , " << voisin[1] << " , " << voisin[2] << std::endl;
-		std::cerr << r.str();
-	}*/
-
-
-
 	//attente du message de terminaison
 	MPI_Request rqst;
 	MPI_Irecv(NULL, 0, MPI_BYTE, MPI_ANY_SOURCE, KILL, MPI_COMM_WORLD, &rqst);
 	int flag = 0;
-
-
 	
-	//changement de son status vers w (work)
-	Mandelbrot::mpmc->setState('w');
 
 	//synchronisation
 	MPI_Barrier(MPI_COMM_WORLD);

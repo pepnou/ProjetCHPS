@@ -20,6 +20,19 @@ Mpmc::Mpmc(size_t size) : size(size)
 	MPI_Win_create(buf, size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &window);
 
 	memset( buf, 0, size);
+	
+	char goal = 'w';
+	int header_size = sizeof(char) + 4*sizeof(size_t);
+
+	MPI_Win_lock(MPI_LOCK_EXCLUSIVE, mpi_rank, 0, window);
+
+	MPI_Accumulate(&goal, 1, MPI_CHAR, mpi_rank, state, 1, MPI_CHAR, MPI_REPLACE, window);
+	MPI_Accumulate(&header_size, 1, MPI_CHAR, mpi_rank, last_write, 1, MPI_UNSIGNED_LONG, MPI_REPLACE, window);
+	MPI_Accumulate(&header_size, 1, MPI_CHAR, mpi_rank, write_ok, 1, MPI_UNSIGNED_LONG, MPI_REPLACE, window);
+	MPI_Accumulate(&header_size, 1, MPI_CHAR, mpi_rank, last_read, 1, MPI_UNSIGNED_LONG, MPI_REPLACE, window);
+	MPI_Accumulate(&header_size, 1, MPI_CHAR, mpi_rank, read_ok, 1, MPI_UNSIGNED_LONG, MPI_REPLACE, window);
+
+	MPI_Win_unlock(mpi_rank, window);
 	//std::cout << __FUNCTION__ << " fin" << std::endl;
 }
 
@@ -62,8 +75,6 @@ void Mpmc::setState(char goal)
 
 int Mpmc::push(char* work)
 {
-	//std::cout << __FUNCTION__ << " deb" << std::endl;
-
 	/*size_t current, next;
 	bool loop = true;
 	do {
@@ -83,7 +94,7 @@ int Mpmc::push(char* work)
 
 	MPI_Win_lock(MPI_LOCK_EXCLUSIVE, mpi_rank, 0, window);
 
-	size_t current, next, result;
+	size_t current, next, result, r_ok;
 	bool loop = true;
 
 	size_t length = strlen(work) + 1;
@@ -91,16 +102,25 @@ int Mpmc::push(char* work)
 
 	size_t header_size = sizeof(char) + 4 * sizeof(size_t);
 
-	do 
+	std::cerr << work << " " << length << " " << msg_size << " " << header_size << std::endl;
+
+	do
 	{
+		MPI_Get(&r_ok, 1, MPI_UNSIGNED_LONG, mpi_rank, read_ok, 1, MPI_UNSIGNED_LONG, window);
 		MPI_Get(&current, 1, MPI_UNSIGNED_LONG, mpi_rank, last_write, 1, MPI_UNSIGNED_LONG, window);
+
 		next = ((current + msg_size - header_size) % (size - header_size)) + header_size;
-		
-		if( (current < next && !( *((size_t*)buf + read_ok) > current && *((size_t*)buf + read_ok) < next ) ) 
-			|| ( current > next && *((size_t*)buf + read_ok) <= current && *((size_t*)buf + read_ok) > next ) )
+
+		bool cond;
+		cond = current < next && (r_ok <= current || r_ok > next);
+		cond = cond || (current > next && (r_ok > next && r_ok <= current));
+
+		std::cerr << r_ok << " " << current << " " << next << std::endl;
+
+		if(cond)
 		{
 			MPI_Compare_and_swap(&next, &current, &result, MPI_UNSIGNED_LONG, mpi_rank, last_write, window);
-			if(result == next)
+			if(result == current)
 			{
 				MPI_Put(&length, 1, MPI_UNSIGNED_LONG, mpi_rank, current, 1, MPI_UNSIGNED_LONG, window);
 				MPI_Put(work, 1, MPI_UNSIGNED_LONG, mpi_rank, current + sizeof(size_t), 1, MPI_UNSIGNED_LONG, window);
@@ -116,13 +136,11 @@ int Mpmc::push(char* work)
 		else
 		{
 			MPI_Win_unlock(mpi_rank, window);
-			//std::cout << __FUNCTION__ << " fin" << std::endl;
 			return MPMC_FULL;
 		}
 	} while(loop);
 	
 	MPI_Win_unlock(mpi_rank, window);
-	//std::cout << __FUNCTION__ << " fin" << std::endl;
 	return MPMC_SUCCES;
 }
 
@@ -130,7 +148,6 @@ int Mpmc::pop(size_t target, char* work)
 {
 	//std::cout << __FUNCTION__ << " deb" << std::endl;
 
-	std::cerr << target << std::endl;
 	if(work)
 		delete [] work;
 	
@@ -166,23 +183,18 @@ int Mpmc::pop(size_t target, char* work)
 
 	do
 	{
-		std::cerr << 0 << std::endl;
 		MPI_Get(&current, 1, MPI_UNSIGNED_LONG, target, last_read, 1, MPI_UNSIGNED_LONG, window);
-		std::cerr << 1 << std::endl;
 		MPI_Get(&w_ok, 1, MPI_UNSIGNED_LONG, target, sizeof(size_t), 1, MPI_UNSIGNED_LONG, window);
-		std::cerr << 2 << std::endl;
 
 		if((w_ok - current + size) % size > 0)
 		{
-			std::cerr << 3 << std::endl;
 			MPI_Get(&size, 1, MPI_UNSIGNED_LONG, target, current, 1, MPI_UNSIGNED_LONG, window);
-			std::cerr << 4 << std::endl;
 			next = (current - header_size + size + sizeof(size_t)) % (size - header_size) + header_size;
 
 			if(size != 0)
 			{
 				MPI_Compare_and_swap(&next, &current, &result, MPI_UNSIGNED_LONG, target, last_read, window);
-				if( result == next)
+				if( result == current)
 				{
 					work = new char[size];
 					MPI_Get(work, size, MPI_CHAR, target, current + sizeof(size_t), size, MPI_CHAR, window);

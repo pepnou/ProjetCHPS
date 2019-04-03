@@ -144,12 +144,12 @@ int Mpmc::push(char* work)
 	return MPMC_SUCCES;
 }
 
-int Mpmc::pop(size_t target, char* work)
+int Mpmc::pop(size_t target, char** work)
 {
-	//std::cout << __FUNCTION__ << " deb" << std::endl;
+	std::cout << __FUNCTION__ << " deb" << std::endl;
 
-	if(work)
-		delete [] work;
+	//if(work)
+	//	delete [] work;
 	
 	/*offset_t current, next;
 	work w;
@@ -186,22 +186,29 @@ int Mpmc::pop(size_t target, char* work)
 		MPI_Get(&current, 1, MPI_UNSIGNED_LONG, target, last_read, 1, MPI_UNSIGNED_LONG, window);
 		MPI_Get(&w_ok, 1, MPI_UNSIGNED_LONG, target, sizeof(size_t), 1, MPI_UNSIGNED_LONG, window);
 
-		if((w_ok - current + size) % size > 0)
+		next = ((current + sizeof(size_t) - header_size) % (size - header_size)) + header_size;
+
+		bool cond;
+		cond = current < next && (w_ok <= current || w_ok > next);
+		cond = cond || (current > next && (w_ok > next && w_ok <= current));
+
+		//if((w_ok - current + size) % size > 0)
+		if(cond)
 		{
 			MPI_Get(&size, 1, MPI_UNSIGNED_LONG, target, current, 1, MPI_UNSIGNED_LONG, window);
 			next = (current - header_size + size + sizeof(size_t)) % (size - header_size) + header_size;
 
-			if(size != 0)
-			{
+			//if(size != 0)
+			//{
 				MPI_Compare_and_swap(&next, &current, &result, MPI_UNSIGNED_LONG, target, last_read, window);
-				if( result == current)
+				if(result == current)
 				{
-					work = new char[size];
-					MPI_Get(work, size, MPI_CHAR, target, current + sizeof(size_t), size, MPI_CHAR, window);
+					*work = new char[size];
+					MPI_Get(*work, size, MPI_CHAR, target, current + sizeof(size_t), size, MPI_CHAR, window);
 
-					char* empty = (char*)calloc(size+sizeof(size_t), sizeof(char));
-					MPI_Put(empty, size + sizeof(size_t), MPI_CHAR, target, current, size + sizeof(size_t), MPI_CHAR, window);
-					free(empty);
+					//char* empty = (char*)calloc(size+sizeof(size_t), sizeof(char));
+					//MPI_Put(empty, size + sizeof(size_t), MPI_CHAR, target, current, size + sizeof(size_t), MPI_CHAR, window);
+					//free(empty);
 
 					do
 					{
@@ -210,7 +217,7 @@ int Mpmc::pop(size_t target, char* work)
 					
 					loop = false;
 				}
-			}
+			//}
 		}
 		else
 		{

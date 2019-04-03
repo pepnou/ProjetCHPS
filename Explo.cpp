@@ -297,11 +297,12 @@ char* getWork(int* voisin)
 
 	char* work = NULL;
 
-	if(Mandelbrot::mpmc->pop(rank, work) != MPMC_SUCCES)
-		if (voisin[0] != -1 && Mandelbrot::mpmc->pop(voisin[0], work) != MPMC_SUCCES)
-			if (voisin[1] != -1 && Mandelbrot::mpmc->pop(voisin[1], work) != MPMC_SUCCES)
-				if (voisin[2] != -1 && Mandelbrot::mpmc->pop(voisin[2], work) != MPMC_SUCCES);
+	if(Mandelbrot::mpmc->pop(rank, &work) != MPMC_SUCCES)
+		if (voisin[0] == -1 || Mandelbrot::mpmc->pop(voisin[0], &work) != MPMC_SUCCES)
+			if (voisin[1] == -1 || Mandelbrot::mpmc->pop(voisin[1], &work) != MPMC_SUCCES)
+				if (voisin[2] == -1 || Mandelbrot::mpmc->pop(voisin[2], &work) != MPMC_SUCCES);
 	
+	std::cerr << work << std::endl;
 	return work;
 }
 
@@ -373,7 +374,7 @@ int main(int argc, char** argv)
 	MPI_Request rqst;
 	MPI_Irecv(NULL, 0, MPI_BYTE, MPI_ANY_SOURCE, KILL, MPI_COMM_WORLD, &rqst);
 	int flag = 0;
-	
+
 
 	//synchronisation
 	MPI_Barrier(MPI_COMM_WORLD);

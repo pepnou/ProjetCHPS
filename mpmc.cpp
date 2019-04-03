@@ -10,33 +10,59 @@
 
 Mpmc::Mpmc(size_t size) : size(size)
 {
-	buf = (char*)malloc(size);
-	MPI_Win_allocate(size, 1, /*info*/MPI_INFO_NULL, MPI_COMM_WORLD, buf, &window);
+	//std::cout << __FUNCTION__ << " deb" << std::endl;
+
+	//MPI_Alloc_mem(size, MPI_INFO_NULL, &buf);
+	//MPI_Win_create(buf, size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &window);
+	MPI_Win_allocate(size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &buf, &window);
 	MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
 	
 	memset( buf, 0, size);
+	//std::cout << __FUNCTION__ << " fin" << std::endl;
 }
 
 Mpmc::~Mpmc()
 {
+	//std::cout << __FUNCTION__ << " deb" << std::endl;
+
 	MPI_Win_free( &window );
+
+	//std::cout << __FUNCTION__ << " fin" << std::endl;
 }
 
 char Mpmc::getState(size_t target)
 {
+	//std::cout << __FUNCTION__ << " deb" << std::endl;
+
 	char result;
-	MPI_Get(&result, 1, MPI_CHAR, target, state, 1, MPI_CHAR, window);
+
+	MPI_Win_lock(MPI_LOCK_SHARED, target, 0, window);
+	//MPI_Get(&result, 1, MPI_CHAR, target, state, 1, MPI_CHAR, window);
+	MPI_Get_accumulate(NULL, 0, MPI_CHAR, &result, 1, MPI_CHAR, target, state, 1, MPI_CHAR, MPI_NO_OP, window);
+	MPI_Win_unlock(target, window);
+
+	//std::cout << __FUNCTION__ << " fin" << std::endl;
+	
 	return result;
 }
 
 void Mpmc::setState(char goal)
 {
-	MPI_Put(&goal, 1, MPI_CHAR, mpi_rank, state, 1, MPI_CHAR, window);
+	//std::cout << __FUNCTION__ << " deb" << std::endl;
+
+	MPI_Win_lock(MPI_LOCK_EXCLUSIVE, mpi_rank, 0, window);
+	//MPI_Put(&goal, 1, MPI_CHAR, mpi_rank, state, 1, MPI_CHAR, window);
+	MPI_Accumulate(&goal, 1, MPI_CHAR, mpi_rank, state, 1, MPI_CHAR, MPI_REPLACE, window);
+	MPI_Win_unlock(mpi_rank, window);
+
+	//std::cout << __FUNCTION__ << " fin" << std::endl;
 }
 
 int Mpmc::push(char* work)
 {
+	//std::cout << __FUNCTION__ << " deb" << std::endl;
+
 	/*size_t current, next;
 	bool loop = true;
 	do {
@@ -53,6 +79,8 @@ int Mpmc::push(char* work)
 			}
 		}
 	} while(loop);*/
+
+	MPI_Win_lock(MPI_LOCK_EXCLUSIVE, mpi_rank, 0, window);
 
 	size_t current, next, result;
 	bool loop = true;
@@ -86,15 +114,21 @@ int Mpmc::push(char* work)
 		}
 		else
 		{
+			MPI_Win_unlock(mpi_rank, window);
+			//std::cout << __FUNCTION__ << " fin" << std::endl;
 			return MPMC_FULL;
 		}
 	} while(loop);
 	
+	MPI_Win_unlock(mpi_rank, window);
+	//std::cout << __FUNCTION__ << " fin" << std::endl;
 	return MPMC_SUCCES;
 }
 
 int Mpmc::pop(size_t target, char* work)
 {
+	//std::cout << __FUNCTION__ << " deb" << std::endl;
+
 	std::cerr << target << std::endl;
 	if(work)
 		delete [] work;
@@ -126,6 +160,8 @@ int Mpmc::pop(size_t target, char* work)
 
 	size_t current, next, result, size, w_ok;
 	bool loop = true;
+
+	MPI_Win_lock(MPI_LOCK_EXCLUSIVE, target, 0, window);
 
 	do
 	{
@@ -165,9 +201,43 @@ int Mpmc::pop(size_t target, char* work)
 		}
 		else
 		{
+			MPI_Win_unlock(target, window);
+			//std::cout << __FUNCTION__ << " fin" << std::endl;
 			return MPMC_EMPTY;
 		}
 		
 	} while(loop);
+
+	MPI_Win_unlock(target, window);
+	//std::cout << __FUNCTION__ << " fin" << std::endl;
 	return MPMC_SUCCES;
+}
+
+
+int Mpmc::tryPop(size_t target)
+{
+	//std::cout << __FUNCTION__ << " deb" << std::endl;
+
+	size_t current, size, w_ok;
+
+	MPI_Win_lock(MPI_LOCK_EXCLUSIVE, target, 0, window);
+
+	MPI_Get(&current, 1, MPI_UNSIGNED_LONG, target, last_read, 1, MPI_UNSIGNED_LONG, window);
+	MPI_Get(&w_ok, 1, MPI_UNSIGNED_LONG, target, sizeof(size_t), 1, MPI_UNSIGNED_LONG, window);
+
+	if((w_ok - current + size) % size > 0)
+	{
+		MPI_Get(&size, 1, MPI_UNSIGNED_LONG, target, current, 1, MPI_UNSIGNED_LONG, window);
+
+		if(size != 0)
+		{
+			MPI_Win_unlock(target, window);
+			//std::cout << __FUNCTION__ << " fin" << std::endl;
+			return MPMC_SUCCES;
+		}
+	}
+
+	MPI_Win_unlock(target, window);
+	//std::cout << __FUNCTION__ << " fin" << std::endl;
+	return MPMC_EMPTY;
 }

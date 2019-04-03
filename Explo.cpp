@@ -277,6 +277,8 @@ void receiveExploOptions()
 
 char* getWork(int* voisin)
 {
+	return NULL;
+
 	int rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
@@ -288,6 +290,19 @@ char* getWork(int* voisin)
 				if (voisin[2] != -1 && Mandelbrot::mpmc->pop(voisin[2], work) != MPMC_SUCCES);
 	
 	return work;
+}
+
+bool tryWork(int* voisin)
+{
+	int rank;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+	bool res = Mandelbrot::mpmc->tryPop(rank) == MPMC_SUCCES;
+	res = res || (voisin[0] != -1 && Mandelbrot::mpmc->tryPop(voisin[0]) == MPMC_SUCCES);
+	res = res || (voisin[1] != -1 && Mandelbrot::mpmc->tryPop(voisin[1]) == MPMC_SUCCES);
+	res = res || (voisin[2] != -1 && Mandelbrot::mpmc->tryPop(voisin[2]) == MPMC_SUCCES);
+
+	return res;
 }
 
 
@@ -302,10 +317,23 @@ int main(int argc, char** argv)
 	bool verbose;
 	
 	if(rank == 0)
+	{
 		getExploOptions(argc, argv, Mandelbrot::mpmc, verbose);
+
+		std::stringstream cmd("");
+		cmd << "mkdir -p " << Mandelbrot::rep;
+		int ret = system(cmd.str().c_str());
+		if(ret == -1 || ret == 127)
+		{
+			perror("system");
+			MPI_Abort(MPI_COMM_WORLD, 43);
+		}
+	}
 	else
 		receiveExploOptions();
 
+
+	init_top10();
 
 	Mandelbrot::mpmc = new Mpmc(MPMC_SIZE);
 
@@ -313,9 +341,15 @@ int main(int argc, char** argv)
 	uint64_t tick = rdtsc();
 
 	Mandelbrot* M;
-	char* work;
+	char* work = NULL;
 
 	int* voisin = getNeighbors();
+
+	{
+		std::stringstream r("");
+		r << rank << " : " << voisin[0] << " , " << voisin[1] << " , " << voisin[2] << std::endl;
+		std::cerr << r.str();
+	}
 
 	MPI_Request rqst;
 	MPI_Irecv(NULL, 0, MPI_BYTE, MPI_ANY_SOURCE, KILL, MPI_COMM_WORLD, &rqst);
@@ -325,45 +359,61 @@ int main(int argc, char** argv)
 	int count;
 	MPI_Status status;
 	double key;
+
+	Mandelbrot::mpmc->setState('w');
+	MPI_Barrier(MPI_COMM_WORLD);
 	
 	while(1)
 	{
-		Mandelbrot::mpmc->setState('w');
-
-		work = NULL;
-		while((work = getWork(voisin)))
+		while(tryWork(voisin))
 		{
-			M = new Mandelbrot(work);
-			M->dichotomie3();
-			delete M;
-			delete [] work;
+			Mandelbrot::mpmc->setState('w');
+
+			if((work = getWork(voisin)))
+			{
+				M = new Mandelbrot(work);
+				M->dichotomie3();
+				delete M;
+				delete [] work;
+				work = NULL;
+			}
 		}
 
-		bool fg = voisin[1] != -1 || Mandelbrot::mpmc->getState(voisin[1]) == 's';
-		bool fd = voisin[2] != -1 || Mandelbrot::mpmc->getState(voisin[2]) == 's';
+		bool fg = voisin[1] == -1 || Mandelbrot::mpmc->getState(voisin[1]) == 's';
+		bool fd = voisin[2] == -1 || Mandelbrot::mpmc->getState(voisin[2]) == 's';
 
 		if(fg && fd)
 			Mandelbrot::mpmc->setState('s');
 
 		if(voisin[0] == -1 && Mandelbrot::mpmc->getState(rank) == 's')
 		{
-			for (int i = 1; i < 3; ++i)
-				if(voisin[i] != -1)
-					MPI_Send(0, 0, MPI_BYTE, voisin[i], KILL, MPI_COMM_WORLD);
+			if(voisin[1] != -1)
+				MPI_Send(NULL, 0, MPI_BYTE, voisin[1], KILL, MPI_COMM_WORLD);
+			if(voisin[2] != -1)
+				MPI_Send(NULL, 0, MPI_BYTE, voisin[2], KILL, MPI_COMM_WORLD);
 			break;
 		}
 		else
 		{
 			MPI_Test(&rqst, &flag, MPI_STATUS_IGNORE);
 			if(flag)
+			{
+				if(voisin[1] != -1)
+					MPI_Send(NULL, 0, MPI_BYTE, voisin[1], KILL, MPI_COMM_WORLD);
+				if(voisin[2] != -1)
+					MPI_Send(NULL, 0, MPI_BYTE, voisin[2], KILL, MPI_COMM_WORLD);
 				break;
+			}
 		}
 
 		//usleep(100);
 	}
 
+	std::cerr << rank << std::endl;
+	MPI_Barrier(MPI_COMM_WORLD);
+
 	std::stringstream list("");
-	for( int i = 0;i < 10 && Mandelbrot::top10[i].val != NULL; i++)
+	for( int i = 0; i < 10 && Mandelbrot::top10[i].val != NULL; i++)
 	{
 		if(i == 0)
 			list << Mandelbrot::top10[i].key << "|" << Mandelbrot::top10[i].val;
@@ -378,7 +428,7 @@ int main(int argc, char** argv)
 			if(voisin[i] != -1)
 			{
 				//receive top 10 from child
-				MPI_Probe(i, LIST_SEND, MPI_COMM_WORLD, &status);
+				MPI_Probe(voisin[i], LIST_SEND, MPI_COMM_WORLD, &status);
 				MPI_Get_count(&status, MPI_CHAR, &count);
 				buf = new char[count+1]();
 				MPI_Recv(buf, count, MPI_CHAR, status.MPI_SOURCE, LIST_SEND, MPI_COMM_WORLD, MPI_STATUS_IGNORE);

@@ -308,7 +308,7 @@ char* getWork(int* voisin)
 			if (voisin[1] == -1 || Mandelbrot::mpmc->pop(voisin[1], &work) != MPMC_SUCCES)
 				if (voisin[2] == -1 || Mandelbrot::mpmc->pop(voisin[2], &work) != MPMC_SUCCES);
 	
-	std::cerr << work << std::endl;
+	//std::cerr << work << std::endl;
 	return work;
 }
 
@@ -396,13 +396,11 @@ int main(int argc, char** argv)
 
 			if((work = getWork(voisin)))
 			{
-				std::cerr << "debut dicho" << std::endl;
 				M = new Mandelbrot(work);
 				M->dichotomie3();
 				delete M;
 				delete [] work;
 				work = NULL;
-				std::cerr << "fin dicho" << std::endl;
 			}
 		}
 

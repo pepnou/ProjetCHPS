@@ -102,7 +102,7 @@ int Mpmc::push(char* work)
 
 		if(cond)
 		{
-			std::cerr << current << " " << next << std::endl;
+			//std::cerr << current << " " << next << std::endl;
 
 			MPI_Compare_and_swap(&next, &current, &result, MPI_UNSIGNED_LONG, mpi_rank, last_write, window);
 			if(result == current)
@@ -131,7 +131,7 @@ int Mpmc::push(char* work)
 
 int Mpmc::pop(size_t target, char** work)
 {
-	std::cout << __FUNCTION__ << " deb" << std::endl;
+	//std::cout << __FUNCTION__ << " deb" << std::endl;
 
 	size_t header_size = sizeof(char) + 4 * sizeof(size_t);
 
@@ -147,7 +147,7 @@ int Mpmc::pop(size_t target, char** work)
 
 		next = ((current + sizeof(size_t) - header_size) % (size - header_size)) + header_size;
 
-		std::cerr << current << " " << next << " " << w_ok << std::endl;
+		//std::cerr << current << " " << next << " " << w_ok << std::endl;
 
 		bool cond;
 		cond = current < next && (w_ok < current || w_ok >= next);

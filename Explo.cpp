@@ -40,6 +40,8 @@ void getExploOptions(int argc, char** argv, Mpmc* mpmc, bool& verbose)
 		// couleur
 		default_param[3] = RAINBOW;
 
+		verbose = false;
+
 	try
 	{
 		boost::program_options::options_description generic("Generic options");
@@ -277,8 +279,6 @@ void receiveExploOptions()
 
 char* getWork(int* voisin)
 {
-	return NULL;
-
 	int rank;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
@@ -308,12 +308,17 @@ bool tryWork(int* voisin)
 
 int main(int argc, char** argv)
 {
+	//initalisation de MPI
 	MPI_Init(&argc, &argv);
 	
 	int rank, size;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
+
+
+
+	//recuperation des options
 	bool verbose;
 	
 	if(rank == 0)
@@ -333,35 +338,41 @@ int main(int argc, char** argv)
 		receiveExploOptions();
 
 
-	init_top10();
-
-	Mandelbrot::mpmc = new Mpmc(MPMC_SIZE);
-
-	
-	uint64_t tick = rdtsc();
-
-	Mandelbrot* M;
+	//initialisation des variables
+	Mandelbrot* M = NULL;
 	char* work = NULL;
 
+	init_top10();
+	Mandelbrot::mpmc = new Mpmc(MPMC_SIZE);
+
+
+
+	//creation de l'arbre de communication
 	int* voisin = getNeighbors();
 
-	{
+	/*{
 		std::stringstream r("");
 		r << rank << " : " << voisin[0] << " , " << voisin[1] << " , " << voisin[2] << std::endl;
 		std::cerr << r.str();
-	}
+	}*/
 
+
+
+	//attente du message de terminaison
 	MPI_Request rqst;
 	MPI_Irecv(NULL, 0, MPI_BYTE, MPI_ANY_SOURCE, KILL, MPI_COMM_WORLD, &rqst);
 	int flag = 0;
 
-	char *buf, *tmp, *val;
-	int count;
-	MPI_Status status;
-	double key;
 
+	
+	//changement de son status vers w (work)
 	Mandelbrot::mpmc->setState('w');
+
+	//synchronisation
 	MPI_Barrier(MPI_COMM_WORLD);
+
+	//debut de la mesure de temps	
+	uint64_t tick = rdtsc();
 	
 	while(1)
 	{
@@ -405,13 +416,18 @@ int main(int argc, char** argv)
 				break;
 			}
 		}
-
-		//usleep(100);
 	}
 
-	std::cerr << rank << std::endl;
+	//synchronisation
 	MPI_Barrier(MPI_COMM_WORLD);
 
+	//initialisation des variables utilisées pour la récuperation des top10
+	char *buf = NULL, *tmp = NULL, *val = NULL;
+	int count;
+	MPI_Status status;
+	double key;
+
+	//concatenation du top10 en une chaine de charactère
 	std::stringstream list("");
 	for( int i = 0; i < 10 && Mandelbrot::top10[i].val != NULL; i++)
 	{
@@ -421,6 +437,7 @@ int main(int argc, char** argv)
 			list << "|" << Mandelbrot::top10[i].key << "|" << Mandelbrot::top10[i].val;
 	}
 
+	// transmission des top10 des feuilles vers la racine de l'arbre
 	if(voisin[1] != -1 || voisin[2] != -1)
 	{
 		for (int i = 1; i < 3; ++i)
@@ -454,7 +471,7 @@ int main(int argc, char** argv)
 
 	if(voisin[0] != -1)
 		MPI_Send(list.str().c_str(), list.str().size(), MPI_CHAR, voisin[0], LIST_SEND, MPI_COMM_WORLD);
-	else
+	else // ecriture par la racine du top 10 dans le fichier
 	{
 		std::stringstream file_name("");
 		file_name << Mandelbrot::rep << "/Coordinates.txt";
@@ -465,12 +482,13 @@ int main(int argc, char** argv)
 				fprintf(f2, "0:%s:2\n", Mandelbrot::top10[i].val);
 		}
 		fclose(f2);
-
-
-		if(verbose == true)
-			std::cout << "Time spend in cycle : " << rdtsc() - tick << std::endl;
 	}
 
+	//affichage du temps
+	if(rank == 0 && verbose)
+		std::cout << "Time spend in cycle : " << rdtsc() - tick << std::endl;
+
+	//liberation mem et tout et tout
 	delete Mandelbrot::mpmc;
 	MPI_Finalize();
 	std::exit(0);

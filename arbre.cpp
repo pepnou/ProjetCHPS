@@ -18,14 +18,14 @@ void creer_fils(arbre_t& pos, int& cle, int currentHeigth, arbre_t& racine, int 
 
 	if(currentHeigth < height)
 	{
-		if(cle < size -1)
+		if(cle < size - 2)
 		{
 			arbre_t fg = new Noeud_t();
 			fg->gauche = NULL;
 			fg->droite = NULL;
 			fg->pere = pos;
 			pos->gauche = fg;
-			creer_fils(fg, cle, currentHeigth, racine, size, height);
+			creer_fils(fg, cle, currentHeigth, racine, size - 1, height);
 		}
 
 		pos->cle = ++cle;
@@ -75,7 +75,6 @@ void creer_pere(arbre_t& pos, int& cle, int currentHeigth, arbre_t& racine, int 
 
 
 arbre_t creer_arbre()
-
 { 
 	int size;
 	MPI_Comm_size(MPI_COMM_WORLD, &size);

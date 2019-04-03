@@ -12,12 +12,13 @@ Mpmc::Mpmc(size_t size) : size(size)
 {
 	//std::cout << __FUNCTION__ << " deb" << std::endl;
 
-	//MPI_Alloc_mem(size, MPI_INFO_NULL, &buf);
-	//MPI_Win_create(buf, size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &window);
-	MPI_Win_allocate(size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &buf, &window);
 	MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 	MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
-	
+
+	//MPI_Win_allocate(size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &buf, &window);
+	MPI_Alloc_mem(size, MPI_INFO_NULL, &buf);
+	MPI_Win_create(buf, size, 1, MPI_INFO_NULL, MPI_COMM_WORLD, &window);
+
 	memset( buf, 0, size);
 	//std::cout << __FUNCTION__ << " fin" << std::endl;
 }

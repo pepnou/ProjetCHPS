@@ -85,7 +85,7 @@ int Mpmc::push(char* work)
 
 	size_t header_size = sizeof(char) + 4 * sizeof(size_t);
 
-	std::cerr << work << " " << length << " " << msg_size << " " << header_size << std::endl;
+	//std::cerr << work << " " << length << " " << msg_size << " " << header_size << std::endl;
 
 	do
 	{
@@ -102,6 +102,8 @@ int Mpmc::push(char* work)
 
 		if(cond)
 		{
+			std::cerr << current << " " << next << std::endl;
+
 			MPI_Compare_and_swap(&next, &current, &result, MPI_UNSIGNED_LONG, mpi_rank, last_write, window);
 			if(result == current)
 			{
@@ -141,13 +143,15 @@ int Mpmc::pop(size_t target, char** work)
 	do
 	{
 		MPI_Get(&current, 1, MPI_UNSIGNED_LONG, target, last_read, 1, MPI_UNSIGNED_LONG, window);
-		MPI_Get(&w_ok, 1, MPI_UNSIGNED_LONG, target, sizeof(size_t), 1, MPI_UNSIGNED_LONG, window);
+		MPI_Get(&w_ok, 1, MPI_UNSIGNED_LONG, target, write_ok, 1, MPI_UNSIGNED_LONG, window);
 
 		next = ((current + sizeof(size_t) - header_size) % (size - header_size)) + header_size;
 
+		std::cerr << current << " " << next << " " << w_ok << std::endl;
+
 		bool cond;
-		cond = current < next && (w_ok <= current || w_ok > next);
-		cond = cond || (current > next && (w_ok > next && w_ok <= current));
+		cond = current < next && (w_ok < current || w_ok >= next);
+		cond = cond || (current > next && (w_ok >= next && w_ok < current));
 
 		//if((w_ok - current + size) % size > 0)
 		if(cond)
@@ -195,13 +199,13 @@ int Mpmc::tryPop(size_t target)
 
 
 	MPI_Get(&current, 1, MPI_UNSIGNED_LONG, target, last_read, 1, MPI_UNSIGNED_LONG, window);
-	MPI_Get(&w_ok, 1, MPI_UNSIGNED_LONG, target, sizeof(size_t), 1, MPI_UNSIGNED_LONG, window);
+	MPI_Get(&w_ok, 1, MPI_UNSIGNED_LONG, target, write_ok, 1, MPI_UNSIGNED_LONG, window);
 
 	next = ((current + sizeof(size_t) - header_size) % (size - header_size)) + header_size;
 
 	bool cond;
-	cond = current < next && (w_ok <= current || w_ok > next);
-	cond = cond || (current > next && (w_ok > next && w_ok <= current));
+	cond = current < next && (w_ok < current || w_ok >= next);
+	cond = cond || (current > next && (w_ok >= next && w_ok < current));
 
 	//if((w_ok - current + size) % size > 0)
 	if(cond)

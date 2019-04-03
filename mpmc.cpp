@@ -115,7 +115,7 @@ int Mpmc::push(char* work)
 		cond = current < next && (r_ok <= current || r_ok > next);
 		cond = cond || (current > next && (r_ok > next && r_ok <= current));
 
-		std::cerr << r_ok << " " << current << " " << next << std::endl;
+		//std::cerr << r_ok << " " << current << " " << next << std::endl;
 
 		if(cond)
 		{
@@ -123,7 +123,7 @@ int Mpmc::push(char* work)
 			if(result == current)
 			{
 				MPI_Put(&length, 1, MPI_UNSIGNED_LONG, mpi_rank, current, 1, MPI_UNSIGNED_LONG, window);
-				MPI_Put(work, 1, MPI_UNSIGNED_LONG, mpi_rank, current + sizeof(size_t), 1, MPI_UNSIGNED_LONG, window);
+				MPI_Put(work, length, MPI_CHAR, mpi_rank, current + sizeof(size_t), length, MPI_CHAR, window);
 				
 				do
 				{

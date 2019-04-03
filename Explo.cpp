@@ -262,6 +262,12 @@ void getExploOptions(int argc, char** argv, Mpmc* mpmc, bool& verbose)
 	MPI_Bcast(Mandelbrot::rep, default_param[4], MPI_CHAR, 0, MPI_COMM_WORLD);
 
 
+	Mandelbrot::im_width = default_param[0];
+	Mandelbrot::im_height = default_param[1];
+	Mandelbrot::surEchantillonage = default_param[2];
+	Mandelbrot::color = default_param[3];
+
+
 	std::stringstream w_ss;
 	w_ss << enough << ":" << x << ":" << y << ":" << w << ":" << h << ":2:3";
 	char* work = new char[w_ss.str().size() + 1]();
@@ -390,11 +396,13 @@ int main(int argc, char** argv)
 
 			if((work = getWork(voisin)))
 			{
+				std::cerr << "debut dicho" << std::endl;
 				M = new Mandelbrot(work);
 				M->dichotomie3();
 				delete M;
 				delete [] work;
 				work = NULL;
+				std::cerr << "fin dicho" << std::endl;
 			}
 		}
 

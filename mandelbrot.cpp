@@ -661,7 +661,7 @@ void Mandelbrot::dichotomie3()
                 map.erase(std::prev(map.end()));*/
 
             insert_top10(res, buf);
-        } 
+        }
 
 
 

@@ -4,6 +4,10 @@
 #include <gmp.h>
 #include <vector>
 
+#define RAINBOW 1
+#define JAUNE_BLEU 2
+#define SINCOS 3
+
 void resize(int sig);
 
 void handler(int argc, char** argv);

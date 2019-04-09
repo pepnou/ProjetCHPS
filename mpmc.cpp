@@ -24,6 +24,9 @@ Mpmc::Mpmc(size_t size) : size(size)
 	char goal = 'w';
 	int header_size = sizeof(char) + 4*sizeof(size_t);
 
+	if(mpi_rank != 0)
+		header_size++;
+
 	MPI_Win_lock(MPI_LOCK_EXCLUSIVE, mpi_rank, 0, window);
 
 	MPI_Accumulate(&goal, 1, MPI_CHAR, mpi_rank, state, 1, MPI_CHAR, MPI_REPLACE, window);
@@ -55,6 +58,9 @@ char Mpmc::getState(size_t target)
 	//MPI_Get(&result, 1, MPI_CHAR, target, state, 1, MPI_CHAR, window);
 	MPI_Get_accumulate(NULL, 0, MPI_CHAR, &result, 1, MPI_CHAR, target, state, 1, MPI_CHAR, MPI_NO_OP, window);
 	MPI_Win_unlock(target, window);
+
+	if(mpi_rank != 0)
+		std::cerr << mpi_rank << " / " << target << " : " << result << std::endl;
 
 	//std::cout << __FUNCTION__ << " fin" << std::endl;
 	
@@ -145,6 +151,9 @@ int Mpmc::pop(size_t target, char** work)
 		MPI_Get(&current, 1, MPI_UNSIGNED_LONG, target, last_read, 1, MPI_UNSIGNED_LONG, window);
 		MPI_Get(&w_ok, 1, MPI_UNSIGNED_LONG, target, write_ok, 1, MPI_UNSIGNED_LONG, window);
 
+		//MPI_Get_accumulate(NULL, 0, MPI_UNSIGNED_LONG, &current, 1, MPI_UNSIGNED_LONG, target, last_read, 1, MPI_UNSIGNED_LONG, MPI_NO_OP, window);
+		//MPI_Get_accumulate(NULL, 0, MPI_UNSIGNED_LONG, &w_ok, 1, MPI_UNSIGNED_LONG, target, write_ok, 1, MPI_UNSIGNED_LONG, MPI_NO_OP, window);
+
 		next = ((current + sizeof(size_t) - header_size) % (size - header_size)) + header_size;
 
 		//std::cerr << current << " " << next << " " << w_ok << std::endl;
@@ -153,9 +162,14 @@ int Mpmc::pop(size_t target, char** work)
 		cond = current < next && (w_ok < current || w_ok >= next);
 		cond = cond || (current > next && (w_ok >= next && w_ok < current));
 
+		//std::cerr << mpi_rank << " / " << target << " : " << current << " " << next << " " << w_ok << " " << cond << std::endl;
+
 		//if((w_ok - current + size) % size > 0)
 		if(cond)
 		{
+			if(mpi_rank != 0)
+				std::cerr << "tentative de chopage de boulot" << std::endl;
+
 			MPI_Get(&msg_size, 1, MPI_UNSIGNED_LONG, target, current, 1, MPI_UNSIGNED_LONG, window);
 			next = (current + msg_size + sizeof(size_t) - header_size) % (size - header_size) + header_size;
 
@@ -201,13 +215,18 @@ int Mpmc::tryPop(size_t target)
 	MPI_Get(&current, 1, MPI_UNSIGNED_LONG, target, last_read, 1, MPI_UNSIGNED_LONG, window);
 	MPI_Get(&w_ok, 1, MPI_UNSIGNED_LONG, target, write_ok, 1, MPI_UNSIGNED_LONG, window);
 
-	next = ((current + sizeof(size_t) - header_size) % (size - header_size)) + header_size;
+	//MPI_Get_accumulate(NULL, 0, MPI_UNSIGNED_LONG, &current, 1, MPI_UNSIGNED_LONG, target, last_read, 1, MPI_UNSIGNED_LONG, MPI_NO_OP, window);
+	//MPI_Get_accumulate(NULL, 0, MPI_UNSIGNED_LONG, &w_ok, 1, MPI_UNSIGNED_LONG, target, write_ok, 1, MPI_UNSIGNED_LONG, MPI_NO_OP, window);
 
+	next = ((current + sizeof(size_t) - header_size) % (size - header_size)) + header_size;
+	
 	bool cond;
 	cond = current < next && (w_ok < current || w_ok >= next);
 	cond = cond || (current > next && (w_ok >= next && w_ok < current));
 
-	//if((w_ok - current + size) % size > 0)
+	if(mpi_rank != 0 && target != mpi_rank)
+		std::cerr << mpi_rank << " / " << target << " : " << current << " " << next << " " << w_ok << " " << cond << std::endl;
+
 	if(cond)
 	{
 		MPI_Win_unlock(target, window);

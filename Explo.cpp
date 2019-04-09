@@ -308,7 +308,8 @@ char* getWork(int* voisin)
 			if (voisin[1] == -1 || Mandelbrot::mpmc->pop(voisin[1], &work) != MPMC_SUCCES)
 				if (voisin[2] == -1 || Mandelbrot::mpmc->pop(voisin[2], &work) != MPMC_SUCCES);
 	
-	//std::cerr << work << std::endl;
+	if(rank != 0)
+		std::cerr << work << std::endl;
 	return work;
 }
 
@@ -410,13 +411,16 @@ int main(int argc, char** argv)
 		if(fg && fd)
 			Mandelbrot::mpmc->setState('s');
 
-		if(voisin[0] == -1 && Mandelbrot::mpmc->getState(rank) == 's')
+		if(voisin[0] == -1)
 		{
-			if(voisin[1] != -1)
-				MPI_Send(NULL, 0, MPI_BYTE, voisin[1], KILL, MPI_COMM_WORLD);
-			if(voisin[2] != -1)
-				MPI_Send(NULL, 0, MPI_BYTE, voisin[2], KILL, MPI_COMM_WORLD);
-			break;
+			if(Mandelbrot::mpmc->getState(rank) == 's')
+			{
+				if(voisin[1] != -1)
+					MPI_Send(NULL, 0, MPI_BYTE, voisin[1], KILL, MPI_COMM_WORLD);
+				if(voisin[2] != -1)
+					MPI_Send(NULL, 0, MPI_BYTE, voisin[2], KILL, MPI_COMM_WORLD);
+				break;
+			}
 		}
 		else
 		{
@@ -430,6 +434,9 @@ int main(int argc, char** argv)
 				break;
 			}
 		}
+
+		//usleep(100);
+		sleep(2);
 	}
 
 	//synchronisation

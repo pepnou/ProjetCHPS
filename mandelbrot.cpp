@@ -624,7 +624,7 @@ void Mandelbrot::dichotomie3()
 {
     int prec = mpf_get_prec(pos_x);
 
-    escapeSpeedCalcSeq();
+    escapeSpeedCalcPar();
     draw();
 
     bool filtre/*, needwork*/;

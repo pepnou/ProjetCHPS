@@ -442,7 +442,7 @@ bool getGenOptions(int argc, char** argv, int* default_param, char* &file, bool&
 		config.add_options()
 			("im-width,w", boost::program_options::value< int >(), ": width of the generated images")
 			("im-height,h", boost::program_options::value< int >(), ": height of the generated images")
-			("file,f", boost::program_options::value< std::string>(), ": file containing positions of places in the fractal used to genrate images")
+			("file,f", boost::program_options::value< std::string>()->required(), ": file containing positions of places in the fractal used to generate images")
 			("color,C", boost::program_options::value< int >(), ": the color algorithm used, see --help-color")
 			("super-sampling,S", boost::program_options::value< int >(), ": the maximum number of points calculated per pixel")
             ("blocHeight,H", boost::program_options::value< int >(), ": the height of the blocs the images are divided into");

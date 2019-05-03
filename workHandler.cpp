@@ -442,7 +442,7 @@ bool getGenOptions(int argc, char** argv, int* default_param, char* &file, bool&
 		config.add_options()
 			("im-width,w", boost::program_options::value< int >(), ": width of the generated images")
 			("im-height,h", boost::program_options::value< int >(), ": height of the generated images")
-			("file,f", boost::program_options::value< std::string>()->required(), ": file containing positions of places in the fractal used to generate images")
+			("file,f", boost::program_options::value< std::string>(), ": file containing positions of places in the fractal used to generate images (required)")
 			("color,C", boost::program_options::value< int >(), ": the color algorithm used, see --help-color")
 			("super-sampling,S", boost::program_options::value< int >(), ": the maximum number of points calculated per pixel")
             ("blocHeight,H", boost::program_options::value< int >(), ": the height of the blocs the images are divided into");
@@ -512,7 +512,7 @@ bool getGenOptions(int argc, char** argv, int* default_param, char* &file, bool&
 		if (vm2.count("help"))
 		{
 			std::cout << visible << "\n";
-			exit(0);
+			MPI_Abort(MPI_COMM_WORLD, 0);
 		}
 		if (vm2.count("im-width"))
 		{
@@ -535,6 +535,11 @@ bool getGenOptions(int argc, char** argv, int* default_param, char* &file, bool&
 			strcpy(file, s.c_str());
 			file[s.size()] = '\0';
 		}
+        else if(!vm2.count("config"))
+        {
+            std::cerr << "Coordinate file required, use --file or -f" << std::endl;
+            MPI_Abort(MPI_COMM_WORLD, 0);
+        }
 		
 		if (vm2.count("color"))
 		{
@@ -583,6 +588,12 @@ bool getGenOptions(int argc, char** argv, int* default_param, char* &file, bool&
 	{
 		std::cout << E.what() << std::endl;
 	}
+
+    if(size < 2)
+    {
+        std::cerr << "Program must be called with at least 2 processes" << std::endl;
+        MPI_Abort(MPI_COMM_WORLD, 0);
+    }
 
     int tmp = default_param[1];
     default_param[1] = blocHeight;
